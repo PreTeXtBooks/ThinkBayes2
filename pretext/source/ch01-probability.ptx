@@ -475,36 +475,39 @@ I'll define <c>conditional</c> to take two Boolean series, <c>proposition</c> an
   <section xml:id="sec-laws-of-probability">
     <title>Laws of Probability</title>
 
-    <p>
-      In the next few sections, we'll derive three relationships between conjunction and conditional probability:
-    </p>
-    <p>
-      * Theorem 1: Using a conjunction to compute a conditional probability.
-    </p>
-    <p>
-      * Theorem 2: Using a conditional probability to compute a conjunction.
-    </p>
-    <p>
-      * Theorem 3: Using <c>conditional(A, B)</c> to compute <c>conditional(B, A)</c>.
-    </p>
-    <p>
-      Theorem 3 is also known as Bayes's Theorem.
-    </p>
-    <p>
-      I'll write these theorems using mathematical notation for probability:
-    </p>
-    <p>
-      * $P(A)$ is the probability of proposition $A$.
-    </p>
-    <p>
-      * $P(A~\mathrm{and}~B)$ is the probability of the conjunction of $A$ and $B$, that is, the probability that both are true.
-    </p>
-    <p>
-      * $P(A | B)$ is the conditional probability of $A$ given that $B$ is true.  The vertical line between $A$ and $B$ is pronounced &quot;given&quot;.
-    </p>
-    <p>
-      With that, we are ready for Theorem 1.
-    </p>
+    <introduction>
+      <p>
+        In the next few sections, we'll derive three relationships between conjunction and conditional probability:
+      </p>
+      <p>
+        * Theorem 1: Using a conjunction to compute a conditional probability.
+      </p>
+      <p>
+        * Theorem 2: Using a conditional probability to compute a conjunction.
+      </p>
+      <p>
+        * Theorem 3: Using <c>conditional(A, B)</c> to compute <c>conditional(B, A)</c>.
+      </p>
+      <p>
+        Theorem 3 is also known as Bayes's Theorem.
+      </p>
+      <p>
+        I'll write these theorems using mathematical notation for probability:
+      </p>
+      <p>
+        * $P(A)$ is the probability of proposition $A$.
+      </p>
+      <p>
+        * $P(A~\mathrm{and}~B)$ is the probability of the conjunction of $A$ and $B$, that is, the probability that both are true.
+      </p>
+      <p>
+        * $P(A | B)$ is the conditional probability of $A$ given that $B$ is true.  The vertical line between $A$ and $B$ is pronounced &quot;given&quot;.
+      </p>
+      <p>
+        With that, we are ready for Theorem 1.
+      </p>
+    </introduction>
+
     <subsection xml:id="subsec-theorem-1">
       <title>Theorem 1</title>
 
