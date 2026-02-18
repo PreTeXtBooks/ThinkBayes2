@@ -6,7 +6,11 @@ by Allen B. Downey
 
 *Think Bayes* is an introduction to Bayesian statistics using computational methods.
 
+## PreTeXt Version
 
+A PreTeXt version of this book is now available in the `pretext/` directory. This version provides an alternative format with enhanced accessibility and navigation features. See [pretext/README.md](pretext/README.md) for more information on building and viewing the PreTeXt version.
+
+## Book Versions
 
 Print and electronic versions of this book are available from
 [Bookshop.org](https://bookshop.org/a/98697/9781492089469),
