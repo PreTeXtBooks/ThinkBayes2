@@ -48,7 +48,9 @@
     </p>
     <p>
       For example, if we survey 1000 people, and 20 of them are bank tellers, the fraction that work as bank tellers is 0.02 or 2%.  If we choose a person from this population at random, the probability that they are a bank teller is 2%.
-By &quot;at random&quot; I mean that every person in the dataset has the same chance of being chosen.
+    </p>
+    <p>
+      By &quot;at random&quot; I mean that every person in the dataset has the same chance of being chosen.
     </p>
     <p>
       With this definition and an appropriate dataset, we can compute probabilities by counting.
@@ -165,15 +167,12 @@ To demonstrate, I'll use data from the <url href="http://gss.norc.org/">General 
       </input>
     </program>
     <p>
-      Now let's look at another variable in this dataset.
-The values of the column <c>sex</c> are encoded like this:
+      The values of the column <c>sex</c> are encoded like this:
     </p>
-    <p>
-      ``<c>
+    <pre>
 1    Male
 2    Female
-</c>``
-    </p>
+    </pre>
     <p>
       So we can make a Boolean series that is <c>True</c> for female respondents and <c>False</c> otherwise.
     </p>
@@ -204,8 +203,7 @@ The values of the column <c>sex</c> are encoded like this:
     <p>
       The values of <c>polviews</c> are on a seven-point scale:
     </p>
-    <p>
-      ``<c>
+    <pre>
 1	Extremely liberal
 2	Liberal
 3	Slightly liberal
@@ -213,8 +211,7 @@ The values of the column <c>sex</c> are encoded like this:
 5	Slightly conservative
 6	Conservative
 7	Extremely conservative
-</c>``
-    </p>
+    </pre>
     <p>
       I'll define <c>liberal</c> to be <c>True</c> for anyone whose response is &quot;Extremely liberal&quot;, &quot;Liberal&quot;, or &quot;Slightly liberal&quot;.
     </p>
@@ -237,8 +234,7 @@ The values of the column <c>sex</c> are encoded like this:
     <p>
       The values of <c>partyid</c> are encoded like this:
     </p>
-    <p>
-      ``<c>
+    <pre>
 0	Strong democrat
 1	Not strong democrat
 2	Independent, near democrat
@@ -247,8 +243,7 @@ The values of the column <c>sex</c> are encoded like this:
 5	Not strong republican
 6	Strong republican
 7	Other party
-</c>``
-    </p>
+    </pre>
     <p>
       I'll define <c>democrat</c> to include respondents who chose &quot;Strong democrat&quot; or &quot;Not strong democrat&quot;:
     </p>
@@ -323,27 +318,21 @@ For example, we have already computed the probability that a respondent is a ban
     <p>
       Conditional probability is a probability that depends on a condition, but that might not be the most helpful definition.  Here are some examples:
     </p>
-    <p>
-      * What is the probability that a respondent is a Democrat, given that they are liberal?
-    </p>
-    <p>
-      * What is the probability that a respondent is female, given that they are a banker?
-    </p>
-    <p>
-      * What is the probability that a respondent is liberal, given that they are female?
-    </p>
+    <ul>
+      <li>What is the probability that a respondent is a Democrat, given that they are liberal?</li>
+      <li>What is the probability that a respondent is female, given that they are a banker?</li>
+      <li>What is the probability that a respondent is liberal, given that they are female?</li>
+    </ul>
     <p>
       Let's start with the first one, which we can interpret like this: &quot;Of all the respondents who are liberal, what fraction are Democrats?&quot;
     </p>
     <p>
       We can compute this probability in two steps:
     </p>
-    <p>
-      1. Select all respondents who are liberal.
-    </p>
-    <p>
-      2. Compute the fraction of the selected respondents who are Democrats.
-    </p>
+    <ol>
+      <li>Select all respondents who are liberal.</li>
+      <li>Compute the fraction of the selected respondents who are Democrats.</li>
+    </ol>
     <p>
       To select liberal respondents, we can use the bracket operator, <c>[]</c>, like this:
     </p>
@@ -479,30 +468,22 @@ I'll define <c>conditional</c> to take two Boolean series, <c>proposition</c> an
       <p>
         In the next few sections, we'll derive three relationships between conjunction and conditional probability:
       </p>
-      <p>
-        * Theorem 1: Using a conjunction to compute a conditional probability.
-      </p>
-      <p>
-        * Theorem 2: Using a conditional probability to compute a conjunction.
-      </p>
-      <p>
-        * Theorem 3: Using <c>conditional(A, B)</c> to compute <c>conditional(B, A)</c>.
-      </p>
+      <ul>
+        <li>Theorem 1: Using a conjunction to compute a conditional probability.</li>
+        <li>Theorem 2: Using a conditional probability to compute a conjunction.</li>
+        <li>Theorem 3: Using <c>conditional(A, B)</c> to compute <c>conditional(B, A)</c>.</li>
+      </ul>
       <p>
         Theorem 3 is also known as Bayes's Theorem.
       </p>
       <p>
         I'll write these theorems using mathematical notation for probability:
       </p>
-      <p>
-        * $P(A)$ is the probability of proposition $A$.
-      </p>
-      <p>
-        * $P(A~\mathrm{and}~B)$ is the probability of the conjunction of $A$ and $B$, that is, the probability that both are true.
-      </p>
-      <p>
-        * $P(A | B)$ is the conditional probability of $A$ given that $B$ is true.  The vertical line between $A$ and $B$ is pronounced &quot;given&quot;.
-      </p>
+      <ul>
+        <li>$P(A)$ is the probability of proposition $A$.</li>
+        <li>$P(A~\mathrm{and}~B)$ is the probability of the conjunction of $A$ and $B$, that is, the probability that both are true.</li>
+        <li>$P(A | B)$ is the conditional probability of $A$ given that $B$ is true.  The vertical line between $A$ and $B$ is pronounced &quot;given&quot;.</li>
+      </ul>
       <p>
         With that, we are ready for Theorem 1.
       </p>
@@ -514,12 +495,10 @@ I'll define <c>conditional</c> to take two Boolean series, <c>proposition</c> an
       <p>
         What fraction of bankers are female?  We have already seen one way to compute the answer:
       </p>
-      <p>
-        1. Use the bracket operator to select the bankers, then
-      </p>
-      <p>
-        2. Use <c>mean</c> to compute the fraction of bankers who are female.
-      </p>
+      <ol>
+        <li>Use the bracket operator to select the bankers, then</li>
+        <li>Use <c>mean</c> to compute the fraction of bankers who are female.</li>
+      </ol>
       <p>
         We can write these steps like this:
       </p>
@@ -666,14 +645,12 @@ Here's one form of the law, expressed in mathematical notation:
     </p>
     <p>
       In words, the total probability of $A$ is the sum of two possibilities: either $B_1$ and $A$ are true or $B_2$ and $A$ are true.
-But this law applies only if $B_1$ and $B_2$ are:
+      But this law applies only if $B_1$ and $B_2$ are:
     </p>
-    <p>
-      * Mutually exclusive, which means that only one of them can be true, and
-    </p>
-    <p>
-      * Collectively exhaustive, which means that one of them must be true.
-    </p>
+    <ul>
+      <li>Mutually exclusive, which means that only one of them can be true, and</li>
+      <li>Collectively exhaustive, which means that one of them must be true.</li>
+    </ul>
     <p>
       As an example, let's use this law to compute the probability that a respondent is a banker.
 We can compute it directly like this:
@@ -814,12 +791,10 @@ In the next chapter, we'll see how.
         <p>
           Use <c>conditional</c> to compute the following probabilities:
         </p>
-        <p>
-          * What is the probability that a respondent is liberal, given that they are a Democrat?
-        </p>
-        <p>
-          * What is the probability that a respondent is a Democrat, given that they are liberal?
-        </p>
+        <ul>
+          <li>What is the probability that a respondent is liberal, given that they are a Democrat?</li>
+          <li>What is the probability that a respondent is a Democrat, given that they are liberal?</li>
+        </ul>
         <p>
           Think carefully about the order of the arguments you pass to <c>conditional</c>.
         </p>
