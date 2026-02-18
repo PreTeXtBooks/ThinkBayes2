@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='utf-8'?>
+
+<chapter xml:id="ch-regression" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <title>Regression</title>
+
+  <introduction>
+    <p>
+      This chapter explores Bayesian methods for linear and nonlinear regression.
+    </p>
+  </introduction>
+
+  <!-- Sections will be added here -->
+
+</chapter>

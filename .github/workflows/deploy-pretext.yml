@@ -1,0 +1,42 @@
+name: Build and Deploy PreTeXt Book
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install PreTeXt CLI
+        run: |
+          pip install --upgrade pip
+          pip install pretextbook
+      
+      - name: Build PreTeXt HTML
+        run: |
+          cd pretext
+          pretext build web
+      
+      - name: Deploy to GitHub Pages
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./pretext/output/web
+          publish_branch: gh-pages
+          force_orphan: true

@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='utf-8'?>
+
+<chapter xml:id="ch-logistic-regression" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <title>Logistic Regression</title>
+
+  <introduction>
+    <p>
+      This chapter introduces Bayesian logistic regression for binary classification problems.
+    </p>
+  </introduction>
+
+  <!-- Sections will be added here -->
+
+</chapter>

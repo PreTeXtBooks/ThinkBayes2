@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='utf-8'?>
+
+<chapter xml:id="ch-mcmc" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <title>MCMC</title>
+
+  <introduction>
+    <p>
+      This chapter introduces Markov Chain Monte Carlo methods for Bayesian inference.
+    </p>
+  </introduction>
+
+  <!-- Sections will be added here -->
+
+</chapter>

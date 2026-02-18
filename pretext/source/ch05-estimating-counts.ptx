@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='utf-8'?>
+
+<chapter xml:id="ch-estimating-counts" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <title>Estimating Counts</title>
+
+  <introduction>
+    <p>
+      This chapter presents methods for estimating counts, including the locomotive problem and the German tank problem.
+    </p>
+  </introduction>
+
+  <!-- Sections will be added here -->
+
+</chapter>

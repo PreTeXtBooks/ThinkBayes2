@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!-- Think Bayes 2: An introduction to Bayesian statistics using computational methods -->
+<!-- by Allen B. Downey -->
+
+<pretext xml:lang="en-US" xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <!-- we first include a file which contains the docinfo element: -->
+  <xi:include href="./meta_docinfo.ptx" />
+
+  <!-- The <book> tags wrap all the content -->
+  <book xml:id="think-bayes">
+    <title>Think Bayes</title>
+    <subtitle>Bayesian Statistics in Python</subtitle>
+
+    <!-- Frontmatter for prefaces and such -->
+    <xi:include href="./meta_frontmatter.ptx" />
+
+    <!-- Chapters -->
+    <xi:include href="./ch01-probability.ptx" />
+    <xi:include href="./ch02-bayes-theorem.ptx" />
+    <xi:include href="./ch03-distributions.ptx" />
+    <xi:include href="./ch04-estimating-proportions.ptx" />
+    <xi:include href="./ch05-estimating-counts.ptx" />
+    <xi:include href="./ch06-odds-addends.ptx" />
+    <xi:include href="./ch07-min-max-mixture.ptx" />
+    <xi:include href="./ch08-poisson-processes.ptx" />
+    <xi:include href="./ch09-decision-analysis.ptx" />
+    <xi:include href="./ch10-testing.ptx" />
+    <xi:include href="./ch11-comparison.ptx" />
+    <xi:include href="./ch12-classification.ptx" />
+    <xi:include href="./ch13-inference.ptx" />
+    <xi:include href="./ch14-survival-analysis.ptx" />
+    <xi:include href="./ch15-mark-recapture.ptx" />
+    <xi:include href="./ch16-logistic-regression.ptx" />
+    <xi:include href="./ch17-regression.ptx" />
+    <xi:include href="./ch18-conjugate-priors.ptx" />
+    <xi:include href="./ch19-mcmc.ptx" />
+    <xi:include href="./ch20-abc.ptx" />
+
+    <!-- Backmatter -->
+    <xi:include href="./meta_backmatter.ptx" />
+  </book>
+</pretext>
