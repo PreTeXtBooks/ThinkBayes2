@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='utf-8'?>
+
+<chapter xml:id="ch-mark-recapture" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <title>Mark and Recapture</title>
+
+  <introduction>
+    <p>
+      This chapter explores the mark and recapture method for estimating population sizes.
+    </p>
+  </introduction>
+
+  <!-- Sections will be added here -->
+
+</chapter>

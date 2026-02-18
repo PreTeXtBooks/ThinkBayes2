@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='utf-8'?>
+
+<chapter xml:id="ch-bayes-theorem" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <title>Bayes's Theorem</title>
+
+  <introduction>
+    <p>
+      This chapter introduces Bayes's theorem and demonstrates its power for solving a wide range of problems.
+    </p>
+  </introduction>
+
+  <!-- Sections will be added here -->
+
+</chapter>

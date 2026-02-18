@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='utf-8'?>
+
+<chapter xml:id="ch-inference" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <title>Inference</title>
+
+  <introduction>
+    <p>
+      This chapter explores statistical inference using Bayesian methods.
+    </p>
+  </introduction>
+
+  <!-- Sections will be added here -->
+
+</chapter>

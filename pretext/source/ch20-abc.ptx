@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='utf-8'?>
+
+<chapter xml:id="ch-abc" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <title>Approximate Bayesian Computation</title>
+
+  <introduction>
+    <p>
+      This chapter introduces Approximate Bayesian Computation (ABC) methods for problems where the likelihood is intractable.
+    </p>
+  </introduction>
+
+  <!-- Sections will be added here -->
+
+</chapter>

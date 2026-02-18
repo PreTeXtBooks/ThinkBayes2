@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='utf-8'?>
+
+<chapter xml:id="ch-distributions" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <title>Distributions</title>
+
+  <introduction>
+    <p>
+      This chapter presents probability distributions and shows how to represent them in Python.
+    </p>
+  </introduction>
+
+  <!-- Sections will be added here -->
+
+</chapter>
