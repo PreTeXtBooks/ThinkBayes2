@@ -5,10 +5,709 @@
 
   <introduction>
     <p>
-      This chapter presents probability distributions and shows how to represent them in Python.
+      In the previous chapter we used Bayes's Theorem to solve a cookie problem; then we solved it again using a Bayes table.
+      In this chapter, at the risk of testing your patience, we will solve it one more time using a <c>Pmf</c> object, which represents a <q>probability mass function</q>.
+      I'll explain what that means, and why it is useful for Bayesian statistics.
+    </p>
+    <p>
+      We'll use <c>Pmf</c> objects to solve some more challenging problems and take one more step toward Bayesian statistics.
+      But we'll start with distributions.
     </p>
   </introduction>
 
-  <!-- Sections will be added here -->
+  <section xml:id="sec-distributions-distributions">
+    <title>Distributions</title>
+
+    <p>
+      In statistics a <term>distribution</term> is a set of possible outcomes and their corresponding probabilities.
+      For example, if you toss a coin, there are two possible outcomes with approximately equal probability.
+      If you roll a six-sided die, the set of possible outcomes is the numbers 1 to 6, and the probability associated with each outcome is 1/6.
+    </p>
+
+    <p>
+      To represent distributions, we'll use a library called <c>empiricaldist</c>.
+      An <q>empirical</q> distribution is based on data, as opposed to a theoretical distribution.
+      We'll use this library throughout the book. I'll introduce the basic features in this chapter and we'll see additional features later.
+    </p>
+  </section>
+
+  <section xml:id="sec-distributions-pmf">
+    <title>Probability Mass Functions</title>
+
+    <p>
+      If the outcomes in a distribution are discrete, we can describe the distribution with a <term>probability mass function</term>, or PMF, which is a function that maps from each possible outcome to its probability.
+    </p>
+
+    <p>
+      <c>empiricaldist</c> provides a class called <c>Pmf</c> that represents a probability mass function.
+      To use <c>Pmf</c> you can import it like this:
+    </p>
+
+    <listing xml:id="list-import-pmf">
+      <program language="python">
+        <input>
+from empiricaldist import Pmf
+        </input>
+      </program>
+    </listing>
+
+    <p>
+      The following example makes a <c>Pmf</c> that represents the outcome of a coin toss.
+    </p>
+
+    <listing xml:id="list-coin-pmf">
+      <program language="python">
+        <input>
+coin = Pmf()
+coin['heads'] = 1/2
+coin['tails'] = 1/2
+coin
+        </input>
+      </program>
+    </listing>
+
+    <p>
+      <c>Pmf()</c> creates an empty <c>Pmf</c> with no outcomes.
+      Then we can add new outcomes using the bracket operator.
+      In this example, the two outcomes are represented with strings, and they have the same probability, 0.5.
+    </p>
+
+    <p>
+      You can also make a <c>Pmf</c> from a sequence of possible outcomes.
+      The following example uses <c>Pmf.from_seq</c> to make a <c>Pmf</c> that represents a six-sided die.
+    </p>
+
+    <listing xml:id="list-die-pmf">
+      <program language="python">
+        <input>
+die = Pmf.from_seq([1,2,3,4,5,6])
+die
+        </input>
+      </program>
+    </listing>
+
+    <p>
+      In this example, all outcomes in the sequence appear once, so they all have the same probability, <m>1/6</m>.
+      More generally, outcomes can appear more than once, as in the following example:
+    </p>
+
+    <listing xml:id="list-mississippi-pmf">
+      <program language="python">
+        <input>
+letters = Pmf.from_seq(list('Mississippi'))
+letters
+        </input>
+      </program>
+    </listing>
+
+    <p>
+      The letter <c>M</c> appears once out of 11 characters, so its probability is <m>1/11</m>.
+      The letter <c>i</c> appears 4 times, so its probability is <m>4/11</m>.
+    </p>
+
+    <p>
+      Since the letters in a string are not outcomes of a random process, I'll use the more general term <q>quantities</q> for the letters in the <c>Pmf</c>.
+    </p>
+
+    <p>
+      The <c>Pmf</c> class inherits from a Pandas <c>Series</c>, so anything you can do with a <c>Series</c>, you can also do with a <c>Pmf</c>.
+      For example, you can use the bracket operator to look up a quantity and get the corresponding probability.
+    </p>
+
+    <listing xml:id="list-lookup-bracket">
+      <program language="python">
+        <input>
+letters['s']
+        </input>
+      </program>
+    </listing>
+
+    <p>
+      In the word <q>Mississippi</q>, about 36% of the letters are <q>s</q>.
+    </p>
+
+    <p>
+      However, if you ask for the probability of a quantity that's not in the distribution, you get a <c>KeyError</c>.
+      You can also call a <c>Pmf</c> as if it were a function, with a letter in parentheses.
+    </p>
+
+    <listing xml:id="list-lookup-parens">
+      <program language="python">
+        <input>
+letters('s')
+        </input>
+      </program>
+    </listing>
+
+    <p>
+      If the quantity is in the distribution the results are the same.
+      But if it is not in the distribution, the result is <c>0</c>, not an error.
+    </p>
+
+    <listing xml:id="list-lookup-missing">
+      <program language="python">
+        <input>
+letters('t')
+        </input>
+      </program>
+    </listing>
+
+    <p>
+      With parentheses, you can also provide a sequence of quantities and get a sequence of probabilities.
+    </p>
+
+    <listing xml:id="list-lookup-sequence">
+      <program language="python">
+        <input>
+die([1,4,7])
+        </input>
+      </program>
+    </listing>
+
+    <p>
+      The quantities in a <c>Pmf</c> can be strings, numbers, or any other type that can be stored in the index of a Pandas <c>Series</c>.
+      If you are familiar with Pandas, that will help you work with <c>Pmf</c> objects.
+      But I will explain what you need to know as we go along.
+    </p>
+  </section>
+
+  <section xml:id="sec-distributions-cookie-revisited">
+    <title>The Cookie Problem Revisited</title>
+
+    <p>
+      In this section I'll use a <c>Pmf</c> to solve the cookie problem from <xref ref="ch-bayes-theorem" />.
+      Here's the statement of the problem again:
+    </p>
+
+    <blockquote>
+      <p>
+        Suppose there are two bowls of cookies.
+      </p>
+      <p>
+        <ul>
+          <li>Bowl 1 contains 30 vanilla cookies and 10 chocolate cookies.</li>
+          <li>Bowl 2 contains 20 vanilla cookies and 20 chocolate cookies.</li>
+        </ul>
+      </p>
+      <p>
+        Now suppose you choose one of the bowls at random and, without looking, choose a cookie at random.
+        If the cookie is vanilla, what is the probability that it came from Bowl 1?
+      </p>
+    </blockquote>
+
+    <p>
+      Here's a <c>Pmf</c> that represents the two hypotheses and their prior probabilities:
+    </p>
+
+    <listing xml:id="list-cookie-prior">
+      <program language="python">
+        <input>
+prior = Pmf.from_seq(['Bowl 1', 'Bowl 2'])
+prior
+        </input>
+      </program>
+    </listing>
+
+    <p>
+      This distribution, which contains the prior probability for each hypothesis, is called (wait for it) the <term>prior distribution</term>.
+    </p>
+
+    <p>
+      To update the distribution based on new data (the vanilla cookie), we multiply the priors by the likelihoods.
+      The likelihood of drawing a vanilla cookie from Bowl 1 is <m>3/4</m>.
+      The likelihood for Bowl 2 is <m>1/2</m>.
+    </p>
+
+    <listing xml:id="list-cookie-likelihood">
+      <program language="python">
+        <input>
+likelihood_vanilla = [3/4, 1/2]
+        </input>
+      </program>
+    </listing>
+
+    <p>
+      If you multiply a <c>Pmf</c> by a sequence of numbers, it multiplies the probabilities by the numbers.
+    </p>
+
+    <listing xml:id="list-cookie-unnorm">
+      <program language="python">
+        <input>
+unnorm = prior * likelihood_vanilla
+unnorm
+        </input>
+      </program>
+    </listing>
+
+    <p>
+      The result is the <term>unnormalized posteriors</term>.
+      They are not probabilities, but once we normalize them, they will be.
+      To normalize them, we have to compute the total probability of the data, which we can do by adding up the unnormalized posteriors.
+    </p>
+
+    <listing xml:id="list-cookie-total-prob">
+      <program language="python">
+        <input>
+prob_data = unnorm.sum()
+prob_data
+        </input>
+      </program>
+    </listing>
+
+    <p>
+      This is the total probability of the data.
+      Now we divide through by this value to get the normalized posteriors.
+    </p>
+
+    <listing xml:id="list-cookie-posterior">
+      <program language="python">
+        <input>
+posterior = unnorm / prob_data
+posterior
+        </input>
+      </program>
+    </listing>
+
+    <p>
+      The posterior probability for Bowl 1 is <m>0.6</m>, which is what we got before.
+      As an alternative, we can use the <c>normalize</c> method, which divides each element by the sum.
+    </p>
+
+    <listing xml:id="list-cookie-normalize">
+      <program language="python">
+        <input>
+unnorm.normalize()
+        </input>
+      </program>
+    </listing>
+
+    <p>
+      With <c>normalize</c>, we can compute the posterior in two steps, starting with the prior distribution:
+    </p>
+
+    <listing xml:id="list-cookie-twostep">
+      <program language="python">
+        <input>
+prior = Pmf.from_seq(['Bowl 1', 'Bowl 2'])
+prior *= likelihood_vanilla
+prior.normalize()
+        </input>
+      </program>
+    </listing>
+
+    <p>
+      Notice that the <c>*=</c> operator modifies the <c>Pmf</c> in place, so we don't have to assign the result back to <c>prior</c>.
+    </p>
+  </section>
+
+  <section xml:id="sec-distributions-101-bowls">
+    <title>101 Bowls</title>
+
+    <p>
+      Next let's solve a cookie problem with more than two hypotheses.
+      Suppose there are 101 bowls:
+    </p>
+
+    <p>
+      <ul>
+        <li>Bowl 0 contains 0% vanilla cookies,</li>
+        <li>Bowl 1 contains 1% vanilla cookies,</li>
+        <li>Bowl 2 contains 2% vanilla cookies,</li>
+      </ul>
+    </p>
+
+    <p>
+      and so on, up to
+    </p>
+
+    <p>
+      <ul>
+        <li>Bowl 99 contains 99% vanilla cookies, and</li>
+        <li>Bowl 100 contains all vanilla cookies.</li>
+      </ul>
+    </p>
+
+    <p>
+      As in the previous version, there are only two kinds of cookies, vanilla and chocolate.
+      Suppose we choose a bowl at random, choose a cookie at random, and it turns out to be vanilla.
+      What is the probability that the cookie came from Bowl <m>x</m>, for each value of <m>x</m>?
+    </p>
+
+    <p>
+      To solve this problem, I'll use <c>range</c> to represent 101 hypotheses, numbered from 0 to 100.
+    </p>
+
+    <listing xml:id="list-101-prior">
+      <program language="python">
+        <input>
+import numpy as np
+
+xs = np.arange(101)
+prior = Pmf(1/101, xs)
+        </input>
+      </program>
+    </listing>
+
+    <p>
+      This statement creates 101 hypotheses with equal prior probabilities.
+      Now let's do the update. The likelihoods are easy to compute: if there are <m>x</m> vanilla cookies in a bowl that contains 100 cookies, the probability of a vanilla cookie is <m>x/100</m>.
+    </p>
+
+    <listing xml:id="list-101-likelihood">
+      <program language="python">
+        <input>
+likelihood_vanilla = xs / 100
+        </input>
+      </program>
+    </listing>
+
+    <p>
+      That worked because <c>xs</c> is a NumPy array, so the division operator applies to each element.
+      Now we compute the posterior in the usual way:
+    </p>
+
+    <listing xml:id="list-101-posterior">
+      <program language="python">
+        <input>
+posterior = prior * likelihood_vanilla
+posterior.normalize()
+        </input>
+      </program>
+    </listing>
+
+    <p>
+      Here's what the posterior distribution looks like:
+    </p>
+
+    <listing xml:id="list-101-plot">
+      <program language="python">
+        <input>
+posterior.plot()
+plt.xlabel('Bowl #')
+plt.ylabel('Probability')
+plt.title('Posterior distribution after one vanilla cookie');
+        </input>
+      </program>
+    </listing>
+
+    <p>
+      The posterior distribution rises to the right, which makes sense because the more vanilla cookies in the bowl, the more likely we are to get a vanilla cookie.
+      Bowl 100 has the highest posterior probability, but notice that Bowl 0 has probability 0.
+      This is because the likelihood of getting a vanilla cookie from Bowl 0 is 0, and when we multiply by 0, the posterior probability is 0, regardless of the prior.
+    </p>
+
+    <p>
+      Now suppose we put the first cookie back, stir, draw again from the same bowl, and get another vanilla cookie.
+      What is the posterior distribution after this second cookie?
+      To answer this question, we use the posterior after one cookie as the prior for the second cookie, and do the update again.
+    </p>
+
+    <listing xml:id="list-101-update2">
+      <program language="python">
+        <input>
+prior = posterior
+prior *= likelihood_vanilla
+prior.normalize()
+        </input>
+      </program>
+    </listing>
+
+    <p>
+      Notice that we use the same likelihood for both updates, because we are assuming the cookies came from the same bowl.
+      Here's what the posterior looks like after two cookies:
+    </p>
+
+    <listing xml:id="list-101-plot2">
+      <program language="python">
+        <input>
+prior.plot()
+plt.xlabel('Bowl #')
+plt.ylabel('Probability')
+plt.title('Posterior distribution after two vanilla cookies');
+        </input>
+      </program>
+    </listing>
+
+    <p>
+      After two vanilla cookies, the probabilities are a bit more concentrated on the high-numbered bowls.
+      We can make this visible by plotting the sequence of posteriors.
+    </p>
+
+    <listing xml:id="list-101-sequence">
+      <program language="python">
+        <input>
+# plot the sequence of posteriors
+
+prior = Pmf(1/101, xs)
+for i in range(3):
+    prior *= likelihood_vanilla
+    prior.normalize()
+    prior.plot(label=f'After {i+1} cookies')
+    
+plt.xlabel('Bowl #')
+plt.ylabel('Probability')
+plt.title('Posterior distributions')
+plt.legend();
+        </input>
+      </program>
+    </listing>
+
+    <p>
+      As we see more cookies, the posterior distribution gets more concentrated around the high-numbered bowls.
+      But even after three cookies, there is still substantial uncertainty about which bowl we are drawing from.
+    </p>
+  </section>
+
+  <section xml:id="sec-distributions-dice">
+    <title>The Dice Problem</title>
+
+    <p>
+      A six-sided die is a cube with numbers on the faces; when you roll it, each face has an equal chance of landing face up.
+      If you roll it many times, you expect each value to appear about <m>1/6</m> of the time.
+    </p>
+
+    <p>
+      But not all dice are six-sided. There are also 4-sided, 8-sided, 12-sided, and 20-sided dice, as shown in this figure.
+      Suppose I have a box with one each of 4-sided, 6-sided, 8-sided, and 12-sided dice.
+      I choose a die from the box at random, roll it, and report that the outcome is a 1.
+      What is the probability that I chose the 4-sided die?
+    </p>
+
+    <p>
+      As always, we start with a prior distribution.
+      Because there are four dice and nothing to suggest one is more likely than the others, I'll use a uniform distribution.
+    </p>
+
+    <listing xml:id="list-dice-prior">
+      <program language="python">
+        <input>
+dice = [4, 6, 8, 12]
+prior = Pmf(1/4, dice)
+prior
+        </input>
+      </program>
+    </listing>
+
+    <p>
+      Now we compute the likelihood of the data (rolling a 1) under each hypothesis.
+      If I roll a 4-sided die, the probability of getting a 1 is <m>1/4</m>.
+      For a 6-sided die it's <m>1/6</m>, and so on.
+    </p>
+
+    <listing xml:id="list-dice-likelihood">
+      <program language="python">
+        <input>
+likelihood = 1 / np.array(dice)
+likelihood
+        </input>
+      </program>
+    </listing>
+
+    <p>
+      Now we can compute the posterior distribution in the usual way:
+    </p>
+
+    <listing xml:id="list-dice-posterior">
+      <program language="python">
+        <input>
+posterior = prior * likelihood
+posterior.normalize()
+posterior
+        </input>
+      </program>
+    </listing>
+
+    <p>
+      The posterior probability is highest for the 4-sided die, as we should expect.
+      But it is not overwhelmingly likely. After one roll, there is still more than a 25% chance that the die is 6-sided.
+    </p>
+
+    <p>
+      Now suppose I roll the same die again and get a 2.
+      What do you think is the probability now that the die is 4-sided?
+    </p>
+
+    <p>
+      To do the second update, we start with the posterior distribution from the first update and multiply by the likelihoods again.
+    </p>
+
+    <listing xml:id="list-dice-update2">
+      <program language="python">
+        <input>
+posterior *= likelihood
+posterior.normalize()
+posterior
+        </input>
+      </program>
+    </listing>
+
+    <p>
+      After two rolls, the posterior probability of the 4-sided die is about <m>0.47</m>.
+      It's less than <m>0.5</m> because there's a good chance the die is 6-sided or 8-sided.
+    </p>
+  </section>
+
+  <section xml:id="sec-distributions-updating-dice">
+    <title>Updating Dice</title>
+
+    <p>
+      If we roll the die more times, we can do more updates.
+      Let's suppose the outcome of five rolls is 1, 2, 1, 3, and 2 again.
+      Here's the update after the third roll:
+    </p>
+
+    <listing xml:id="list-dice-roll3">
+      <program language="python">
+        <input>
+posterior *= likelihood
+posterior.normalize()
+posterior
+        </input>
+      </program>
+    </listing>
+
+    <p>
+      And here's a function that takes the posterior distribution and a sequence of outcomes, and does an update for each outcome:
+    </p>
+
+    <listing xml:id="list-update-dice-function">
+      <program language="python">
+        <input>
+def update_dice(pmf, data):
+    """Update pmf based on data."""
+    dice = pmf.qs
+    likelihood = 1 / dice
+    for outcome in data:
+        pmf *= likelihood
+    pmf.normalize()
+        </input>
+      </program>
+    </listing>
+
+    <p>
+      Now we can update with the remaining rolls:
+    </p>
+
+    <listing xml:id="list-dice-remaining">
+      <program language="python">
+        <input>
+update_dice(posterior, [3, 2])
+posterior
+        </input>
+      </program>
+    </listing>
+
+    <p>
+      After 5 rolls, the posterior probability of the 4-sided die is about <m>0.56</m>.
+      Now the 4-sided die has more than a <m>50\text{%}</m> probability, but we are still not certain which die it is.
+    </p>
+  </section>
+
+  <section xml:id="sec-distributions-summary">
+    <title>Summary</title>
+
+    <p>
+      In this chapter we introduced the <c>Pmf</c> object, which represents a probability mass function (PMF), and used it to solve three problems from Chapter 2 and beyond:
+    </p>
+
+    <p>
+      <ul>
+        <li>We used a <c>Pmf</c> to represent the posterior distribution in the cookie problem.</li>
+        <li>We extended the cookie problem to the case where there are more than two bowls.</li>
+        <li>We solved the dice problem, which is similar to the cookie problem, but the hypotheses and data are numerical rather than categorical.</li>
+      </ul>
+    </p>
+
+    <p>
+      In the next chapter we'll take the next step and work with continuous distributions, where the number of hypotheses is not just large, but infinite!
+    </p>
+  </section>
+
+  <exercises xml:id="exercises-distributions">
+    <title>Exercises</title>
+
+    <exercise xml:id="ex-distributions-euro">
+      <title>The Euro Problem</title>
+      <statement>
+        <p>
+          In <em>Information Theory, Inference, and Learning Algorithms</em>, David MacKay poses this problem:
+        </p>
+        <blockquote>
+          <p>
+            A statistical statement appeared in The Guardian on Friday January 4, 2002:
+          </p>
+          <p>
+            <q>When spun on edge 250 times, a Belgian one-euro coin came up heads 140 times and tails 110 times.
+            'It looks very suspicious to me,' said Barry Blight, a statistics lecturer at the London School of Economics.
+            'If the coin were unbiased, the chance of getting a result as extreme as that would be less than 7%.'</q>
+          </p>
+        </blockquote>
+        <p>
+          But do these data give evidence that the coin is biased rather than fair?
+        </p>
+        <p>
+          To answer this question, compute the posterior distribution for the proportion of heads, given the data.
+          Suppose we start with a uniform prior where any proportion from 0 to 1 has equal probability.
+        </p>
+        <p>
+          As a simplification, you can divide the range from 0 to 1 into 101 hypotheses with values 0, 0.01, 0.02, etc.
+        </p>
+      </statement>
+    </exercise>
+
+    <exercise xml:id="ex-distributions-dice-sum">
+      <title>Dice Sum</title>
+      <statement>
+        <p>
+          Suppose you have two identical dice, either 6-sided or 12-sided.
+          You choose one at random and roll it twice.
+          The total of the two rolls is 8.
+          What is the probability that you rolled the 6-sided die?
+        </p>
+        <p>
+          Hint: You might want to enumerate all pairs of values that add up to 8 and compute their probabilities.
+        </p>
+      </statement>
+    </exercise>
+
+    <exercise xml:id="ex-distributions-101-euro">
+      <title>The Euro Problem Extended</title>
+      <statement>
+        <p>
+          For the Euro problem in <xref ref="ex-distributions-euro" />, what is the posterior distribution after 250 spins that come up heads 140 times?
+          Use the posterior mean to estimate the probability that the coin comes up heads.
+        </p>
+      </statement>
+    </exercise>
+
+    <exercise xml:id="ex-distributions-dungeons">
+      <title>Dungeons and Dragons</title>
+      <statement>
+        <p>
+          In the game Dungeons and Dragons, players use non-standard dice with 4, 6, 8, 12, or 20 sides.
+          Suppose you find a die that is so worn you can't tell how many sides it has.
+          You roll it six times and get 1, 3, 4, 5, 6, and 1 again.
+        </p>
+        <p>
+          What is the most likely number of sides, and what is its probability?
+        </p>
+      </statement>
+    </exercise>
+
+    <exercise xml:id="ex-distributions-price-showcase">
+      <title>The Price is Right Problem</title>
+      <statement>
+        <p>
+          On the game show <em>The Price is Right</em>, contestants try to guess the price of a prize.
+          The one who comes closest without going over wins the prize.
+        </p>
+        <p>
+          Suppose you are a contestant. You know that the actual price is drawn from a uniform distribution between $100 and $1000.
+          Your opponent goes first and bids $500.
+          What is your best bid, assuming your opponent's bid is a random draw from a uniform distribution?
+        </p>
+      </statement>
+    </exercise>
+  </exercises>
 
 </chapter>
