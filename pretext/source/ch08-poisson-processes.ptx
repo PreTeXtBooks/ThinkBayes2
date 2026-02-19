@@ -118,7 +118,7 @@ def make_poisson_pmf(lam, high):
     <p>
       The first parameter is the goal-scoring rate.
       The second is the upper bound of the distribution.
-      In theory the Poisson distribution goes to infinity, but we can cut if off when we get to quantities with negligible probability.
+      In theory the Poisson distribution goes to infinity, but we can cut it off when we get to quantities with negligible probability.
     </p>
 
     <p>
