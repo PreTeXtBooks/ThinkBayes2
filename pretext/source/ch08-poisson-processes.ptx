@@ -420,7 +420,7 @@ tie = Pmf.prob_eq(pred_france, pred_croatia)
 
     <p>
       Assuming that France wins half of the ties, their chance of winning the rematch is about 65%.
-      This is a bit lower than their probability of superiority, which is 75%. And that makes sense even if they are the better team, they might lose the game.
+      This is a bit lower than their probability of superiority, which is 75%. And that makes sense: even if they are the better team, they might lose the game.
     </p>
   </section>
 
@@ -520,8 +520,8 @@ pmf_time.normalize()
     <title>Exercises</title>
 
     <p>
-      The code for this chapter is in <c>chap07.ipynb</c>, which is in the repository for this book.  See Section 0.3 for details.
-      You can run the notebook on Colab at <url href="https://colab.research.google.com/github/AllenDowney/ThinkBayes2/blob/master/code/chap07.ipynb">https://colab.research.google.com/github/AllenDowney/ThinkBayes2/blob/master/code/chap07.ipynb</url>.
+      The code for this chapter is in <c>chap08.ipynb</c>, which is in the repository for this book.  See Section 0.3 for details.
+      You can run the notebook on Colab at <url href="https://colab.research.google.com/github/AllenDowney/ThinkBayes2/blob/master/code/chap08.ipynb">https://colab.research.google.com/github/AllenDowney/ThinkBayes2/blob/master/code/chap08.ipynb</url>.
     </p>
 
     <p>
@@ -531,7 +531,7 @@ pmf_time.normalize()
     <exercise xml:id="ex-poisson-germany-brazil">
       <statement>
         <p>
-          Finish off the exercise from Section 8.9:
+          Finish off the exercise from the Exponential Distribution section:
         </p>
 
         <blockquote>
