@@ -289,6 +289,21 @@ decorate(xlabel='Proportion of heads (x)',
   <section xml:id="sec-ch10-bayesian-bandits">
     <title>Bayesian Bandits</title>
 
+    <p>
+      If you have ever been to a casino, you have probably seen a slot machine, which is sometimes called a "one-armed bandit" because it has a handle like an arm and the ability to take money like a bandit.
+    </p>
+    <p>
+      The Bayesian Bandit strategy is named after one-armed bandits because it solves a problem based on a simplified version of a slot machine.
+    </p>
+    <p>
+      Suppose that each time you play a slot machine, there is a fixed probability that you win. And suppose that different machines give you different probabilities of winning, but you don't know what the probabilities are.
+    </p>
+    <p>
+      Initially, you have the same prior belief about each of the machines, so you have no reason to prefer one over the others. But if you play each machine a few times, you can use the results to estimate the probabilities. And you can use the estimated probabilities to decide which machine to play next.
+    </p>
+    <p>
+      At a high level, that's the Bayesian bandit strategy. Now let's see the details.
+    </p>
   </section>
 
   <section xml:id="sec-ch10-prior-beliefs">
@@ -668,6 +683,27 @@ summarize_counter(counter)
   <section xml:id="sec-ch10-summary">
     <title>Summary</title>
 
+    <p>
+      In this chapter we finally solved the Euro problem, determining whether the data support the hypothesis that the coin is fair or biased. We found that the answer depends on how we define "biased". And we summarized the results using a Bayes factor, which quantifies the strength of the evidence.
+    </p>
+    <p>
+      But the answer wasn't satisfying because, in my opinion, the question wasn't interesting. Knowing whether the coin is biased is not useful unless it helps us make better predictions and better decisions.
+    </p>
+    <p>
+      As an example of a more interesting question, we looked at the "one-armed bandit" problem and a strategy for solving it, the Bayesian bandit algorithm, which tries to balance exploration and exploitation, that is, gathering more information and making the best use of the information we have.
+    </p>
+    <p>
+      As an exercise, you'll have a chance to explore adaptive strategies for standardized testing.
+    </p>
+    <p>
+      Bayesian bandits and adaptive testing are examples of <url href="https://wiki.lesswrong.com/wiki/Bayesian_decision_theory">Bayesian decision theory</url>, which is the idea of using a posterior distribution as part of a decision-making process, often by choosing an action that minimizes the costs we expect on average (or maximizes a benefit).
+    </p>
+    <p>
+      The strategy we used in <xref ref="_MaximizingExpectedGain" /> to bid on <em>The Price is Right</em> is another example.
+    </p>
+    <p>
+      These strategies demonstrate what I think is the biggest advantage of Bayesian methods over classical statistics. When we represent knowledge in the form of probability distributions, Bayes's theorem tells us how to change our beliefs as we get more data, and Bayesian decision theory tells us how to make that knowledge actionable.
+    </p>
   </section>
 
   <section xml:id="sec-ch10-exercises">
@@ -760,7 +796,7 @@ decorate(xlabel='Ability',
       </input>
     </program>
     <p>
-      Someone with <c>ability=900</c> is nearly certain to get the right answer. Someone with <c>ability=100</c> has about a 25% change of getting the right answer by guessing.
+      Someone with <c>ability=900</c> is nearly certain to get the right answer. Someone with <c>ability=100</c> has about a 25% chance of getting the right answer by guessing.
     </p>
   </section>
 
