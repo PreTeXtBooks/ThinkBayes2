@@ -5,10 +5,884 @@
 
   <introduction>
     <p>
-      This chapter introduces the concepts and notation of probability that we will use throughout this book.
+      The foundation of Bayesian statistics is Bayes's Theorem, and the foundation of Bayes's Theorem is conditional probability.
+    </p>
+    <p>
+      In this chapter, we'll start with conditional probability, derive Bayes's Theorem, and demonstrate it using a real dataset.  In the next chapter, we'll use Bayes's Theorem to solve problems related to conditional probability.  In the chapters that follow, we'll make the transition from Bayes's Theorem to Bayesian statistics, and I'll explain the difference.
     </p>
   </introduction>
 
-  <!-- Sections will be added here -->
+  <section xml:id="sec-linda-the-banker">
+    <title>Linda the Banker</title>
+
+    <p>
+      To introduce conditional probability, I'll use an example from a <url href="https://en.wikipedia.org/wiki/Conjunction_fallacy">famous experiment by Tversky and Kahneman</url>, who posed the following question:
+    </p>
+    <blockquote>
+      <p>Linda is 31 years old, single, outspoken, and very bright. She majored in philosophy. As a student, she was deeply concerned with issues of discrimination and social justice, and also participated in anti-nuclear demonstrations.  Which is more probable?</p>
+      <p>1. Linda is a bank teller.</p>
+      <p>2. Linda is a bank teller and is active in the feminist movement.</p>
+    </blockquote>
+    <p>
+      Many people choose the second answer, presumably because it seems more consistent with the description.  It seems uncharacteristic if Linda is <em>just</em> a bank teller; it seems more consistent if she is also a feminist.
+    </p>
+    <p>
+      But the second answer cannot be &quot;more probable&quot;, as the question asks.  Suppose we find 1000 people who fit Linda's description and 10 of them work as bank tellers.  How many of them are also feminists?  At most, all 10 of them are; in that case, the two options are <em>equally</em> probable.  If fewer than 10 are, the second option is <em>less</em> probable.  But there is no way the second option can be <em>more</em> probable.
+    </p>
+    <p>
+      If you were inclined to choose the second option, you are in good company.  The biologist <url href="https://doi.org/10.1080/09332480.1989.10554932">Stephen J. Gould wrote</url> :
+    </p>
+    <blockquote>
+      <p>I am particularly fond of this example because I know that the [second] statement is least probable, yet a little <url href="https://en.wikipedia.org/wiki/Homunculus_argument">homunculus</url> in my head continues to jump up and down, shouting at me, &quot;but she can't just be a bank teller; read the description.&quot;</p>
+    </blockquote>
+    <p>
+      If the little person in your head is still unhappy, maybe this chapter will help.
+    </p>
+  </section>
+
+  <section xml:id="sec-probability">
+    <title>Probability</title>
+
+    <p>
+      At this point I should provide a definition of &quot;probability&quot;, but that <url href="https://en.wikipedia.org/wiki/Probability_interpretations">turns out to be surprisingly difficult</url>.  To avoid getting stuck before we start, we will use a simple definition for now and refine it later: A <em>probability</em> is a fraction of a finite set.
+    </p>
+    <p>
+      For example, if we survey 1000 people, and 20 of them are bank tellers, the fraction that work as bank tellers is 0.02 or 2%.  If we choose a person from this population at random, the probability that they are a bank teller is 2%.
+    </p>
+    <p>
+      By &quot;at random&quot; I mean that every person in the dataset has the same chance of being chosen.
+    </p>
+    <p>
+      With this definition and an appropriate dataset, we can compute probabilities by counting.
+To demonstrate, I'll use data from the <url href="http://gss.norc.org/">General Social Survey</url> (GSS).
+    </p>
+    <p>
+      The following cell downloads the data.
+    </p>
+    <program language="python">
+      <input>
+    # Load the data file
+    
+    from os.path import basename, exists
+    
+    def download(url):
+        filename = basename(url)
+        if not exists(filename):
+            from urllib.request import urlretrieve
+            local, _ = urlretrieve(url, filename)
+            print('Downloaded ' + local)
+        
+    download('https://github.com/AllenDowney/ThinkBayes2/raw/master/data/gss_bayes.csv')
+      </input>
+    </program>
+    <p>
+      I'll use Pandas to read the data and store it in a <c>DataFrame</c>.
+    </p>
+    <program language="python">
+      <input>
+    import pandas as pd
+    
+    gss = pd.read_csv('gss_bayes.csv')
+    gss.head()
+      </input>
+    </program>
+    <p>
+      The <c>DataFrame</c> has one row for each person surveyed and one column for each variable I selected.
+    </p>
+    <p>
+      The columns are
+    </p>
+    <ul>
+      <li><c>caseid</c>: Respondent identifier.</li>
+      <li><c>year</c>: Year when the respondent was surveyed.</li>
+      <li><c>age</c>: Respondent's age when surveyed.</li>
+      <li><c>sex</c>: Male or female.</li>
+      <li><c>polviews</c>: Political views on a range from liberal to conservative.</li>
+      <li><c>partyid</c>: Political party affiliation, Democrat, Independent, or Republican.</li>
+      <li><c>indus10</c>: <url href="https://www.census.gov/cgi-bin/sssd/naics/naicsrch?chart=2007">Code</url> for the industry the respondent works in.</li>
+    </ul>
+    <p>
+      Let's look at these variables in more detail, starting with <c>indus10</c>.
+    </p>
+  </section>
+
+  <section xml:id="sec-fraction-of-bankers">
+    <title>Fraction of Bankers</title>
+
+    <p>
+      The code for &quot;Banking and related activities&quot; is 6870, so we can select bankers like this:
+    </p>
+    <program language="python">
+      <input>
+    banker = (gss['indus10'] == 6870)
+    banker.head()
+      </input>
+    </program>
+    <p>
+      The result is a Pandas <c>Series</c> that contains the Boolean values <c>True</c> and <c>False</c>.
+    </p>
+    <p>
+      If we use the <c>sum</c> function on this <c>Series</c>, it treats <c>True</c> as 1 and <c>False</c> as 0, so the total is the number of bankers.
+    </p>
+    <program language="python">
+      <input>
+    banker.sum()
+      </input>
+    </program>
+    <p>
+      In this dataset, there are 728 bankers.
+    </p>
+    <p>
+      To compute the <em>fraction</em> of bankers, we can use the <c>mean</c> function, which computes the fraction of <c>True</c> values in the <c>Series</c>:
+    </p>
+    <program language="python">
+      <input>
+    banker.mean()
+      </input>
+    </program>
+    <p>
+      About 1.5% of the respondents work in banking, so if we choose a random person from the dataset, the probability they are a banker is about 1.5%.
+    </p>
+  </section>
+
+  <section xml:id="sec-the-probability-function">
+    <title>The Probability Function</title>
+
+    <p>
+      I'll put the code from the previous section in a function that takes a Boolean series and returns a probability:
+    </p>
+    <program language="python">
+      <input>
+    def prob(A):
+        &quot;&quot;&quot;Computes the probability of a proposition, A.&quot;&quot;&quot;    
+        return A.mean()
+      </input>
+    </program>
+    <p>
+      So we can compute the fraction of bankers like this:
+    </p>
+    <program language="python">
+      <input>
+    prob(banker)
+      </input>
+    </program>
+    <p>
+      The values of the column <c>sex</c> are encoded like this:
+    </p>
+    <pre>
+1    Male
+2    Female
+    </pre>
+    <p>
+      So we can make a Boolean series that is <c>True</c> for female respondents and <c>False</c> otherwise.
+    </p>
+    <program language="python">
+      <input>
+    female = (gss['sex'] == 2)
+      </input>
+    </program>
+    <p>
+      And use it to compute the fraction of respondents who are women.
+    </p>
+    <program language="python">
+      <input>
+    prob(female)
+      </input>
+    </program>
+    <p>
+      The fraction of women in this dataset is higher than in the adult U.S. population because <url href="https://gss.norc.org/faq">the GSS does not include people living in institutions</url> like prisons and military housing, and those populations are more likely to be male.
+    </p>
+  </section>
+
+  <section xml:id="sec-political-views-and-parties">
+    <title>Political Views and Parties</title>
+
+    <p>
+      The other variables we'll consider are <c>polviews</c>, which describes the political views of the respondents, and <c>partyid</c>, which describes their affiliation with a political party.
+    </p>
+    <p>
+      The values of <c>polviews</c> are on a seven-point scale:
+    </p>
+    <pre>
+1	Extremely liberal
+2	Liberal
+3	Slightly liberal
+4	Moderate
+5	Slightly conservative
+6	Conservative
+7	Extremely conservative
+    </pre>
+    <p>
+      I'll define <c>liberal</c> to be <c>True</c> for anyone whose response is &quot;Extremely liberal&quot;, &quot;Liberal&quot;, or &quot;Slightly liberal&quot;.
+    </p>
+    <program language="python">
+      <input>
+    liberal = (gss['polviews'] &lt;= 3)
+      </input>
+    </program>
+    <p>
+      Here's the fraction of respondents who are liberal by this definition.
+    </p>
+    <program language="python">
+      <input>
+    prob(liberal)
+      </input>
+    </program>
+    <p>
+      If we choose a random person in this dataset, the probability they are liberal is about 27%.
+    </p>
+    <p>
+      The values of <c>partyid</c> are encoded like this:
+    </p>
+    <pre>
+0	Strong democrat
+1	Not strong democrat
+2	Independent, near democrat
+3	Independent
+4	Independent, near republican
+5	Not strong republican
+6	Strong republican
+7	Other party
+    </pre>
+    <p>
+      I'll define <c>democrat</c> to include respondents who chose &quot;Strong democrat&quot; or &quot;Not strong democrat&quot;:
+    </p>
+    <program language="python">
+      <input>
+    democrat = (gss['partyid'] &lt;= 1)
+      </input>
+    </program>
+    <p>
+      And here's the fraction of respondents who are Democrats, by this definition.
+    </p>
+    <program language="python">
+      <input>
+    prob(democrat)
+      </input>
+    </program>
+  </section>
+
+  <section xml:id="sec-conjunction">
+    <title>Conjunction</title>
+
+    <p>
+      Now that we have a definition of probability and a function that computes it, let's move on to conjunction.
+    </p>
+    <p>
+      &quot;Conjunction&quot; is another name for the logical <c>and</c> operation.  If you have two <url href="https://en.wikipedia.org/wiki/Proposition">propositions</url>, <c>A</c> and <c>B</c>, the conjunction <c>A and B</c> is <c>True</c> if both <c>A</c> and <c>B</c> are <c>True</c>, and <c>False</c> otherwise.
+    </p>
+    <p>
+      If we have two Boolean series, we can use the <c>&amp;</c> operator to compute their conjunction.
+For example, we have already computed the probability that a respondent is a banker.
+    </p>
+    <program language="python">
+      <input>
+    prob(banker)
+      </input>
+    </program>
+    <p>
+      And the probability that they are a Democrat:
+    </p>
+    <program language="python">
+      <input>
+    prob(democrat)
+      </input>
+    </program>
+    <p>
+      Now we can compute the probability that a respondent is a banker <em>and</em> a Democrat:
+    </p>
+    <program language="python">
+      <input>
+    prob(banker &amp; democrat)
+      </input>
+    </program>
+    <p>
+      As we should expect, <c>prob(banker &amp; democrat)</c> is less than <c>prob(banker)</c>, because not all bankers are Democrats.
+    </p>
+    <p>
+      We expect conjunction to be commutative; that is, <c>A &amp; B</c> should be the same as <c>B &amp; A</c>.  To check, we can also compute <c>prob(democrat &amp; banker)</c>:
+    </p>
+    <program language="python">
+      <input>
+    prob(democrat &amp; banker)
+      </input>
+    </program>
+    <p>
+      As expected, they are the same.
+    </p>
+  </section>
+
+  <section xml:id="sec-conditional-probability">
+    <title>Conditional Probability</title>
+
+    <p>
+      Conditional probability is a probability that depends on a condition, but that might not be the most helpful definition.  Here are some examples:
+    </p>
+    <ul>
+      <li>What is the probability that a respondent is a Democrat, given that they are liberal?</li>
+      <li>What is the probability that a respondent is female, given that they are a banker?</li>
+      <li>What is the probability that a respondent is liberal, given that they are female?</li>
+    </ul>
+    <p>
+      Let's start with the first one, which we can interpret like this: &quot;Of all the respondents who are liberal, what fraction are Democrats?&quot;
+    </p>
+    <p>
+      We can compute this probability in two steps:
+    </p>
+    <ol>
+      <li>Select all respondents who are liberal.</li>
+      <li>Compute the fraction of the selected respondents who are Democrats.</li>
+    </ol>
+    <p>
+      To select liberal respondents, we can use the bracket operator, <c>[]</c>, like this:
+    </p>
+    <program language="python">
+      <input>
+    selected = democrat[liberal]
+      </input>
+    </program>
+    <p>
+      <c>selected</c> contains the values of <c>democrat</c> for liberal respondents, so <c>prob(selected)</c> is the fraction of liberals who are Democrats:
+    </p>
+    <program language="python">
+      <input>
+    prob(selected)
+      </input>
+    </program>
+    <p>
+      A little more than half of liberals are Democrats.  If that result is lower than you expected, keep in mind:
+    </p>
+    <p>
+      1. We used a somewhat strict definition of &quot;Democrat&quot;, excluding Independents who &quot;lean&quot; democratic.
+    </p>
+    <p>
+      2. The dataset includes respondents as far back as 1974; in the early part of this interval, there was less alignment between political views and party affiliation, compared to the present.
+    </p>
+    <p>
+      Let's try the second example, &quot;What is the probability that a respondent is female, given that they are a banker?&quot;
+We can interpret that to mean, &quot;Of all respondents who are bankers, what fraction are female?&quot;
+    </p>
+    <p>
+      Again, we'll use the bracket operator to select only the bankers and <c>prob</c> to compute the fraction that are female.
+    </p>
+    <program language="python">
+      <input>
+    selected = female[banker]
+    prob(selected)
+      </input>
+    </program>
+    <p>
+      About 77% of the bankers in this dataset are female.
+    </p>
+    <p>
+      Let's wrap this computation in a function.
+I'll define <c>conditional</c> to take two Boolean series, <c>proposition</c> and <c>given</c>, and compute the conditional probability of <c>proposition</c> conditioned on <c>given</c>:
+    </p>
+    <program language="python">
+      <input>
+    def conditional(proposition, given):
+        &quot;&quot;&quot;Probability of A conditioned on given.&quot;&quot;&quot;
+        return prob(proposition[given])
+      </input>
+    </program>
+    <p>
+      We can use <c>conditional</c> to compute the probability that a respondent is liberal given that they are female.
+    </p>
+    <program language="python">
+      <input>
+    conditional(liberal, given=female)
+      </input>
+    </program>
+    <p>
+      About 28% of female respondents are liberal.
+    </p>
+    <p>
+      I included the keyword, <c>given</c>, along with the parameter, <c>female</c>, to make this expression more readable.
+    </p>
+  </section>
+
+  <section xml:id="sec-conditional-probability-is-not-commutative">
+    <title>Conditional Probability Is Not Commutative</title>
+
+    <p>
+      We have seen that conjunction is commutative; that is, <c>prob(A &amp; B)</c> is always equal to <c>prob(B &amp; A)</c>.
+    </p>
+    <p>
+      But conditional probability is <em>not</em> commutative; that is, <c>conditional(A, B)</c> is not the same as <c>conditional(B, A)</c>.
+    </p>
+    <p>
+      That should be clear if we look at an example.  Previously, we computed the probability a respondent is female, given that they are banker.
+    </p>
+    <program language="python">
+      <input>
+    conditional(female, given=banker)
+      </input>
+    </program>
+    <p>
+      The result shows that the majority of bankers are female.  That is not the same as the probability that a respondent is a banker, given that they are female:
+    </p>
+    <program language="python">
+      <input>
+    conditional(banker, given=female)
+      </input>
+    </program>
+    <p>
+      Only about 2% of female respondents are bankers.
+    </p>
+    <p>
+      I hope this example makes it clear that conditional probability is not commutative, and maybe it was already clear to you.  Nevertheless, it is a common error to confuse <c>conditional(A, B)</c> and <c>conditional(B, A)</c>.  We'll see some examples later.
+    </p>
+  </section>
+
+  <section xml:id="sec-condition-and-conjunction">
+    <title>Condition and Conjunction</title>
+
+    <p>
+      We can combine conditional probability and conjunction.  For example, here's the probability a respondent is female, given that they are a liberal Democrat.
+    </p>
+    <program language="python">
+      <input>
+    conditional(female, given=liberal &amp; democrat)
+      </input>
+    </program>
+    <p>
+      About 57% of liberal Democrats are female.
+    </p>
+    <p>
+      And here's the probability they are a liberal female, given that they are a banker:
+    </p>
+    <program language="python">
+      <input>
+    conditional(liberal &amp; female, given=banker)
+      </input>
+    </program>
+    <p>
+      About 17% of bankers are liberal women.
+    </p>
+  </section>
+
+  <section xml:id="sec-laws-of-probability">
+    <title>Laws of Probability</title>
+
+    <introduction>
+      <p>
+        In the next few sections, we'll derive three relationships between conjunction and conditional probability:
+      </p>
+      <ul>
+        <li>Theorem 1: Using a conjunction to compute a conditional probability.</li>
+        <li>Theorem 2: Using a conditional probability to compute a conjunction.</li>
+        <li>Theorem 3: Using <c>conditional(A, B)</c> to compute <c>conditional(B, A)</c>.</li>
+      </ul>
+      <p>
+        Theorem 3 is also known as Bayes's Theorem.
+      </p>
+      <p>
+        I'll write these theorems using mathematical notation for probability:
+      </p>
+      <ul>
+        <li>$P(A)$ is the probability of proposition $A$.</li>
+        <li>$P(A~\mathrm{and}~B)$ is the probability of the conjunction of $A$ and $B$, that is, the probability that both are true.</li>
+        <li>$P(A | B)$ is the conditional probability of $A$ given that $B$ is true.  The vertical line between $A$ and $B$ is pronounced &quot;given&quot;.</li>
+      </ul>
+      <p>
+        With that, we are ready for Theorem 1.
+      </p>
+    </introduction>
+
+    <subsection xml:id="subsec-theorem-1">
+      <title>Theorem 1</title>
+
+      <p>
+        What fraction of bankers are female?  We have already seen one way to compute the answer:
+      </p>
+      <ol>
+        <li>Use the bracket operator to select the bankers, then</li>
+        <li>Use <c>mean</c> to compute the fraction of bankers who are female.</li>
+      </ol>
+      <p>
+        We can write these steps like this:
+      </p>
+      <program language="python">
+        <input>
+      female[banker].mean()
+        </input>
+      </program>
+      <p>
+        Or we can use the <c>conditional</c> function, which does the same thing:
+      </p>
+      <program language="python">
+        <input>
+      conditional(female, given=banker)
+        </input>
+      </program>
+      <p>
+        But there is another way to compute this conditional probability, by computing the ratio of two probabilities:
+      </p>
+      <p>
+        1. The fraction of respondents who are female bankers, and
+      </p>
+      <p>
+        2. The fraction of respondents who are bankers.
+      </p>
+      <p>
+        In other words: of all the bankers, what fraction are female bankers?
+Here's how we compute this ratio.
+      </p>
+      <program language="python">
+        <input>
+      prob(female &amp; banker) / prob(banker)
+        </input>
+      </program>
+      <p>
+        The result is the same.  This example demonstrates a general rule that relates conditional probability and conjunction.  Here's what it looks like in math notation:
+      </p>
+      <p>
+        $$P(A|B) = \frac{P(A~\mathrm{and}~B)}{P(B)}$$
+      </p>
+      <p>
+        And that's Theorem 1.
+      </p>
+    </subsection>
+
+    <subsection xml:id="subsec-theorem-2">
+      <title>Theorem 2</title>
+
+      <p>
+        If we start with Theorem 1 and multiply both sides by $P(B)$, we get Theorem 2.
+      </p>
+      <p>
+        $$P(A~\mathrm{and}~B) = P(B) ~ P(A|B)$$
+      </p>
+      <p>
+        This formula suggests a second way to compute a conjunction: instead of using the <c>&amp;</c> operator, we can compute the product of two probabilities.
+      </p>
+      <p>
+        Let's see if it works for <c>liberal</c> and <c>democrat</c>.  Here's the result using <c>&amp;</c>:
+      </p>
+      <program language="python">
+        <input>
+      prob(liberal &amp; democrat)
+        </input>
+      </program>
+      <p>
+        And here's the result using Theorem 2:
+      </p>
+      <program language="python">
+        <input>
+      prob(democrat) * conditional(liberal, democrat)
+        </input>
+      </program>
+      <p>
+        They are the same.
+      </p>
+    </subsection>
+
+    <subsection xml:id="subsec-theorem-3">
+      <title>Theorem 3</title>
+
+      <p>
+        We have established that conjunction is commutative.  In math notation, that means:
+      </p>
+      <p>
+        $$P(A~\mathrm{and}~B) = P(B~\mathrm{and}~A)$$
+      </p>
+      <p>
+        If we apply Theorem 2 to both sides, we have
+      </p>
+      <p>
+        $$P(B) P(A|B) = P(A) P(B|A)$$
+      </p>
+      <p>
+        Here's one way to interpret that: if you want to check $A$ and $B$, you can do it in either order:
+      </p>
+      <p>
+        1. You can check $B$ first, then $A$ conditioned on $B$, or
+      </p>
+      <p>
+        2. You can check $A$ first, then $B$ conditioned on $A$.
+      </p>
+      <p>
+        If we divide through by $P(B)$, we get Theorem 3:
+      </p>
+      <p>
+        $$P(A|B) = \frac{P(A) P(B|A)}{P(B)}$$
+      </p>
+      <p>
+        And that, my friends, is Bayes's Theorem.
+      </p>
+      <p>
+        To see how it works, let's compute the fraction of bankers who are liberal, first using <c>conditional</c>:
+      </p>
+      <program language="python">
+        <input>
+      conditional(liberal, given=banker)
+        </input>
+      </program>
+      <p>
+        Now using Bayes's Theorem:
+      </p>
+      <program language="python">
+        <input>
+      prob(liberal) * conditional(banker, liberal) / prob(banker)
+        </input>
+      </program>
+      <p>
+        They are the same.
+      </p>
+    </subsection>
+
+  </section>
+
+  <section xml:id="sec-the-law-of-total-probability">
+    <title>The Law of Total Probability</title>
+
+    <p>
+      In addition to these three theorems, there's one more thing we'll need to do Bayesian statistics: the law of total probability.
+Here's one form of the law, expressed in mathematical notation:
+    </p>
+    <p>
+      $$P(A) = P(B_1 \mathrm{and} A) + P(B_2 \mathrm{and} A)$$
+    </p>
+    <p>
+      In words, the total probability of $A$ is the sum of two possibilities: either $B_1$ and $A$ are true or $B_2$ and $A$ are true.
+      But this law applies only if $B_1$ and $B_2$ are:
+    </p>
+    <ul>
+      <li>Mutually exclusive, which means that only one of them can be true, and</li>
+      <li>Collectively exhaustive, which means that one of them must be true.</li>
+    </ul>
+    <p>
+      As an example, let's use this law to compute the probability that a respondent is a banker.
+We can compute it directly like this:
+    </p>
+    <program language="python">
+      <input>
+    prob(banker)
+      </input>
+    </program>
+    <p>
+      So let's confirm that we get the same thing if we compute male and female bankers separately.
+    </p>
+    <p>
+      In this dataset all respondents are designated male or female.  Recently, the GSS Board of Overseers announced that they will add more inclusive gender questions to the survey (you can read more about this issue, and their decision, at <url href="https://gender.stanford.edu/news-publications/gender-news/more-inclusive-gender-questions-added-general-social-survey">https://gender.stanford.edu/news-publications/gender-news/more-inclusive-gender-questions-added-general-social-survey</url>.
+    </p>
+    <p>
+      We already have a Boolean <c>Series</c> that is <c>True</c> for female respondents.
+Here's the complementary <c>Series</c> for male respondents.
+    </p>
+    <program language="python">
+      <input>
+    male = (gss['sex'] == 1)
+      </input>
+    </program>
+    <p>
+      Now we can compute the total probability of <c>banker</c> like this.
+    </p>
+    <program language="python">
+      <input>
+    prob(male &amp; banker) + prob(female &amp; banker)
+      </input>
+    </program>
+    <p>
+      Because <c>male</c> and <c>female</c> are mutually exclusive and collectively exhaustive (MECE), we get the same result we got by computing the probability of <c>banker</c> directly.
+    </p>
+    <p>
+      Applying Theorem 2, we can also write the law of total probability like this:
+    </p>
+    <p>
+      $$P(A) = P(B_1) P(A|B_1) + P(B_2) P(A|B_2)$$
+    </p>
+    <p>
+      And we can test it with the same example:
+    </p>
+    <program language="python">
+      <input>
+    (prob(male) * conditional(banker, given=male) +
+    prob(female) * conditional(banker, given=female))
+      </input>
+    </program>
+    <p>
+      When there are more than two conditions, it is more concise to write the law of total probability as a summation:
+    </p>
+    <p>
+      $$P(A) = \sum_i P(B_i) P(A|B_i)$$
+    </p>
+    <p>
+      Again, this holds as long as the conditions, $B_i$ are mutually exclusive and collectively exhaustive.
+As an example, let's consider <c>polviews</c>, which has seven different values.
+    </p>
+    <program language="python">
+      <input>
+    B = gss['polviews']
+    B.value_counts().sort_index()
+      </input>
+    </program>
+    <p>
+      On this scale, <c>4.0</c> represents &quot;Moderate&quot;.
+So we can compute the probability of a moderate banker like this:
+    </p>
+    <program language="python">
+      <input>
+    i = 4
+    prob(B==i) * conditional(banker, B==i)
+      </input>
+    </program>
+    <p>
+      And we can use <c>sum</c> and a <url href="https://www.johndcook.com/blog/2020/01/15/generator-expression/">generator expression</url> to compute the summation.
+    </p>
+    <program language="python">
+      <input>
+    sum(prob(B==i) * conditional(banker, B==i)
+        for i in range(1, 8))
+      </input>
+    </program>
+    <p>
+      The result is the same.
+    </p>
+    <p>
+      In this example, using the law of total probability is a lot more work than computing the probability directly, but it will turn out to be useful, I promise.
+    </p>
+  </section>
+
+  <section xml:id="sec-summary">
+    <title>Summary</title>
+
+    <p>
+      Here's what we have so far:
+    </p>
+    <p>
+      <em>Theorem 1</em> gives us a way to compute a conditional probability using a conjunction:
+    </p>
+    <p>
+      $$P(A|B) = \frac{P(A~\mathrm{and}~B)}{P(B)}$$
+    </p>
+    <p>
+      <em>Theorem 2</em> gives us a way to compute a conjunction using a conditional probability:
+    </p>
+    <p>
+      $$P(A~\mathrm{and}~B) = P(B) P(A|B)$$
+    </p>
+    <p>
+      <em>Theorem 3</em>, also known as Bayes's Theorem, gives us a way to get from $P(A|B)$ to $P(B|A)$, or the other way around:
+    </p>
+    <p>
+      $$P(A|B) = \frac{P(A) P(B|A)}{P(B)}$$
+    </p>
+    <p>
+      <em>The Law of Total Probability</em> provides a way to compute probabilities by adding up the pieces:
+    </p>
+    <p>
+      $$P(A) = \sum_i P(B_i) P(A|B_i)$$
+    </p>
+    <p>
+      At this point you might ask, &quot;So what?&quot;  If we have all of the data, we can compute any probability we want, any conjunction, or any conditional probability, just by counting.  We don't have to use these formulas.
+    </p>
+    <p>
+      And you are right, <em>if</em> we have all of the data.  But often we don't, and in that case, these formulas can be pretty useful -- especially Bayes's Theorem.
+In the next chapter, we'll see how.
+    </p>
+  </section>
+
+  <section xml:id="sec-exercises">
+    <title>Exercises</title>
+
+    <exercise xml:id="ex-101">
+      <statement>
+        <p>
+          Use <c>conditional</c> to compute the following probabilities:
+        </p>
+        <ul>
+          <li>What is the probability that a respondent is liberal, given that they are a Democrat?</li>
+          <li>What is the probability that a respondent is a Democrat, given that they are liberal?</li>
+        </ul>
+        <p>
+          Think carefully about the order of the arguments you pass to <c>conditional</c>.
+        </p>
+      </statement>
+    </exercise>
+    <exercise xml:id="ex-104">
+      <statement>
+        <p>
+          Let's use the tools in this chapter to solve a variation of the Linda problem.
+        </p>
+        <blockquote>
+          <p>Linda is 31 years old, single, outspoken, and very bright. She majored in philosophy. As a student, she was deeply concerned with issues of discrimination and social justice, and also participated in anti-nuclear demonstrations.  Which is more probable?</p>
+          <p>1. Linda is a banker.</p>
+          <p>2. Linda is a banker and considers herself a liberal Democrat.</p>
+        </blockquote>
+        <p>
+          To answer this question, compute
+        </p>
+        <p>
+          * The probability that Linda is a banker, given that she is female,
+        </p>
+        <p>
+          * The probability that Linda is a banker and a liberal Democrat, given that she is female.
+        </p>
+      </statement>
+    </exercise>
+    <exercise xml:id="ex-107">
+      <statement>
+        <p>
+          There's a <url href="https://quoteinvestigator.com/2014/02/24/heart-head/">famous quote</url> about young people, old people, liberals, and conservatives that goes something like:
+        </p>
+        <blockquote>
+          <p>If you are not a liberal at 25, you have no heart. If you are not a conservative at 35, you have no brain.</p>
+        </blockquote>
+        <p>
+          Whether you agree with this proposition or not, it suggests some probabilities we can compute as an exercise.
+Rather than use the specific ages 25 and 35, let's define <c>young</c> and <c>old</c> as under 30 or over 65:
+        </p>
+      </statement>
+    </exercise>
+    <program language="python">
+      <input>
+    young = (gss['age'] &lt; 30)
+    prob(young)
+      </input>
+    </program>
+    <program language="python">
+      <input>
+    old = (gss['age'] &gt;= 65)
+    prob(old)
+      </input>
+    </program>
+    <p>
+      For these thresholds, I chose round numbers near the 20th and 80th percentiles.  Depending on your age, you may or may not agree with these definitions of &quot;young&quot; and &quot;old&quot;.
+    </p>
+    <p>
+      I'll define <c>conservative</c> as someone whose political views are &quot;Conservative&quot;, &quot;Slightly Conservative&quot;, or &quot;Extremely Conservative&quot;.
+    </p>
+    <program language="python">
+      <input>
+    conservative = (gss['polviews'] &gt;= 5)
+    prob(conservative)
+      </input>
+    </program>
+    <p>
+      Use <c>prob</c> and <c>conditional</c> to compute the following probabilities.
+    </p>
+    <ul>
+      <li>What is the probability that a randomly chosen respondent is a young liberal?</li>
+      <li>What is the probability that a young person is liberal?</li>
+      <li>What fraction of respondents are old conservatives?</li>
+      <li>What fraction of conservatives are old?</li>
+    </ul>
+    <p>
+      For each statement, think about whether it is expressing a conjunction, a conditional probability, or both.
+    </p>
+    <p>
+      For the conditional probabilities, be careful about the order of the arguments. If your answer to the last question is greater than 30%, you have it backwards!
+    </p>
+    <p>
+      <em>Think Bayes</em>, Second Edition
+    </p>
+    <p>
+      Copyright 2020 Allen B. Downey
+    </p>
+    <p>
+      License: <url href="https://creativecommons.org/licenses/by-nc-sa/4.0/">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)</url>
+    </p>
+  </section>
 
 </chapter>
