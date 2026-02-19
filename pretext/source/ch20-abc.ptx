@@ -5,10 +5,1045 @@
 
   <introduction>
     <p>
-      This chapter introduces Approximate Bayesian Computation (ABC) methods for problems where the likelihood is intractable.
+      You can order print and ebook versions of <em>Think Bayes 2e</em> from <url href="https://bookshop.org/a/98697/9781492089469">Bookshop.org</url> and <url href="https://amzn.to/334eqGo">Amazon</url>.
+    </p>
+    <program language="python">
+      <input>
+from utils import set_pyplot_params
+set_pyplot_params()
+      </input>
+    </program>
+    <p>
+      This chapter introduces a method of last resort for the most complex problems, Approximate Bayesian Computation (ABC).
+I say it is a last resort because it usually requires more computation than other methods, so if you can solve a problem any other way, you should.
+However, for the examples in this chapter, ABC is not just easy to implement; it is also efficient.
+    </p>
+    <p>
+      The first example is my solution to a problem posed by a patient
+with a kidney tumor.
+I use data from a medical journal to model tumor growth, and use simulations to estimate the age of a tumor based on its size.
+    </p>
+    <p>
+      The second example is a model of cell counting, which has applications in biology, medicine, and zymurgy (beer-making).
+Given a cell count from a diluted sample, we estimate the concentration of cells.
+    </p>
+    <p>
+      Finally, as an exercise, you'll have a chance to work on a fun sock-counting problem.
     </p>
   </introduction>
 
-  <!-- Sections will be added here -->
+  <section xml:id="sec-ch20-the-kidney-tumor-problem">
+    <title>The Kidney Tumor Problem</title>
 
+    <p>
+      I am a frequent reader and occasional contributor to the online
+statistics forum at <url href="http://reddit.com/r/statistics">http://reddit.com/r/statistics</url>. 
+In November 2011, I read the following message:
+    </p>
+    <p>
+      &gt; "I have Stage IV Kidney Cancer and am trying to determine if the cancer formed before I retired from the military. ... Given the dates of retirement and detection is it possible to determine when there was a 50/50 chance that I developed the disease? Is it possible to determine the probability on the retirement date? My tumor was 15.5 cm x 15 cm at detection. Grade II."
+    </p>
+    <p>
+      I contacted the author of the message to get more information; I
+learned that veterans get different benefits if it is "more likely than not" that a tumor formed while they were in military service (among other considerations).
+So I agree to help him answer his question.
+    </p>
+    <p>
+      Because renal tumors grow slowly, and often do not cause symptoms, they are sometimes left untreated. As a result, doctors can observe the rate of growth for untreated tumors by comparing scans from the same patient at different times. Several papers have reported these growth rates.
+    </p>
+    <p>
+      For my analysis I used data from a paper by <url href="https://pubs.rsna.org/doi/full/10.1148/radiol.2501071712">Zhang et al</url>. 
+They report growth rates in two forms:
+    </p>
+    <p>
+      * Volumetric doubling time, which is the time it would take for a tumor to double in size.
+    </p>
+    <p>
+      * Reciprocal doubling time (RDT), which is the number of doublings per year.
+    </p>
+    <p>
+      The next section shows how we work with these growth rates.
+    </p>
+    <p>
+      Zhang et al, Distribution of Renal Tumor Growth Rates Determined
+    by Using Serial Volumetric CT Measurements, January 2009
+    <em>Radiology</em>, 250, 137-144.
+    
+https://pubs.rsna.org/doi/full/10.1148/radiol.2501071712
+    </p>
+  </section>
+
+  <section xml:id="sec-ch20-a-simple-growth-model">
+    <title>A Simple Growth Model</title>
+
+    <p>
+      We'll start with a simple model of tumor growth based on two assumptions:
+    </p>
+    <p>
+      * Tumors grow with a constant doubling time, and
+    </p>
+    <p>
+      * They are roughly spherical in shape.
+    </p>
+    <p>
+      And I'll define two points in time:
+    </p>
+    <p>
+      * <c>t1</c> is when my correspondent retired.
+    </p>
+    <p>
+      * <c>t2</c> is when the tumor was detected.
+    </p>
+    <p>
+      The time between <c>t1</c> and <c>t2</c> was about 9.0 years.
+As an example, let's assume that the diameter of the tumor was 1 cm at <c>t1</c>, and estimate its size at <c>t2</c>.
+    </p>
+    <p>
+      I'll use the following function to compute the volume of a sphere with a given diameter.
+    </p>
+    <program language="python">
+      <input>
+import numpy as np
+
+def calc_volume(diameter):
+    """Converts a diameter to a volume."""
+    factor = 4 * np.pi / 3
+    return factor * (diameter/2.0)**3
+      </input>
+    </program>
+    <p>
+      Assuming that the tumor is spherical, we can compute its volume at <c>t1</c>.
+    </p>
+    <program language="python">
+      <input>
+d1 = 1
+v1 = calc_volume(d1)
+v1
+      </input>
+    </program>
+    <p>
+      The median volume doubling time reported by Zhang et al. is 811 days, which corresponds to an RDT of 0.45 doublings per year.
+    </p>
+    <program language="python">
+      <input>
+median_doubling_time = 811
+rdt = 365 / median_doubling_time
+rdt
+      </input>
+    </program>
+    <p>
+      We can compute the number of doublings that would have happened in the interval between <c>t1</c> and <c>t2</c>:
+    </p>
+    <program language="python">
+      <input>
+interval = 9.0
+doublings = interval * rdt
+doublings
+      </input>
+    </program>
+    <p>
+      Given <c>v1</c> and the number of doublings, we can compute the volume at <c>t2</c>.
+    </p>
+    <program language="python">
+      <input>
+v2 = v1 * 2**doublings
+v2
+      </input>
+    </program>
+    <p>
+      The following function computes the diameter of a sphere with the given volume.
+    </p>
+    <program language="python">
+      <input>
+def calc_diameter(volume):
+    """Converts a volume to a diameter."""
+    factor = 3 / np.pi / 4
+    return 2 * (factor * volume)**(1/3)
+      </input>
+    </program>
+    <p>
+      So we can compute the diameter of the tumor at <c>t2</c>:
+    </p>
+    <program language="python">
+      <input>
+d2 = calc_diameter(v2)
+d2
+      </input>
+    </program>
+    <p>
+      If the diameter of the tumor was 1 cm at <c>t1</c>, and it grew at the median rate, the diameter would be about 2.5 cm at <c>t2</c>.
+    </p>
+    <p>
+      This example demonstrates the growth model, but it doesn't answer the question my correspondent posed.
+    </p>
+  </section>
+
+  <section xml:id="sec-ch20-a-more-general-model">
+    <title>A More General Model</title>
+
+    <p>
+      Given the size of a tumor at time of diagnosis, we would like to know the distribution of its age.
+To find it, we'll run simulations of tumor growth to get the distribution of size conditioned on age. 
+Then we'll compute the distribution of age conditioned on size.
+    </p>
+    <p>
+      The simulation starts with a small tumor and runs these steps:
+    </p>
+    <p>
+      1.  Choose a value from the distribution of growth rates.
+    </p>
+    <p>
+      2.  Compute the size of the tumor at the end of an interval.
+    </p>
+    <p>
+      3.  Repeat until the tumor exceeds the maximum relevant size.
+    </p>
+    <p>
+      So the first thing we need is the distribution of growth rates.
+    </p>
+    <p>
+      Using the figures in the paper by Zhange et al., I created an array, <c>rdt_sample</c>, that contains estimated values of RDT for the 53 patients in the study.
+    </p>
+    <p>
+      Again, RDT stands for "reciprocal doubling time", which is in doublings per year.
+So if <c>rdt=1</c>, a tumor would double in volume in one year.
+If <c>rdt=2</c>, it would double twice; that is, the volume would quadruple.
+And if <c>rdt=-1</c>, it would halve in volume.
+    </p>
+    <program language="python">
+      <input>
+# Data from the histogram in Figure 3
+
+import numpy as np
+from empiricaldist import Pmf
+
+counts = [2, 29, 11, 6, 3, 1, 1]
+rdts = np.arange(-1, 6) + 0.01
+pmf_rdt = Pmf(counts, rdts)
+pmf_rdt.normalize()
+      </input>
+    </program>
+    <program language="python">
+      <input>
+# Data from the scatter plot in Figure 4
+
+rdts = [5.089,  3.572,  3.242,  2.642,  1.982,  1.847,  1.908,  1.798,
+        1.798,  1.761,  2.703, -0.416,  0.024,  0.869,  0.746,  0.257,
+        0.269,  0.086,  0.086,  1.321,  1.052,  1.076,  0.758,  0.587,
+        0.367,  0.416,  0.073,  0.538,  0.281,  0.122, -0.869, -1.431,
+        0.012,  0.037, -0.135,  0.122,  0.208,  0.245,  0.404,  0.648,
+        0.673,  0.673,  0.563,  0.391,  0.049,  0.538,  0.514,  0.404,
+        0.404,  0.33,  -0.061,  0.538,  0.306]
+
+rdt_sample = np.array(rdts)
+len(rdt_sample)
+      </input>
+    </program>
+    <p>
+      We can use the sample of RDTs to estimate the PDF of the distribution.
+    </p>
+    <program language="python">
+      <input>
+from utils import kde_from_sample
+
+qs = np.linspace(-2, 6, num=201)
+pmf_rdt = kde_from_sample(rdt_sample, qs)
+      </input>
+    </program>
+    <program language="python">
+      <input>
+1 / pmf_rdt.median() * 365
+      </input>
+    </program>
+    <p>
+      Here's what it looks like.
+    </p>
+    <program language="python">
+      <input>
+from utils import decorate
+
+pmf_rdt.plot(label='rdts')
+
+decorate(xlabel='Reciprocal doubling time (RDT)',
+         ylabel='PDF',
+         title='Distribution of growth rates')
+      </input>
+    </program>
+    <p>
+      In the next section we will use this distribution to simulate tumor growth.
+    </p>
+  </section>
+
+  <section xml:id="sec-ch20-simulation">
+    <title>Simulation</title>
+
+    <p>
+      Now we're ready to run the simulations.
+Starting with a small tumor, we'll simulate a series of intervals until the tumor reaches a maximum size.
+    </p>
+    <p>
+      At the beginning of each simulated interval, we'll choose a value from the distribution of growth rates and compute the size of the tumor at the end.
+    </p>
+    <p>
+      I chose an interval of 245 days (about 8 months) because that is the
+median time between measurements in the data source
+    </p>
+    <p>
+      For the initial diameter I chose 0.3 cm, because carcinomas smaller than that are less likely to be invasive and less likely to have the blood supply needed for rapid growth (see <url href="http://en.wikipedia.org/wiki/Carcinoma_in_situ">this page on carcinoma</url>).
+For the maximum diameter I chose 20 cm.
+    </p>
+    <program language="python">
+      <input>
+interval = 245 / 365      # year
+min_diameter = 0.3        # cm
+max_diameter = 20         # cm
+      </input>
+    </program>
+    <p>
+      I'll use <c>calc_volume</c> to compute the initial and maximum volumes:
+    </p>
+    <program language="python">
+      <input>
+v0 = calc_volume(min_diameter)
+vmax = calc_volume(max_diameter)
+v0, vmax
+      </input>
+    </program>
+    <p>
+      The following function runs the simulation.
+    </p>
+    <program language="python">
+      <input>
+import pandas as pd
+
+def simulate_growth(pmf_rdt):
+    """Simulate the growth of a tumor."""
+    age = 0
+    volume = v0
+    res = []
+    
+    while True:
+        res.append((age, volume))
+        if volume &gt; vmax:
+            break
+
+        rdt = pmf_rdt.choice()[0]
+        age += interval 
+        doublings = rdt * interval
+        volume *= 2**doublings
+        
+    columns = ['age', 'volume']
+    sim = pd.DataFrame(res, columns=columns)
+    sim['diameter'] = calc_diameter(sim['volume'])
+    return sim
+      </input>
+    </program>
+    <p>
+      <c>simulate_growth</c> takes as a parameter a <c>Pmf</c> that represents the distribution of RDT.
+It initializes the age and volume of the tumor, then runs a loop that simulates one interval at a time.
+    </p>
+    <p>
+      Each time through the loop, it checks the volume of the tumor and exits if it exceeds <c>vmax</c>.
+    </p>
+    <p>
+      Otherwise it chooses a value from <c>pmf_rdt</c> and updates <c>age</c> and <c>volume</c>.  Since <c>rdt</c> is in doublings per year, we multiply by <c>interval</c> to compute the number of doublings during each interval.
+    </p>
+    <p>
+      At the end of the loop, <c>simulate_growth</c> puts the results in a <c>DataFrame</c> and computes the diameter that corresponds to each volume.
+    </p>
+    <p>
+      Here's how we call this function:
+    </p>
+    <program language="python">
+      <input>
+np.random.seed(17)
+      </input>
+    </program>
+    <program language="python">
+      <input>
+sim = simulate_growth(pmf_rdt)
+      </input>
+    </program>
+    <p>
+      Here are the results for the first few intervals:
+    </p>
+    <program language="python">
+      <input>
+sim.head(3)
+      </input>
+    </program>
+    <p>
+      And the last few intervals.
+    </p>
+    <program language="python">
+      <input>
+sim.tail(3)
+      </input>
+    </program>
+    <p>
+      To show the results graphically, I'll run 101 simulations:
+    </p>
+    <program language="python">
+      <input>
+np.random.seed(17)
+      </input>
+    </program>
+    <program language="python">
+      <input>
+sims = [simulate_growth(pmf_rdt) for _ in range(101)]
+      </input>
+    </program>
+    <p>
+      And plot the results.
+    </p>
+    <program language="python">
+      <input>
+import matplotlib.pyplot as plt
+
+diameters = [4, 8, 16]
+for diameter in diameters:
+    plt.axhline(diameter,
+                color='C5', linewidth=2, ls=':')
+
+for sim in sims:
+    plt.plot(sim['age'], sim['diameter'],
+             color='C1', linewidth=0.5, alpha=0.5)
+    
+decorate(xlabel='Tumor age (years)',
+         ylabel='Diameter (cm, log scale)',
+         ylim=[0.2, 20],
+         yscale='log')
+
+yticks = [0.2, 0.5, 1, 2, 5, 10, 20]
+plt.yticks(yticks, yticks);
+      </input>
+    </program>
+    <p>
+      In this figure, each thin, solid line shows the simulated growth of a tumor over time, with diameter on a log scale.
+The dotted lines are at 4, 8, and 16 cm.
+    </p>
+    <p>
+      By reading across the dotted lines, you can get a sense of the distribution of age at each size.
+For example, reading across the top line, we see that the age of a 16 cm tumor might be as low 10 years or as high as 40 years, but it is most likely to be between 15 and 30.
+    </p>
+    <p>
+      To compute this distribution more precisely, we can interpolate the growth curves to see when each one passes through a given size.
+The following function takes the results of the simulations and returns the age when each tumor reached a given diameter.
+    </p>
+    <program language="python">
+      <input>
+from scipy.interpolate import interp1d
+
+def interpolate_ages(sims, diameter):
+    """Estimate the age when each tumor reached a given size."""
+    ages = []
+    for sim in sims:
+        interp = interp1d(sim['diameter'], sim['age'])
+        age = interp(diameter)
+        ages.append(float(age))
+    return ages
+      </input>
+    </program>
+    <p>
+      We can call this function like this:
+    </p>
+    <program language="python">
+      <input>
+from empiricaldist import Cdf
+
+ages = interpolate_ages(sims, 15)
+cdf = Cdf.from_seq(ages)
+print(cdf.median(), cdf.credible_interval(0.9))
+      </input>
+    </program>
+    <p>
+      For a tumor 15 cm in diameter, the median age is about 22 years, the 90% credible interval is between 13 and 34 years, and the probability that it formed less than 9 years ago is less than 1%.
+    </p>
+    <program language="python">
+      <input>
+1 - cdf(9.0)
+      </input>
+    </program>
+    <p>
+      But this result is based on two modeling decisions that are potentially problematic:
+    </p>
+    <p>
+      * In the simulations, growth rate during each interval is independent of previous growth rates. In reality it is plausible that tumors that have grown quickly in the past are likely to grow quickly in the future. In other words, there is probably a serial correlation in growth rate.
+    </p>
+    <p>
+      * To convert from linear measure to volume, we assume that tumors are approximately spherical.
+    </p>
+    <p>
+      In additional experiments, I implemented a simulation that chooses growth rates with serial correlation; the effect is that the fast-growing tumors grow faster and the slow-growing tumors grow slower.
+Nevertheless, with moderate correlation (0.5), the probability that a 15 cm tumor is less than 9 years old is only about 1%.
+    </p>
+    <p>
+      The assumption that tumors are spherical is probably fine for tumors up to a few centimeters, but not for a tumor with linear dimensions 15.5 x 15 cm.
+If, as seems likely, a tumor this size is relatively flat, it might have the same volume as a 6 cm sphere.
+But even with this smaller volume and correlation 0.5, the probability that this tumor is less than 9 years old is about 5%.
+    </p>
+    <p>
+      So even taking into account modeling errors, it is unlikely that such a large tumor could have formed after my correspondent retired from military service.
+    </p>
+    <p>
+      The following figure shows the distribution of ages for tumors with diameters 4, 8, and 15 cm.
+    </p>
+    <program language="python">
+      <input>
+for diameter in diameters:
+    ages = interpolate_ages(sims, diameter)
+    cdf = Cdf.from_seq(ages)
+    cdf.plot(label=f'{diameter} cm')
+    
+decorate(xlabel='Tumor age (years)',
+         ylabel='CDF')
+      </input>
+    </program>
+  </section>
+
+  <section xml:id="sec-ch20-approximate-bayesian-calculation">
+    <title>Approximate Bayesian Calculation</title>
+
+    <p>
+      At this point you might wonder why this example is in a book about Bayesian statistics.
+We never defined a prior distribution or did a Bayesian update.
+Why not? Because we didn't have to.
+    </p>
+    <p>
+      Instead, we used simulations to compute ages and sizes for a collection of hypothetical tumors.
+Then, implicitly, we used the simulation results to form a joint distribution of age and size.
+If we select a column from the joint distribution, we get a distribution of size conditioned on age.
+If we select a row, we get a distribution of age conditioned on size.
+    </p>
+    <p>
+      So this example is like the ones we saw in &lt;&lt;_Probability&gt;&gt;: if you have all of the data, you don't need Bayes's theorem; you can compute probabilities by counting.
+    </p>
+    <p>
+      This example is a first step toward Approximate Bayesian Computation (ABC).
+The next example is a second step.
+    </p>
+  </section>
+
+  <section xml:id="sec-ch20-counting-cells">
+    <title>Counting Cells</title>
+
+    <p>
+      This example comes from <url href="https://dataorigami.net/blogs/napkin-folding/bayesian-cell-counting">this blog post</url>, by Cameron Davidson-Pilon.
+In it, he models the process biologists use to estimate the concentration of cells in a sample of liquid.
+The example he presents is counting cells in a "yeast slurry", which is a mixture of yeast and water used in brewing beer.
+    </p>
+    <p>
+      There are two steps in the process:
+    </p>
+    <p>
+      * First, the slurry is diluted until the concentration is low enough that it is practical to count cells.
+    </p>
+    <p>
+      * Then a small sample is put on a hemocytometer, which is a specialized microscope slide that holds a fixed amount of liquid on a rectangular grid.
+    </p>
+    <p>
+      The cells and the grid are visible in a microscope, making it possible to count the cells accurately.
+    </p>
+    <p>
+      As an example, suppose we start with a yeast slurry with unknown concentration of cells.
+Starting with a 1 mL sample, we dilute it by adding it to a shaker with 9 mL of water and mixing well.
+Then we dilute it again, and then a third time.
+Each dilution reduces the concentration by a factor of 10, so three dilutions reduces the concentration by a factor of 1000.
+    </p>
+    <p>
+      Then we add the diluted sample to the hemocytometer, which has a capacity of 0.0001 mL spread over a 5x5 grid.
+Although the grid has 25 squares, it is standard practice to inspect only a few of them, say 5, and report the total number of cells in the inspected squares.
+    </p>
+    <p>
+      This process is simple enough, but at every stage there are sources of error:
+    </p>
+    <p>
+      * During the dilution process, liquids are measured using pipettes that introduce measurement error.
+    </p>
+    <p>
+      * The amount of liquid in the hemocytometer might vary from the specification.
+    </p>
+    <p>
+      * During each step of the sampling process, we might select more or less than the average number of cells, due to random variation.
+    </p>
+    <p>
+      Davidson-Pilon presents a PyMC model that describes these errors.
+I'll start by replicating his model; then we'll adapt it for ABC.
+    </p>
+    <p>
+      Suppose there are 25 squares in the grid, we count 5 of them, and the total number of cells is 49.
+    </p>
+    <program language="python">
+      <input>
+total_squares = 25
+squares_counted = 5
+yeast_counted = 49
+      </input>
+    </program>
+    <p>
+      Here's the first part of the model, which defines the prior distribution of <c>yeast_conc</c>, which is the concentration of yeast we're trying to estimate.
+    </p>
+    <p>
+      <c>shaker1_vol</c> is the actual volume of water in the first shaker, which should be 9 mL, but might be higher or lower, with standard deviation 0.05 mL.
+<c>shaker2_vol</c> and <c>shaker3_vol</c> are the volumes in the second and third shakers.
+    </p>
+    <program language="python">
+      <input>
+import pymc as pm
+billion = 1e9
+
+with pm.Model() as model:
+    yeast_conc = pm.Normal("yeast conc", 
+                           mu=2 * billion, sigma=0.4 * billion)
+
+    shaker1_vol = pm.Normal("shaker1 vol", mu=9.0, sigma=0.05)
+    shaker2_vol = pm.Normal("shaker2 vol", mu=9.0, sigma=0.05)
+    shaker3_vol = pm.Normal("shaker3 vol", mu=9.0, sigma=0.05)
+      </input>
+    </program>
+    <p>
+      Now, the sample drawn from the yeast slurry is supposed to be 1 mL, but might be more or less.
+And similarly for the sample from the first shaker and from the second shaker.
+The following variables model these steps.
+    </p>
+    <program language="python">
+      <input>
+with model:
+    yeast_slurry_vol = pm.Normal("yeast slurry vol", mu=1.0, sigma=0.01)
+    shaker1_to_shaker2_vol = pm.Normal("shaker1 to shaker2", mu=1.0, sigma=0.01)
+    shaker2_to_shaker3_vol = pm.Normal("shaker2 to shaker3", mu=1.0, sigma=0.01)
+      </input>
+    </program>
+    <p>
+      Given the actual volumes in the samples and in the shakers, we can compute the effective dilution, <c>final_dilution</c>, which should be 1000, but might be higher or lower.
+    </p>
+    <program language="python">
+      <input>
+with model:
+    dilution_shaker1 = (yeast_slurry_vol / 
+                        (yeast_slurry_vol + shaker1_vol))
+    dilution_shaker2 = (shaker1_to_shaker2_vol / 
+                        (shaker1_to_shaker2_vol + shaker2_vol))
+    dilution_shaker3 = (shaker2_to_shaker3_vol / 
+                        (shaker2_to_shaker3_vol + shaker3_vol))
+    
+    final_dilution = (dilution_shaker1 * 
+                      dilution_shaker2 * 
+                      dilution_shaker3)
+      </input>
+    </program>
+    <p>
+      The next step is to place a sample from the third shaker in the chamber of the hemocytomer.
+The capacity of the chamber should be 0.0001 mL, but might vary; to describe this variance, we'll use a gamma distribution, which ensures that we don't generate negative values.
+    </p>
+    <program language="python">
+      <input>
+with model:
+    chamber_vol = pm.Gamma("chamber_vol", mu=0.0001, sigma=0.0001 / 20)
+      </input>
+    </program>
+    <p>
+      On average, the number of cells in the chamber is the product of the actual concentration, final dilution, and chamber volume.
+But the actual number might vary; we'll use a Poisson distribution to model this variance.
+    </p>
+    <program language="python">
+      <input>
+with model:
+    yeast_in_chamber = pm.Poisson("yeast in chamber", 
+        mu=yeast_conc * final_dilution * chamber_vol)
+      </input>
+    </program>
+    <p>
+      Finally, each cell in the chamber will be in one of the squares we count with probability <c>p=squares_counted/total_squares</c>.
+So the actual count follows a binomial distribution.
+    </p>
+    <program language="python">
+      <input>
+with model:
+    count = pm.Binomial("count", 
+                        n=yeast_in_chamber, 
+                        p=squares_counted/total_squares,
+                        observed=yeast_counted)
+      </input>
+    </program>
+    <p>
+      With the model specified, we can use <c>sample</c> to generate a sample from the posterior distribution.
+    </p>
+    <program language="python">
+      <input>
+options = dict(return_inferencedata=False)
+
+with model:
+    trace = pm.sample(1000, **options)
+      </input>
+    </program>
+    <p>
+      And we can use the sample to estimate the posterior distribution of <c>yeast_conc</c> and compute summary statistics.
+    </p>
+    <program language="python">
+      <input>
+posterior_sample = trace['yeast conc'] / billion
+cdf_pymc = Cdf.from_seq(posterior_sample)
+print(cdf_pymc.mean(), cdf_pymc.credible_interval(0.9))
+      </input>
+    </program>
+    <p>
+      The posterior mean is about 2.2 billion cells per mL, with a 90% credible interval from 1.8 and 2.7.
+    </p>
+    <p>
+      So far we've been following in Davidson-Pilon's footsteps.
+And for this problem, the solution using MCMC is sufficient.
+But it also provides an opportunity to demonstrate ABC.
+    </p>
+  </section>
+
+  <section xml:id="sec-ch20-cell-counting-with-abc">
+    <title>Cell Counting with ABC</title>
+
+    <p>
+      The fundamental idea of ABC is that we use the prior distribution to generate a sample of the parameters, and then simulate the system for each set of parameters in the sample.
+    </p>
+    <p>
+      In this case, since we already have a PyMC model, we can use <c>sample_prior_predictive</c> to do the sampling and the simulation.
+    </p>
+    <program language="python">
+      <input>
+with model:
+    prior_sample = pm.sample_prior_predictive(10000, **options)
+      </input>
+    </program>
+    <p>
+      The result is a dictionary that contains samples from the prior distribution of the parameters and the prior predictive distribution of <c>count</c>.
+    </p>
+    <program language="python">
+      <input>
+count = prior_sample['count']
+print(count.mean())
+      </input>
+    </program>
+    <p>
+      Now, to generate a sample from the posterior distribution, we'll select only the elements in the prior sample where the output of the simulation, <c>count</c>, matches the observed data, 49.
+    </p>
+    <program language="python">
+      <input>
+mask = (count == 49)
+mask.sum()
+      </input>
+    </program>
+    <p>
+      We can use <c>mask</c> to select the values of <c>yeast_conc</c> for the simulations that yield the observed data.
+    </p>
+    <program language="python">
+      <input>
+posterior_sample2 = prior_sample['yeast conc'][mask] / billion
+      </input>
+    </program>
+    <p>
+      And we can use the posterior sample to estimate the CDF of the posterior distribution.
+    </p>
+    <program language="python">
+      <input>
+cdf_abc = Cdf.from_seq(posterior_sample2)
+print(cdf_abc.mean(), cdf_abc.credible_interval(0.9))
+      </input>
+    </program>
+    <p>
+      The posterior mean and credible interval are similar to what we got with MCMC.
+Here's what the distributions look like.
+    </p>
+    <program language="python">
+      <input>
+cdf_pymc.plot(label='MCMC', ls=':')
+cdf_abc.plot(label='ABC')
+
+decorate(xlabel='Yeast concentration (cells/mL)',
+         ylabel='CDF',
+         title='Posterior distribution',
+         xlim=(1.4, 3.4))
+      </input>
+    </program>
+    <p>
+      The distributions are similar, but the results from ABC are noisier because the sample size is smaller.
+    </p>
+  </section>
+
+  <section xml:id="sec-ch20-when-do-we-get-to-the-approximate-part">
+    <title>When Do We Get to the Approximate Part?</title>
+
+    <p>
+      The examples so far are similar to Approximate Bayesian Computation, but neither of them demonstrates all of the elements of ABC.
+More generally, ABC is characterized by:
+    </p>
+    <p>
+      1. A prior distribution of parameters.
+    </p>
+    <p>
+      2. A simulation of the system that generates the data.
+    </p>
+    <p>
+      3. A criterion for when we should accept that the output of the simulation matches the data.
+    </p>
+    <p>
+      The kidney tumor example was atypical because we didn't represent the prior distribution of age explicitly.
+Because the simulations generate a joint distribution of age and size, we we able to get the marginal posterior distribution of age directly from the results.
+    </p>
+    <p>
+      The yeast example is more typical because we represented the distribution of the parameters explicitly.
+But we accepted only simulations where the output matches the data exactly.
+    </p>
+    <p>
+      The result is approximate in the sense that we have a sample from the posterior distribution rather than the posterior distribution itself.
+But it is not approximate in the sense of Approximate Bayesian Computation, which typically accepts simulations where the output matches the data only approximately.
+    </p>
+    <p>
+      To show how that works, I will extend the yeast example with an approximate matching criterion.
+    </p>
+    <p>
+      In the previous section, we accepted a simulation if the output is precisely 49 and rejected it otherwise.
+As a result, we got only a few hundred samples out of 10,000 simulations, so that's not very efficient.
+    </p>
+    <p>
+      We can make better use of the simulations if we give "partial credit" when the output is close to 49.
+But how close?  And how much credit?
+    </p>
+    <p>
+      One way to answer that is to back up to the second-to-last step of the simulation, where we know the number of cells in the chamber, and we use the binomial distribution to generate the final count.
+    </p>
+    <p>
+      If there are <c>n</c> cells in the chamber, each has a probability <c>p</c> of being counted, depending on whether it falls in one of the squares in the grid that get counted.
+    </p>
+    <p>
+      We can extract <c>n</c> from the prior sample, like this:
+    </p>
+    <program language="python">
+      <input>
+n = prior_sample['yeast in chamber']
+n.shape
+      </input>
+    </program>
+    <p>
+      And compute <c>p</c> like this:
+    </p>
+    <program language="python">
+      <input>
+p = squares_counted/total_squares
+p
+      </input>
+    </program>
+    <p>
+      Now here's the idea: we'll use the binomial distribution to compute the likelihood of the data, <c>yeast_counted</c>, for each value of <c>n</c> and the fixed value of <c>p</c>.
+    </p>
+    <program language="python">
+      <input>
+from scipy.stats import binom
+
+likelihood = binom(n, p).pmf(yeast_counted).flatten()
+      </input>
+    </program>
+    <program language="python">
+      <input>
+likelihood.shape
+      </input>
+    </program>
+    <p>
+      When the expected count, <c>n * p</c>, is close to the actual count, <c>likelihood</c> is relatively high; when it is farther away, <c>likelihood</c> is lower.
+    </p>
+    <p>
+      The following is a scatter plot of these likelihoods versus the expected counts.
+    </p>
+    <program language="python">
+      <input>
+plt.plot(n*p, likelihood, '.', alpha=0.03, color='C2')
+
+decorate(xlabel='Expected count (number of cells)',
+         ylabel='Likelihood')
+      </input>
+    </program>
+    <p>
+      We can't use these likelihoods to do a Bayesian update because they are incomplete; that is, each likelihood is the probability of the data given <c>n</c>, which is the result of a single simulation.
+    </p>
+    <p>
+      But we <em>can</em> use them to weight the results of the simulations.
+Instead of requiring the output of the simulation to match the data exactly, we'll use the likelihoods to give partial credit when the output is close.
+    </p>
+    <p>
+      Here's how: I'll construct a <c>Pmf</c> that contains yeast concentrations as quantities and the likelihoods as unnormalized probabilities.
+    </p>
+    <program language="python">
+      <input>
+qs = prior_sample['yeast conc'] / billion
+ps = likelihood
+posterior_pmf = Pmf(ps, qs)
+      </input>
+    </program>
+    <p>
+      In this <c>Pmf</c>, values of <c>yeast_conc</c> that yield outputs close to the data map to higher probabilities.
+If we sort the quantities and normalize the probabilities, the result is an estimate of the posterior distribution.
+    </p>
+    <program language="python">
+      <input>
+posterior_pmf.sort_index(inplace=True)
+posterior_pmf.normalize()
+
+print(posterior_pmf.mean(), posterior_pmf.credible_interval(0.9))
+      </input>
+    </program>
+    <p>
+      The posterior mean and credible interval are similar to the values we got from MCMC.
+And here's what the posterior distributions look like.
+    </p>
+    <program language="python">
+      <input>
+cdf_pymc.plot(label='MCMC', ls=':')
+#cdf_abc.plot(label='ABC')
+posterior_pmf.make_cdf().plot(label='ABC2')
+
+decorate(xlabel='Yeast concentration (cells/mL)',
+         ylabel='CDF',
+         title='Posterior distribution',
+         xlim=(1.4, 3.4))
+      </input>
+    </program>
+    <p>
+      The distributions are similar, but the results from MCMC are a little noisier.
+In this example, ABC is more efficient than MCMC, requiring less computation to generate a better estimate of the posterior distribution.
+But that's unusual; usually ABC requires a lot of computation.
+For that reason, it is generally a method of last resort.
+    </p>
+  </section>
+
+  <section xml:id="sec-ch20-summary">
+    <title>Summary</title>
+
+    <p>
+      In this chapter we saw two examples of Approximate Bayesian Computation (ABC), based on simulations of tumor growth and cell counting.
+    </p>
+    <p>
+      The definitive elements of ABC are:
+    </p>
+    <p>
+      1. A prior distribution of parameters.
+    </p>
+    <p>
+      2. A simulation of the system that generates the data.
+    </p>
+    <p>
+      3. A criterion for when we should accept that the output of the simulation matches the data.
+    </p>
+    <p>
+      ABC is particularly useful when the system is too complex to model with tools like PyMC.
+For example, it might involve a physical simulation based on differential equations.
+In that case, each simulation might require substantial computation, and many simulations might be needed to estimate the posterior distribution.
+    </p>
+    <p>
+      Next, you'll have a chance to practice with one more example.
+    </p>
+  </section>
+
+  <exercises xml:id="ex-ch20">
+    <title>Exercises</title>
+
+    <exercise xml:id="ex-ch20-2014">
+      <statement>
+        <p>
+          &gt; That the first 11 socks in the laundry are distinct suggests that there are a lot of socks.
+        </p>
+        <p>
+          Suppose you pull 11 socks out of the laundry and find that no two of them make a matched pair.  Estimate the number of socks in the laundry.
+        </p>
+        <p>
+          To solve this problem, we'll use the model Bååth suggests, which is based on these assumptions:
+        </p>
+        <p>
+          * The laundry contains some number of pairs of socks, <c>n_pairs</c>, plus some number of odd (unpaired) socks, <c>n_odds</c>.
+        </p>
+        <p>
+          * The pairs of socks are different from each other and different from the unpaired socks; in other words, the number of socks of each type is either 1 or 2, never more.
+        </p>
+        <p>
+          We'll use the prior distributions Bååth suggests, which are:
+        </p>
+        <p>
+          * The number of socks follows a negative binomial distribution with mean 30 and standard deviation 15.
+        </p>
+        <p>
+          * The proportion of socks that are paired follows a beta distribution with parameters <c>alpha=15</c> and <c>beta=2</c>.
+        </p>
+        <p>
+          In the notebook for this chapter, I'll define these priors.  Then you can simulate the sampling process and use ABC to estimate the posterior distributions.
+        </p>
+    <p>
+      To get you started, I'll define the priors.
+    </p>
+    <program language="python">
+      <input>
+from scipy.stats import nbinom, beta
+
+mu = 30
+p = 0.8666666
+r = mu * (1-p) / p
+
+prior_n_socks = nbinom(r, 1-p)
+prior_n_socks.mean(), prior_n_socks.std()
+      </input>
+    </program>
+    <program language="python">
+      <input>
+prior_prop_pair = beta(15, 2)
+prior_prop_pair.mean()
+      </input>
+    </program>
+    <program language="python">
+      <input>
+qs = np.arange(90)
+ps = prior_n_socks.pmf(qs)
+pmf = Pmf(ps, qs)
+pmf.normalize()
+
+pmf.plot(label='prior', drawstyle='steps')
+
+decorate(xlabel='Number of socks',
+         ylabel='PMF')
+      </input>
+    </program>
+    <program language="python">
+      <input>
+from utils import pmf_from_dist
+
+qs = np.linspace(0, 1, 101)
+pmf = pmf_from_dist(prior_prop_pair, qs)
+pmf.plot(label='prior', color='C1')
+
+decorate(xlabel='Proportion of socks in pairs',
+         ylabel='PDF')
+      </input>
+    </program>
+    <p>
+      We can sample from the prior distributions like this:
+    </p>
+    <program language="python">
+      <input>
+n_socks = prior_n_socks.rvs()
+prop_pairs = prior_prop_pair.rvs()
+
+n_socks, prop_pairs
+      </input>
+    </program>
+    <p>
+      And use the values to compute <c>n_pairs</c> and <c>n_odds</c>:
+    </p>
+    <program language="python">
+      <input>
+n_pairs = np.round(n_socks//2 * prop_pairs)
+n_odds = n_socks - n_pairs*2
+
+n_pairs, n_odds
+      </input>
+    </program>
+    <p>
+      Now you take it from there.
+    </p>
+      </statement>
+    </exercise>
+  </exercises>
 </chapter>
