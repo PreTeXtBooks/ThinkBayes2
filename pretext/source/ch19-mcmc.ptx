@@ -793,7 +793,7 @@
       </input>
     </program>
     <p>
-      And the dependent variables.
+      And the independent variables.
     </p>
     <program language="python">
       <input>
@@ -859,7 +859,7 @@
     </p>
     <program language="python">
       <input>
-      param_names = ['b1', 'b3', 'b3', 'b4', 'b5', 'b6']
+      param_names = ['b1', 'b2', 'b3', 'b4', 'b5', 'b6']
 
       means = [trace4[name].mean() 
                for name in param_names]
@@ -1103,13 +1103,13 @@
           Note: This exercise is more difficult that some of the previous ones.  One of the challenges is that the data includes <c>k00</c>, which depends on <c>N</c>:
         </p>
         <p>
-          ``<c> k00 = N - num_seen </c>``
+          <c>k00 = N - num_seen</c>
         </p>
         <p>
           So we have to construct the data as part of the model. To do that, we can use <c>pm.math.stack</c>, which makes an array:
         </p>
         <p>
-          ``<c> data = pm.math.stack((k00, k01, k10, k11)) </c>``
+          <c>data = pm.math.stack((k00, k01, k10, k11))</c>
         </p>
         <p>
           Finally, you might find it helpful to use <c>pm.Multinomial</c>.
@@ -1171,17 +1171,7 @@
           # Solution goes here
           </input>
         </program>
-        <p>
-          <ul>
-            <li>Think Bayes*, Second Edition</li>
-          </ul>
-        </p>
-        <p>
-          Copyright 2020 Allen B. Downey
-        </p>
-        <p>
-          License: <url href="https://creativecommons.org/licenses/by-nc-sa/4.0/">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)</url>
-        </p>
+
       </statement>
     </exercise>
   </exercises>
