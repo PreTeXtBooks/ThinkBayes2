@@ -1255,7 +1255,7 @@
     </p>
     <ul>
       <li>The average height for men is 178 cm; the average height for women is 163 cm. So men are taller on average; no surprise there.</li>
-      <li>For men the standard deviation is 27 cm; for women it is 75 cm. So in absolute terms, men's heights are more variable.</li>
+      <li>For men the standard deviation is 8.27 cm; for women it is 7.75 cm. So in absolute terms, men's heights are more variable.</li>
     </ul>
     <p>
       But to compare variability between groups, it is more meaningful to use the <url href="https://en.wikipedia.org/wiki/Coefficient_of_variation">coefficient of variation</url> (CV), which is the standard deviation divided by the mean. It is a dimensionless measure of variability relative to scale. 
