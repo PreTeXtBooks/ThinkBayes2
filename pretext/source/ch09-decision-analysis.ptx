@@ -69,7 +69,7 @@
 
     <p>
       This problem is inspired by an example in Cameron Davidson-Pilon's
-      book, <em>Probablistic Programming and Bayesian Methods for Hackers</em>
+      book, <em>Probabilistic Programming and Bayesian Methods for Hackers</em>
       (see <url href="http://camdavidsonpilon.github.io/Probabilistic-Programming-and-Bayesian-Methods-for-Hackers">http://camdavidsonpilon.github.io/Probabilistic-Programming-and-Bayesian-Methods-for-Hackers</url>).
     </p>
   </section>
@@ -423,7 +423,7 @@ def compute_prob_win(diff, sample_diff):
     # if the opponent overbids, you win
     p1 = prob_overbid(sample_diff)
 
-    # or of their bid is worse than yours, you win
+    # or if their bid is worse than yours, you win
     p2 = prob_worse_than(diff, sample_diff)
     return p1 + p2
       </input>
@@ -687,8 +687,8 @@ expected_gain_series = pd.Series(gains, index=bids)
     <title>Exercises</title>
 
     <p>
-      The code for this chapter is in <c>chap08.ipynb</c>, which is in the repository for this book.  See Section 0.3 for details.
-      You can run the notebook on Colab at <url href="https://colab.research.google.com/github/AllenDowney/ThinkBayes2/blob/master/code/chap08.ipynb">https://colab.research.google.com/github/AllenDowney/ThinkBayes2/blob/master/code/chap08.ipynb</url>.
+      The code for this chapter is in <c>chap09.ipynb</c>, which is in the repository for this book.  See Section 0.3 for details.
+      You can run the notebook on Colab at <url href="https://colab.research.google.com/github/AllenDowney/ThinkBayes2/blob/master/code/chap09.ipynb">https://colab.research.google.com/github/AllenDowney/ThinkBayes2/blob/master/code/chap09.ipynb</url>.
     </p>
 
     <p>
@@ -754,7 +754,7 @@ expected_gain_series = pd.Series(gains, index=bids)
         <ul>
           <li><p>The total cost is $300.</p></li>
 
-          <li><p>You sell all 80 books, so you make $600.</p></li>
+          <li><p>You sell 60 books, so you make $600.</p></li>
 
           <li><p>But the book is out of stock for two weeks, so you lose $100 in future sales.</p></li>
         </ul>
