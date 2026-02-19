@@ -5,10 +5,1544 @@
 
   <introduction>
     <p>
-      This chapter explores Bayesian methods for linear and nonlinear regression.
+      You can order print and ebook versions of <em>Think Bayes 2e</em> from <url href="https://bookshop.org/a/98697/9781492089469">Bookshop.org</url> and <url href="https://amzn.to/334eqGo">Amazon</url>.
+    </p>
+    <program language="python">
+      <input>
+# install empiricaldist if necessary
+
+try:
+    import empiricaldist
+except ImportError:
+    !pip install empiricaldist
+    import empiricaldist
+      </input>
+    </program>
+    <program language="python">
+      <input>
+# Get utils.py
+
+from os.path import basename, exists
+
+def download(url):
+    filename = basename(url)
+    if not exists(filename):
+        from urllib.request import urlretrieve
+        local, _ = urlretrieve(url, filename)
+        print('Downloaded ' + local)
+    
+download('https://github.com/AllenDowney/ThinkBayes2/raw/master/soln/utils.py')
+      </input>
+    </program>
+    <program language="python">
+      <input>
+from utils import set_pyplot_params
+set_pyplot_params()
+      </input>
+    </program>
+    <p>
+      In the previous chapter we saw several examples of logistic regression, which is based on the assumption that the likelihood of an outcome, expressed in the form of log odds, is a linear function of some quantity (continuous or discrete).
+    </p>
+    <p>
+      In this chapter we'll work on examples of simple linear regression, which models the relationship between two quantities.  Specifically, we'll look at changes over time in snowfall and the marathon world record.
+    </p>
+    <p>
+      The models we'll use have three parameters, so you might want to review the tools we used for the three-parameter model in &lt;&lt;_MarkandRecapture&gt;&gt;.
     </p>
   </introduction>
 
-  <!-- Sections will be added here -->
+  <section xml:id="sec-more-snow">
+    <title>More Snow?</title>
+
+    <p>
+      I am under the impression that we don't get as much snow around here as we used to.  By "around here" I mean Norfolk County, Massachusetts, where I was born, grew up, and currently live.  And by "used to" I mean compared to when I was young, like in 1978 when we got <url href="https://en.wikipedia.org/wiki/Northeastern_United_States_blizzard_of_1978">27 inches of snow</url> and I didn't have to go to school for a couple of weeks.
+    </p>
+    <p>
+      Fortunately, we can test my conjecture with data.  Norfolk County happens to be the location of the <url href="https://en.wikipedia.org/wiki/Blue_Hill_Meteorological_Observatory">Blue Hill Meteorological Observatory</url>, which keeps the oldest continuous weather record in North America.
+    </p>
+    <p>
+      Data from this and many other weather stations is available from the <url href="https://www.ncdc.noaa.gov/cdo-web/search">National Oceanic and Atmospheric Administration</url> (NOAA).  I collected data from the Blue Hill Observatory from May 11, 1967 to May 11, 2020.
+    </p>
+
+    <p>
+      The following cell downloads the data as a CSV file.
+    </p>
+
+    <program language="python">
+      <input>
+download('https://github.com/AllenDowney/ThinkBayes2/raw/master/data/2239075.csv')
+      </input>
+    </program>
+
+    <p>
+      We can use Pandas to read the data into <c>DataFrame</c>:
+    </p>
+
+    <program language="python">
+      <input>
+import pandas as pd
+
+df = pd.read_csv('2239075.csv', parse_dates=[2])
+      </input>
+    </program>
+
+    <p>
+      Here's what the last few rows look like.
+    </p>
+
+    <program language="python">
+      <input>
+df.tail(3)
+      </input>
+    </program>
+
+    <p>
+      The columns we'll use are:
+    </p>
+    <ul>
+      <li><c>DATE</c>, which is the date of each observation,</li>
+      <li><c>SNOW</c>, which is the total snowfall in inches.</li>
+    </ul>
+    <p>
+      I'll add a column that contains just the year part of the dates.
+    </p>
+
+    <program language="python">
+      <input>
+df['YEAR'] = df['DATE'].dt.year
+      </input>
+    </program>
+
+    <p>
+      And use <c>groupby</c> to add up the total snowfall in each year.
+    </p>
+
+    <program language="python">
+      <input>
+snow = df.groupby('YEAR')['SNOW'].sum()
+      </input>
+    </program>
+
+    <p>
+      The first and last years are not complete, so I'll drop them.
+    </p>
+
+    <program language="python">
+      <input>
+snow = snow.iloc[1:-1]
+len(snow)
+      </input>
+    </program>
+
+    <p>
+      The following figure shows total snowfall during each of the complete years in my lifetime.
+    </p>
+
+    <program language="python">
+      <input>
+from utils import decorate
+
+snow.plot(ls='', marker='o', alpha=0.5)
+
+decorate(xlabel='Year',
+         ylabel='Total annual snowfall (inches)',
+         title='Total annual snowfall in Norfolk County, MA')
+      </input>
+    </program>
+
+    <p>
+      Looking at this plot, it's hard to say whether snowfall is increasing, decreasing, or unchanged.  In the last decade, we've had several years with more snow than 1978, including 2015, which was the snowiest winter in the Boston area in modern history, with a total of 141 inches.
+    </p>
+    <p>
+      This kind of question -- looking at noisy data and wondering whether it is going up or down -- is precisely the question we can answer with Bayesian regression.
+    </p>
+
+    <program language="python">
+      <input>
+snow.loc[[1978, 1996, 2015]]
+      </input>
+    </program>
+
+  </section>
+
+  <section xml:id="sec-regression-model">
+    <title>Regression Model</title>
+
+    <p>
+      The foundation of regression (Bayesian or not) is the assumption that a time series like this is the sum of two parts:
+    </p>
+    <ol>
+      <li>A linear function of time, and</li>
+      <li>A series of random values drawn from a distribution that is not changing over time.</li>
+    </ol>
+    <p>
+      Mathematically, the regression model is
+    </p>
+    <p>
+      $$y = a x + b + \epsilon$$
+    </p>
+    <p>
+      where $y$ is the series of measurements (snowfall in this example), $x$ is the series of times (years) and $\epsilon$ is the series of random values.
+    </p>
+    <p>
+      $a$ and $b$ are the slope and intercept of the line through the data.  They are unknown parameters, so we will use the data to estimate them.
+    </p>
+    <p>
+      We don't know the distribution of $\epsilon$, so we'll make the additional assumption that it is a normal distribution with mean 0 and unknown standard deviation, $\sigma$. To see whether this assumption is reasonable, I'll plot the distribution of total snowfall and a normal model with the same mean and standard deviation.
+    </p>
+    <p>
+      Here's a <c>Pmf</c> object that represents the distribution of snowfall.
+    </p>
+
+    <program language="python">
+      <input>
+from empiricaldist import Pmf
+
+pmf_snowfall = Pmf.from_seq(snow)
+      </input>
+    </program>
+
+    <p>
+      And here are the mean and standard deviation of the data.
+    </p>
+
+    <program language="python">
+      <input>
+mean, std = pmf_snowfall.mean(), pmf_snowfall.std()
+mean, std
+      </input>
+    </program>
+
+    <p>
+      I'll use the <c>norm</c> object from SciPy to compute the CDF of a normal distribution with the same mean and standard deviation.
+    </p>
+
+    <program language="python">
+      <input>
+from scipy.stats import norm
+
+dist = norm(mean, std)
+qs = pmf_snowfall.qs
+ps = dist.cdf(qs)
+      </input>
+    </program>
+
+    <p>
+      Here's what the distribution of the data looks like compared to the normal model.
+    </p>
+
+    <program language="python">
+      <input>
+import matplotlib.pyplot as plt
+
+plt.plot(qs, ps, color='C5', label='model')
+pmf_snowfall.make_cdf().plot(label='data')
+
+decorate(xlabel='Total snowfall (inches)',
+         ylabel='CDF',
+         title='Normal model of variation in snowfall')
+      </input>
+    </program>
+
+    <p>
+      We've had more winters below the mean than expected, but overall this looks like a reasonable model.
+    </p>
+
+  </section>
+
+  <section xml:id="sec-least-squares-regression">
+    <title>Least Squares Regression</title>
+
+    <p>
+      Our regression model has three parameters: slope, intercept, and standard deviation of $\epsilon$. Before we can estimate them, we have to choose priors. To help with that, I'll use StatsModel to fit a line to the data by <url href="https://en.wikipedia.org/wiki/Least_squares">least squares regression</url>.
+    </p>
+    <p>
+      First, I'll use <c>reset_index</c> to convert <c>snow</c>, which is a <c>Series</c>, to a <c>DataFrame</c>.
+    </p>
+
+    <program language="python">
+      <input>
+data = snow.reset_index()
+data.head(3)
+      </input>
+    </program>
+
+    <p>
+      The result is a <c>DataFrame</c> with two columns, <c>YEAR</c> and <c>SNOW</c>, in a format we can use with StatsModels.
+    </p>
+    <p>
+      As we did in the previous chapter, I'll center the data by subtracting off the mean.
+    </p>
+
+    <program language="python">
+      <input>
+offset = round(data['YEAR'].mean())
+data['x'] = data['YEAR'] - offset
+offset
+      </input>
+    </program>
+
+    <p>
+      And I'll add a column to <c>data</c> so the dependent variable has a standard name.
+    </p>
+
+    <program language="python">
+      <input>
+data['y'] = data['SNOW']
+      </input>
+    </program>
+
+    <p>
+      Now, we can use StatsModels to compute the least squares fit to the data and estimate <c>slope</c> and <c>intercept</c>.
+    </p>
+
+    <program language="python">
+      <input>
+import statsmodels.formula.api as smf
+
+formula = 'y ~ x'
+results = smf.ols(formula, data=data).fit()
+results.params
+      </input>
+    </program>
+
+    <p>
+      The intercept, about 64 inches, is the expected snowfall when <c>x=0</c>, which is the beginning of 1994. The estimated slope indicates that total snowfall is increasing at a rate of about 0.5 inches per year.
+    </p>
+    <p>
+      <c>results</c> also provides <c>resid</c>, which is an array of residuals, that is, the differences between the data and the fitted line. The standard deviation of the residuals is an estimate of <c>sigma</c>.
+    </p>
+
+    <program language="python">
+      <input>
+results.resid.std()
+      </input>
+    </program>
+
+    <p>
+      We'll use these estimates to choose prior distributions for the parameters.
+    </p>
+
+  </section>
+
+  <section xml:id="sec-ch17-priors">
+    <title>Priors</title>
+
+    <p>
+      I'll use uniform distributions for all three parameters.
+    </p>
+
+    <program language="python">
+      <input>
+import numpy as np
+from utils import make_uniform
+
+qs = np.linspace(-0.5, 1.5, 51)
+prior_slope = make_uniform(qs, 'Slope')
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+qs = np.linspace(54, 75, 41)
+prior_inter = make_uniform(qs, 'Intercept')
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+qs = np.linspace(20, 35, 31)
+prior_sigma = make_uniform(qs, 'Sigma')
+      </input>
+    </program>
+
+    <p>
+      I made the prior distributions different lengths for two reasons.  First, if we make a mistake and use the wrong distribution, it will be easier to catch the error if they are all different lengths.
+    </p>
+    <p>
+      Second, it provides more precision for the most important parameter, <c>slope</c>, and spends less computational effort on the least important, <c>sigma</c>.
+    </p>
+    <p>
+      In &lt;&lt;_ThreeParameterModel&gt;&gt; we made a joint distribution with three parameters.  I'll wrap that process in a function:
+    </p>
+
+    <program language="python">
+      <input>
+from utils import make_joint
+
+def make_joint3(pmf1, pmf2, pmf3):
+    &quot;&quot;&quot;Make a joint distribution with three parameters.&quot;&quot;&quot;
+    joint2 = make_joint(pmf2, pmf1).stack()
+    joint3 = make_joint(pmf3, joint2).stack()
+    return Pmf(joint3)
+      </input>
+    </program>
+
+    <p>
+      And use it to make a <c>Pmf</c> that represents the joint distribution of the three parameters.
+    </p>
+
+    <program language="python">
+      <input>
+prior = make_joint3(prior_slope, prior_inter, prior_sigma)
+prior.head(3)
+      </input>
+    </program>
+
+    <p>
+      The index of <c>Pmf</c> has three columns, containing values of <c>slope</c>, <c>inter</c>, and <c>sigma</c>, in that order.
+    </p>
+    <p>
+      With three parameters, the size of the joint distribution starts to get big.  Specifically, it is the product of the lengths of the prior distributions.  In this example, the prior distributions have 51, 41, and 31 values, so the length of the joint prior is 64,821.
+    </p>
+
+    <program language="python">
+      <input>
+len(prior_slope), len(prior_inter), len(prior_sigma)
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+len(prior_slope) * len(prior_inter) * len(prior_sigma)
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+len(prior)
+      </input>
+    </program>
+
+  </section>
+
+  <section xml:id="sec-ch17-likelihood">
+    <title>Likelihood</title>
+
+    <p>
+      Now we'll compute the likelihood of the data. To demonstrate the process, let's assume temporarily that the parameters are known.
+    </p>
+
+    <program language="python">
+      <input>
+inter = 64
+slope = 0.51
+sigma = 25
+      </input>
+    </program>
+
+    <p>
+      I'll extract the <c>xs</c> and <c>ys</c> from <c>data</c> as <c>Series</c> objects:
+    </p>
+
+    <program language="python">
+      <input>
+xs = data['x']
+ys = data['y']
+      </input>
+    </program>
+
+    <p>
+      And compute the "residuals", which are the differences between the actual values, <c>ys</c>, and the values we expect based on <c>slope</c> and <c>inter</c>.
+    </p>
+
+    <program language="python">
+      <input>
+expected = slope * xs + inter
+resid = ys - expected
+      </input>
+    </program>
+
+    <p>
+      According to the model, the residuals should follow a normal distribution with mean 0 and standard deviation <c>sigma</c>.  So we can compute the likelihood of each residual value using <c>norm</c> from SciPy.
+    </p>
+
+    <program language="python">
+      <input>
+densities = norm(0, sigma).pdf(resid)
+      </input>
+    </program>
+
+    <p>
+      The result is an array of probability densities, one for each element of the dataset; their product is the likelihood of the data.
+    </p>
+
+    <program language="python">
+      <input>
+likelihood = densities.prod()
+likelihood
+      </input>
+    </program>
+
+    <p>
+      As we saw in the previous chapter, the likelihood of any particular dataset tends to be small. If it's too small, we might exceed the limits of floating-point arithmetic. When that happens, we can avoid the problem by computing likelihoods under a log transform. But in this example that's not necessary.
+    </p>
+
+  </section>
+
+  <section xml:id="sec-ch17-the-update">
+    <title>The Update</title>
+
+    <p>
+      Now we're ready to do the update.  First, we need to compute the likelihood of the data for each possible set of parameters.
+    </p>
+
+    <program language="python">
+      <input>
+likelihood = prior.copy()
+
+for slope, inter, sigma in prior.index:
+    expected = slope * xs + inter
+    resid = ys - expected
+    densities = norm.pdf(resid, 0, sigma)
+    likelihood[slope, inter, sigma] = densities.prod()
+      </input>
+    </program>
+
+    <p>
+      This computation takes longer than many of the previous examples. We are approaching the limit of what we can do with grid approximations.
+    </p>
+    <p>
+      Nevertheless, we can do the update in the usual way:
+    </p>
+
+    <program language="python">
+      <input>
+posterior = prior * likelihood
+posterior.normalize()
+      </input>
+    </program>
+
+    <p>
+      The result is a <c>Pmf</c> with a three-level index containing values of <c>slope</c>, <c>inter</c>, and <c>sigma</c>. To get the marginal distributions from the joint posterior, we can use <c>Pmf.marginal</c>, which we saw in &lt;&lt;_ThreeParameterModel&gt;&gt;.
+    </p>
+
+    <program language="python">
+      <input>
+posterior_slope = posterior.marginal(0)
+posterior_inter = posterior.marginal(1)
+posterior_sigma = posterior.marginal(2)
+      </input>
+    </program>
+
+    <p>
+      Here's the posterior distribution for <c>sigma</c>:
+    </p>
+
+    <program language="python">
+      <input>
+posterior_sigma.plot()
+
+decorate(xlabel='$\sigma$, standard deviation of $\epsilon$',
+         ylabel='PDF',
+         title='Posterior marginal distribution of $\sigma$')
+      </input>
+    </program>
+
+    <p>
+      The most likely values for <c>sigma</c> are near 26 inches, which is consistent with our estimate based on the standard deviation of the data.
+    </p>
+    <p>
+      However, to say whether snowfall is increasing or decreasing, we don't really care about <c>sigma</c>.  It is a "nuisance parameter", so-called because we have to estimate it as part of the model, but we don't need it to answer the questions we are interested in.
+    </p>
+    <p>
+      Nevertheless, it is good to check the marginal distributions to make sure
+    </p>
+    <ul>
+      <li>The location is consistent with our expectations, and</li>
+      <li>The posterior probabilities are near 0 at the extremes of the range, which indicates that the prior distribution covers all parameters with non-negligible probability.</li>
+    </ul>
+    <p>
+      In this example, the posterior distribution of <c>sigma</c> looks fine.
+    </p>
+
+    <p>
+      Here's the posterior distribution of <c>inter</c>:
+    </p>
+
+    <program language="python">
+      <input>
+posterior_inter.plot(color='C1')
+decorate(xlabel='intercept (inches)',
+         ylabel='PDF',
+         title='Posterior marginal distribution of intercept')
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+from utils import summarize
+    
+summarize(posterior_inter) 
+      </input>
+    </program>
+
+    <p>
+      The posterior mean is about 64 inches, which is the expected amount of snow during the year at the midpoint of the range, 1994.
+    </p>
+    <p>
+      And finally, here's the posterior distribution of <c>slope</c>:
+    </p>
+
+    <program language="python">
+      <input>
+posterior_slope.plot(color='C4')
+decorate(xlabel='Slope (inches per year)',
+         ylabel='PDF',
+         title='Posterior marginal distribution of slope')
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+summarize(posterior_slope)
+      </input>
+    </program>
+
+    <p>
+      The posterior mean is about 0.51 inches, which is consistent with the estimate we got from least squared regression.
+    </p>
+    <p>
+      The 90% credible interval is from 0.1 to 0.9, which indicates that our uncertainty about this estimate is pretty high.  In fact, there is still a small posterior probability (about 2%) that the slope is negative.
+    </p>
+
+    <program language="python">
+      <input>
+posterior_slope.make_cdf()(0)
+      </input>
+    </program>
+
+    <p>
+      However, it is more likely that my conjecture was wrong: we are actually getting more snow around here than we used to, increasing at a rate of about a half-inch per year, which is substantial.  On average, we get an additional 25 inches of snow per year than we did when I was young.
+    </p>
+    <p>
+      This example shows that with slow-moving trends and noisy data, your instincts can be misleading.
+    </p>
+    <p>
+      Now, you might suspect that I overestimate the amount of snow when I was young because I enjoyed it, and underestimate it now because I don't.  But you would be mistaken.
+    </p>
+    <p>
+      During the Blizzard of 1978, we did not have a snowblower and my brother and I had to shovel.  My sister got a pass for no good reason.  Our driveway was about 60 feet long and three cars wide near the garage.  And we had to shovel Mr. Crocker's driveway, too, for which we were not allowed to accept payment.  Furthermore, as I recall it was during this excavation that I accidentally hit my brother with a shovel on the head, and it bled a lot because, you know, scalp wounds.
+    </p>
+    <p>
+      Anyway, the point is that I don't think I overestimate the amount of snow when I was young because I have fond memories of it.
+    </p>
+
+  </section>
+
+  <section xml:id="sec-optimization">
+    <title>Optimization</title>
+
+    <p>
+      The way we computed the likelihood in the previous section was pretty slow.  The problem is that we looped through every possible set of parameters in the prior distribution, and there were more than 60,000 of them.
+    </p>
+    <p>
+      If we can do more work per iteration, and run the loop fewer times, we expect it to go faster.
+    </p>
+    <p>
+      In order to do that, I'll unstack the prior distribution:
+    </p>
+
+    <program language="python">
+      <input>
+joint3 = prior.unstack()
+joint3.head(3)
+      </input>
+    </program>
+
+    <p>
+      The result is a <c>DataFrame</c> with <c>slope</c> and <c>intercept</c> down the rows and <c>sigmas</c> across the columns.
+    </p>
+    <p>
+      The following is a version of <c>likelihood_regression</c> that takes the joint prior distribution in this form and returns the posterior distribution in the same form.
+    </p>
+
+    <program language="python">
+      <input>
+from utils import normalize
+
+def update_optimized(prior, data):
+    &quot;&quot;&quot;Posterior distribution of regression parameters
+    `slope`, `inter`, and `sigma`.
+    
+    prior: Pmf representing the joint prior
+    data: DataFrame with columns `x` and `y`
+    
+    returns: Pmf representing the joint posterior
+    &quot;&quot;&quot;
+    xs = data['x']
+    ys = data['y']
+    sigmas = prior.columns    
+    likelihood = prior.copy()
+
+    for slope, inter in prior.index:
+        expected = slope * xs + inter
+        resid = ys - expected
+        resid_mesh, sigma_mesh = np.meshgrid(resid, sigmas)
+        densities = norm.pdf(resid_mesh, 0, sigma_mesh)
+        likelihood.loc[slope, inter] = densities.prod(axis=1)
+        
+    posterior = prior * likelihood
+    normalize(posterior)
+    return posterior
+      </input>
+    </program>
+
+    <p>
+      This version loops through all possible pairs of <c>slope</c> and <c>inter</c>, so the loop runs about 2000 times.
+    </p>
+
+    <program language="python">
+      <input>
+len(prior_slope) * len(prior_inter)
+      </input>
+    </program>
+
+    <p>
+      Each time through the loop, it uses a grid mesh to compute the likelihood of the data for all values of <c>sigma</c>.  The result is an array with one column for each data point and one row for each value of <c>sigma</c>.  Taking the product across the columns (<c>axis=1</c>) yields the probability of the data for each value of sigma, which we assign as a row in <c>likelihood</c>.
+    </p>
+
+    <program language="python">
+      <input>
+%time posterior_opt = update_optimized(joint3, data)
+      </input>
+    </program>
+
+    <p>
+      We get the same result either way.
+    </p>
+
+    <program language="python">
+      <input>
+np.allclose(posterior, posterior_opt.stack())
+      </input>
+    </program>
+
+    <p>
+      But this version is about 25 times faster than the previous version.
+    </p>
+    <p>
+      This optimization works because many functions in NumPy and SciPy are written in C, so they run fast compared to Python.  If you can do more work each time you call these functions, and less time running the loop in Python, your code will often run substantially faster.
+    </p>
+    <p>
+      In this version of the posterior distribution, <c>slope</c> and <c>inter</c> run down the rows and <c>sigma</c> runs across the columns.  So we can use <c>marginal</c> to get the posterior joint distribution of <c>slope</c> and <c>intercept</c>.
+    </p>
+
+    <program language="python">
+      <input>
+from utils import marginal
+
+posterior2 = marginal(posterior_opt, 1)
+posterior2.head(3)
+      </input>
+    </program>
+
+    <p>
+      The result is a <c>Pmf</c> with two columns in the index. To plot it, we have to unstack it.
+    </p>
+
+    <program language="python">
+      <input>
+joint_posterior = posterior2.unstack().transpose()
+joint_posterior.head(3)
+      </input>
+    </program>
+
+    <p>
+      Here's what it looks like.
+    </p>
+
+    <program language="python">
+      <input>
+from utils import plot_contour
+
+plot_contour(joint_posterior)
+decorate(title='Posterior joint distribution of slope and intercept')
+      </input>
+    </program>
+
+    <p>
+      The ovals in the contour plot are aligned with the axes, which indicates that there is no correlation between <c>slope</c> and <c>inter</c> in the posterior distribution, which is what we expect since we centered the values.
+    </p>
+    <p>
+      In this example, the motivating question is about the slope of the line, so we answered it by looking at the posterior distribution of slope.
+    </p>
+    <p>
+      In the next example, the motivating question is about prediction, so we'll use the joint posterior distribution to generate predictive distributions.
+    </p>
+
+  </section>
+
+  <section xml:id="sec-marathon-world-record">
+    <title>Marathon World Record</title>
+
+    <p>
+      For many running events, if you plot the world record pace over time, the result is a remarkably straight line.  People, <url href="http://allendowney.blogspot.com/2011/04/two-hour-marathon-in-2045.html">including me</url>, have speculated about possible reasons for this phenomenon.
+    </p>
+    <p>
+      People have also speculated about when, if ever, the world record time for the marathon will be less than two hours. (Note: In 2019 Eliud Kipchoge ran the marathon distance in under two hours, which is an astonishing achievement that I fully appreciate, but for several reasons it did not count as a world record).
+    </p>
+    <p>
+      So, as a second example of Bayesian regression, we'll consider the world record progression for the marathon (for male runners), estimate the parameters of a linear model, and use the model to predict when a runner will break the two-hour barrier.
+    </p>
+
+    <p>
+      The following cell downloads a web page from Wikipedia that includes a table of marathon world records, and uses Pandas to put the data in a <c>DataFrame</c>.
+    </p>
+
+    <program language="python">
+      <input>
+url = &quot;https://github.com/AllenDowney/ThinkBayes2/raw/master/data/Marathon_world_record_progression.html&quot;
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+tables = pd.read_html(url)
+len(tables)
+      </input>
+    </program>
+
+    <p>
+      The first table is the one we want.
+    </p>
+
+    <program language="python">
+      <input>
+table = tables[0]
+table.tail(3)
+      </input>
+    </program>
+
+    <p>
+      We can use Pandas to parse the dates. A few of them include notes that cause parsing problems, but the argument <c>errors='coerce'</c> tells Pandas to fill invalid dates with <c>NaT</c>, which is a version of <c>NaN</c> that represents "not a time".
+    </p>
+
+    <program language="python">
+      <input>
+table['date'] = pd.to_datetime(table['Date'], errors='coerce')
+table['date'].head()
+      </input>
+    </program>
+
+    <p>
+      We can also use Pandas to parse the record times.
+    </p>
+
+    <program language="python">
+      <input>
+table['time'] = pd.to_timedelta(table['Time'])
+      </input>
+    </program>
+
+    <p>
+      And convert the times to paces in miles per hour.
+    </p>
+
+    <program language="python">
+      <input>
+table['y'] = 26.2 / table['time'].dt.total_seconds() * 3600
+table['y'].head()
+      </input>
+    </program>
+
+    <p>
+      The following function plots the results.
+    </p>
+
+    <program language="python">
+      <input>
+def plot_speeds(df):
+    &quot;&quot;&quot;Plot marathon world record speed as a function of time.
+    
+    df: DataFrame with date and mph
+    &quot;&quot;&quot;
+    plt.axhline(13.1, color='C5', ls='--')
+    plt.plot(df['date'], df['y'], 'o', 
+             label='World record speed', 
+             color='C1', alpha=0.5)
+    
+    decorate(xlabel='Date',
+             ylabel='Speed (mph)')
+      </input>
+    </program>
+
+    <p>
+      Here's what the results look like. The dashed line shows the speed required for a two-hour marathon, 13.1 miles per hour.
+    </p>
+
+    <program language="python">
+      <input>
+plot_speeds(table)
+      </input>
+    </program>
+
+    <p>
+      It's not a perfectly straight line.  In the early years of the marathon, the record speed increased quickly; since about 1970, it has been increasing more slowly.
+    </p>
+    <p>
+      For our analysis, let's focus on the recent progression, starting in 1970.
+    </p>
+
+    <program language="python">
+      <input>
+recent = table['date'] > pd.to_datetime('1970')
+data = table.loc[recent].copy()
+data.head()
+      </input>
+    </program>
+
+    <p>
+      In the notebook for this chapter, you can see how I loaded and cleaned the data.  The result is a <c>DataFrame</c> that contains the following columns (and additional information we won't use):
+    </p>
+    <ul>
+      <li><c>date</c>, which is a Pandas <c>Timestamp</c> representing the date when the world record was broken, and</li>
+      <li><c>speed</c>, which records the record-breaking pace in mph.</li>
+    </ul>
+    <p>
+      Here's what the results look like, starting in 1970:
+    </p>
+
+    <program language="python">
+      <input>
+plot_speeds(data)
+      </input>
+    </program>
+
+    <p>
+      The data points fall approximately on a line, although it's possible that the slope is increasing.
+    </p>
+    <p>
+      To prepare the data for regression, I'll subtract away the approximate midpoint of the time interval, 1995.
+    </p>
+
+    <program language="python">
+      <input>
+offset = pd.to_datetime('1995')
+timedelta = table['date'] - offset
+      </input>
+    </program>
+
+    <p>
+      When we subtract two <c>Timestamp</c> objects, the result is a "time delta", which we can convert to seconds and then to years.
+    </p>
+
+    <program language="python">
+      <input>
+data['x'] = timedelta.dt.total_seconds() / 3600 / 24 / 365.24
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+data['x'].describe()
+      </input>
+    </program>
+
+    <p>
+      As in the previous example, I'll use least squares regression to compute point estimates for the parameters, which will help with choosing priors.
+    </p>
+
+    <program language="python">
+      <input>
+import statsmodels.formula.api as smf
+
+formula = 'y ~ x'
+results = smf.ols(formula, data=data).fit()
+results.params
+      </input>
+    </program>
+
+    <p>
+      The estimated intercept is about 12.5 mph, which is the interpolated world record pace for 1995.  The estimated slope is about 0.015 mph per year, which is the rate the world record pace is increasing, according to the model.
+    </p>
+    <p>
+      Again, we can use the standard deviation of the residuals as a point estimate for <c>sigma</c>.
+    </p>
+
+    <program language="python">
+      <input>
+results.resid.std()
+      </input>
+    </program>
+
+    <p>
+      These parameters give us a good idea where we should put the prior distributions.
+    </p>
+
+  </section>
+
+  <section xml:id="sec-ch17-the-priors">
+    <title>The Priors</title>
+
+    <p>
+      Here are the prior distributions I chose for <c>slope</c>, <c>intercept</c>, and <c>sigma</c>.
+    </p>
+
+    <program language="python">
+      <input>
+qs = np.linspace(0.012, 0.018, 51)
+prior_slope = make_uniform(qs, 'Slope')
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+qs = np.linspace(12.4, 12.5, 41)
+prior_inter = make_uniform(qs, 'Intercept')
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+qs = np.linspace(0.01, 0.21, 31)
+prior_sigma = make_uniform(qs, 'Sigma')
+      </input>
+    </program>
+
+    <p>
+      And here's the joint prior distribution.
+    </p>
+
+    <program language="python">
+      <input>
+prior = make_joint3(prior_slope, prior_inter, prior_sigma)
+prior.head()
+      </input>
+    </program>
+
+    <p>
+      Now we can compute likelihoods as in the previous example:
+    </p>
+
+    <program language="python">
+      <input>
+xs = data['x']
+ys = data['y']
+likelihood = prior.copy()
+
+for slope, inter, sigma in prior.index:
+    expected = slope * xs + inter
+    resid = ys - expected
+    densities = norm.pdf(resid, 0, sigma)
+    likelihood[slope, inter, sigma] = densities.prod()
+      </input>
+    </program>
+
+    <p>
+      Now we can do the update in the usual way.
+    </p>
+
+    <program language="python">
+      <input>
+posterior = prior * likelihood
+posterior.normalize()
+      </input>
+    </program>
+
+    <p>
+      And unpack the marginals:
+    </p>
+
+    <program language="python">
+      <input>
+posterior_slope = posterior.marginal(0)
+posterior_inter = posterior.marginal(1)
+posterior_sigma = posterior.marginal(2)
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+posterior_sigma.plot();
+      </input>
+    </program>
+
+    <p>
+      Here's the posterior distribution of <c>inter</c>:
+    </p>
+
+    <program language="python">
+      <input>
+posterior_inter.plot(color='C1')
+decorate(xlabel='intercept',
+         ylabel='PDF',
+         title='Posterior marginal distribution of intercept')
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+summarize(posterior_inter)
+      </input>
+    </program>
+
+    <p>
+      The posterior mean is about 12.5 mph, which is the world record marathon pace the model predicts for the midpoint of the date range, 1994.
+    </p>
+    <p>
+      And here's the posterior distribution of <c>slope</c>.
+    </p>
+
+    <program language="python">
+      <input>
+posterior_slope.plot(color='C4')
+decorate(xlabel='Slope',
+         ylabel='PDF',
+         title='Posterior marginal distribution of slope')
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+summarize(posterior_slope)
+      </input>
+    </program>
+
+    <p>
+      The posterior mean is about 0.015 mph per year, or 0.15 mph per decade.
+    </p>
+    <p>
+      That's interesting, but it doesn't answer the question we're interested in: When will there be a two-hour marathon? To answer that, we have to make predictions.
+    </p>
+
+  </section>
+
+  <section xml:id="sec-ch17-prediction">
+    <title>Prediction</title>
+
+    <p>
+      To generate predictions, I'll draw a sample from the posterior distribution of parameters, then use the regression equation to combine the parameters with the data.
+    </p>
+    <p>
+      <c>Pmf</c> provides <c>choice</c>, which we can use to draw a random sample with replacement, using the posterior probabilities as weights.
+    </p>
+
+    <program language="python">
+      <input>
+sample = posterior.choice(101)
+      </input>
+    </program>
+
+    <p>
+      The result is an array of tuples.  Looping through the sample, we can use the regression equation to generate predictions for a range of <c>xs</c>.
+    </p>
+
+    <program language="python">
+      <input>
+xs = np.arange(-25, 50, 2)
+pred = np.empty((len(sample), len(xs)))
+
+for i, (slope, inter, sigma) in enumerate(sample):
+    epsilon = norm(0, sigma).rvs(len(xs))
+    pred[i] = inter + slope * xs + epsilon
+      </input>
+    </program>
+
+    <p>
+      Each prediction is an array with the same length as <c>xs</c>, which I store as a row in <c>pred</c>.  So the result has one row for each sample and one column for each value of <c>x</c>.
+    </p>
+    <p>
+      We can use <c>percentile</c> to compute the 5th, 50th, and 95th percentiles in each column.
+    </p>
+
+    <program language="python">
+      <input>
+low, median, high = np.percentile(pred, [5, 50, 95], axis=0)
+      </input>
+    </program>
+
+    <p>
+      To show the results, I'll plot the median of the predictions as a line and the 90% credible interval as a shaded area.
+    </p>
+
+    <program language="python">
+      <input>
+times = pd.to_timedelta(xs*365.24, unit='days') + offset
+
+plt.fill_between(times, low, high, 
+                 color='C2', alpha=0.1)
+plt.plot(times, median, color='C2')
+
+plot_speeds(data)
+      </input>
+    </program>
+
+    <p>
+      The dashed line shows the two-hour marathon pace, which is 13.1 miles per hour. Visually we can estimate that the prediction line hits the target pace between 2030 and 2040.
+    </p>
+    <p>
+      To make this more precise, we can use interpolation to see when the predictions cross the finish line.  SciPy provides <c>interp1d</c>, which does linear interpolation by default.
+    </p>
+
+    <program language="python">
+      <input>
+from scipy.interpolate import interp1d
+
+future = np.array([interp1d(high, xs)(13.1),
+                   interp1d(median, xs)(13.1),
+                   interp1d(low, xs)(13.1)])
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+dts = pd.to_timedelta(future*365.24, unit='day') + offset
+pd.DataFrame(dict(datetime=dts),
+             index=['early', 'median', 'late'])
+      </input>
+    </program>
+
+    <p>
+      The median prediction is 2036, with a 90% credible interval from 2032 to 2043.  So there is about a 5% chance we'll see a two-hour marathon before 2032.
+    </p>
+
+  </section>
+
+  <section xml:id="sec-ch17-summary">
+    <title>Summary</title>
+
+    <p>
+      This chapter introduces Bayesian regression, which is based on the same model as least squares regression; the difference is that it produces a posterior distribution for the parameters rather than point estimates.
+    </p>
+    <p>
+      In the first example, we looked at changes in snowfall in Norfolk County, Massachusetts, and concluded that we get more snowfall now than when I was young, contrary to my expectation.
+    </p>
+    <p>
+      In the second example, we looked at the progression of world record pace for the men's marathon, computed the joint posterior distribution of the regression parameters, and used it to generate predictions for the next 20 years.
+    </p>
+    <p>
+      These examples have three parameters, so it takes a little longer to compute the likelihood of the data. With more than three parameters, it becomes impractical to use grid algorithms.
+    </p>
+    <p>
+      In the next few chapters, we'll explore other algorithms that reduce the amount of computation we need to do a Bayesian update, which makes it possible to use models with more parameters.
+    </p>
+    <p>
+      But first, you might want to work on these exercises.
+    </p>
+
+  </section>
+
+  <section xml:id="sec-ch17-exercises">
+    <title>Exercises</title>
+
+    <p>
+      <em>Exercise:</em> I am under the impression that it is warmer around here than it used to be.  In this exercise, you can put my conjecture to the test.
+    </p>
+    <p>
+      We'll use the same dataset we used to model snowfall; it also includes daily low and high temperatures in Norfolk County, Massachusetts during my lifetime.
+    </p>
+
+    <p>
+      Here's the data.
+    </p>
+
+    <program language="python">
+      <input>
+df = pd.read_csv('2239075.csv', parse_dates=[2])
+df.head(3)
+      </input>
+    </program>
+
+    <p>
+      Again, I'll create a column that contains the year part of the dates.
+    </p>
+
+    <program language="python">
+      <input>
+df['YEAR'] = df['DATE'].dt.year
+      </input>
+    </program>
+
+    <p>
+      This dataset includes <c>TMIN</c> and <c>TMAX</c>, which are the daily low and high temperatures in degrees F. I'll create a new column with the daily midpoint of the low and high temperatures.
+    </p>
+
+    <program language="python">
+      <input>
+df['TMID'] = (df['TMIN'] + df['TMAX']) / 2
+      </input>
+    </program>
+
+    <p>
+      Now we can group by year and compute the mean of these daily temperatures.
+    </p>
+
+    <program language="python">
+      <input>
+tmid = df.groupby('YEAR')['TMID'].mean()
+len(tmid)
+      </input>
+    </program>
+
+    <p>
+      Again, I'll drop the first and last years, which are incomplete.
+    </p>
+
+    <program language="python">
+      <input>
+complete = tmid.iloc[1:-1]
+len(complete)
+      </input>
+    </program>
+
+    <p>
+      Here's what the time series looks like.
+    </p>
+
+    <program language="python">
+      <input>
+complete.plot(ls='', marker='o', alpha=0.5)
+
+decorate(xlabel='Year',
+         ylabel='Annual average of daily temperature (deg F)')
+      </input>
+    </program>
+
+    <p>
+      As we did with the snow data, I'll convert the <c>Series</c> to a <c>DataFrame</c> to prepare it for regression.
+    </p>
+
+    <program language="python">
+      <input>
+data = complete.reset_index()
+data.head()
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+offset = round(data['YEAR'].mean())
+offset
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+data['x'] = data['YEAR'] - offset
+data['x'].mean()
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+data['y'] = data['TMID']
+data['y'].std()
+      </input>
+    </program>
+
+    <p>
+      Now we can use StatsModels to estimate the parameters.
+    </p>
+
+    <program language="python">
+      <input>
+import statsmodels.formula.api as smf
+
+formula = 'y ~ x'
+results = smf.ols(formula, data=data).fit()
+results.params
+      </input>
+    </program>
+
+    <p>
+      And compute the standard deviation of the parameters.
+    </p>
+
+    <program language="python">
+      <input>
+results.resid.std()
+      </input>
+    </program>
+
+    <p>
+      According to the least squares regression model, annual average temperature is increasing by about 0.044 degrees F per year.
+    </p>
+    <p>
+      To quantify the uncertainty of these parameters and generate predictions for the future, we can use Bayesian regression.
+    </p>
+
+    <ol>
+      <li>Use StatsModels to generate point estimates for the regression parameters.</li>
+      <li>Choose priors for <c>slope</c>, <c>intercept</c>, and <c>sigma</c> based on these estimates, and use <c>make_joint3</c> to make a joint prior distribution.</li>
+      <li>Compute the likelihood of the data and compute the posterior distribution of the parameters.</li>
+      <li>Extract the posterior distribution of <c>slope</c>.  How confident are we that temperature is increasing?</li>
+      <li>Draw a sample of parameters from the posterior distribution and use it to generate predictions up to 2067.</li>
+      <li>Plot the median of the predictions and a 90% credible interval along with the observed data.</li>
+    </ol>
+    <p>
+      Does the model fit the data well?  How much do we expect annual average temperatures to increase over my (expected) lifetime?
+    </p>
+
+    <program language="python">
+      <input>
+# Solution
+
+qs = np.linspace(0, 0.1, num=51)
+prior_slope = make_uniform(qs, 'Slope')
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+# Solution
+
+qs = np.linspace(48, 52, num=41)
+prior_inter = make_uniform(qs, 'Intercept')
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+# Solution
+
+qs = np.linspace(0.5, 2, num=31)
+prior_sigma = make_uniform(qs, 'Sigma')
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+# Solution
+
+prior = make_joint3(prior_slope, prior_inter, prior_sigma)
+prior.head()
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+# Solution
+
+xs = data['x']
+ys = data['y']
+likelihood = prior.copy()
+
+for slope, inter, sigma in prior.index:
+    expected = slope * xs + inter
+    resid = ys - expected
+    densities = norm.pdf(resid, 0, sigma)
+    likelihood[slope, inter, sigma] = densities.prod()
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+# Solution
+
+posterior = prior * likelihood
+posterior.normalize()
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+# Solution
+
+posterior_slope = posterior.marginal(0)
+posterior_inter = posterior.marginal(1)
+posterior_sigma = posterior.marginal(2)
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+# Solution
+
+posterior_inter.plot()
+decorate(xlabel='intercept (inches)',
+         ylabel='PDF',
+         title='Posterior marginal distribution of intercept')
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+# Solution
+
+posterior_inter.mean(), posterior_inter.credible_interval(0.9)
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+# Solution
+
+posterior_slope.plot()
+decorate(xlabel='Slope (inches per year)',
+         ylabel='PDF',
+         title='Posterior marginal distribution of slope')
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+# Solution
+
+posterior_slope.mean(), posterior_slope.credible_interval(0.9)
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+# Solution
+
+sample = posterior.choice(101)
+
+years = np.arange(1967, 2067, 2)
+xs = years - offset
+
+pred = np.empty((len(sample), len(xs)))
+for i, (slope, inter, sigma) in enumerate(sample):
+    pred[i] = inter + slope * xs + norm(0, sigma).rvs(len(xs))
+    
+pred.shape
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+# Solution
+
+low, median, high = np.percentile(pred, [5, 50, 95], axis=0)
+median.shape
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+# Solution
+
+plt.fill_between(years, low, high, alpha=0.1)
+plt.plot(years, median, color='C0')
+
+complete.plot(ls='', marker='o', alpha=0.5)
+
+decorate(xlabel='Year',
+         ylabel='Annual average of daily temperature (deg F)')
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+# Solution
+
+# median increase over my lifetime in degrees F
+
+median[-1] - median[0]
+      </input>
+    </program>
+
+    <p>
+      <em>Think Bayes</em>, Second Edition
+    </p>
+    <p>
+      Copyright 2020 Allen B. Downey
+    </p>
+    <p>
+      License: <url href="https://creativecommons.org/licenses/by-nc-sa/4.0/">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)</url>
+    </p>
+
+  </section>
 
 </chapter>
