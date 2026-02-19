@@ -227,7 +227,7 @@ df
       In most fields, there are many small companies, fewer medium-sized companies, and only one or two very large companies.
     </p>
     <p>
-      In fact, the distribution of company sizes tends to follow a power law, as Robert Axtell reports in <em>Science</em> (<url href="http://www.sciencemag.org/content/293/5536/1818.full.pdf"/>).
+      In fact, the distribution of company sizes tends to follow a power law, as Robert Axtell reports in <em>Science</em> (<url href="http://www.sciencemag.org/content/293/5536/1818.full.pdf">link to article</url>).
     </p>
     <p>
       This law suggests that if there are 1000 companies with fewer than 10 locomotives, there might be 100 companies with 100 locomotives, 10 companies with 1000, and possibly one company with 10,000 locomotives.
@@ -275,8 +275,9 @@ decorate(xlabel='Number of trains',
     <program language="python">
       <input>
 dataset = [60]
-update_train(uniform, dataset)
-update_train(power, dataset)
+for data in dataset:
+    update_train(uniform, data)
+    update_train(power, data)
       </input>
     </program>
     <p>
