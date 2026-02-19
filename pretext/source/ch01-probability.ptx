@@ -859,16 +859,7 @@ Rather than use the specific ages 25 and 35, let's define <c>young</c> and <c>ol
         </p>
       </statement>
   <solution>
-    <p>For these thresholds, I chose round numbers near the 20th and 80th percentiles.  Depending on your age, you may or may not agree with these definitions of &quot;young&quot; and &quot;old&quot;.</p>
-    <p>I'll define `conservative` as someone whose political views are &quot;Conservative&quot;, &quot;Slightly Conservative&quot;, or &quot;Extremely Conservative&quot;.</p>
-    <p>Use `prob` and `conditional` to compute the following probabilities.</p>
-    <p>* What is the probability that a randomly chosen respondent is a young liberal?</p>
-    <p>* What is the probability that a young person is liberal?</p>
-    <p>* What fraction of respondents are old conservatives?</p>
-    <p>* What fraction of conservatives are old?</p>
-    <p>For each statement, think about whether it is expressing a conjunction, a conditional probability, or both.</p>
-    <p>For the conditional probabilities, be careful about the order of the arguments.
-If your answer to the last question is greater than 30%, you have it backwards!</p>
+    <p>For the young liberal questions:</p>
     <program language="python">
       <input>
 prob(young &amp; liberal)
@@ -879,6 +870,7 @@ prob(young &amp; liberal)
 conditional(liberal, given=young)
       </input>
     </program>
+    <p>For the old conservative questions:</p>
     <program language="python">
       <input>
 prob(old &amp; conservative)
