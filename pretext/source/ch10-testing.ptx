@@ -766,6 +766,303 @@ summarize_counter(counter)
       <statement>
         <p>Details of this exercise are in the sections below.</p>
       </statement>
+    <solution>
+      <program language="python">
+        <input>
+def prob_correct(ability, difficulty):
+    """Probability of a correct response."""
+    a = 100
+    c = 0.25
+    x = (ability - difficulty) / a
+    p = c + (1-c) / (1 + np.exp(-x))
+    return p
+        </input>
+      </program>
+      <program language="python">
+        <input>
+abilities = np.linspace(100, 900)
+diff = 500
+ps = prob_correct(abilities, diff)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+plt.plot(abilities, ps)
+decorate(xlabel='Ability',
+         ylabel='Probability correct',
+         title='Probability of correct answer, difficulty=500',
+         ylim=[0, 1.05])
+        </input>
+      </program>
+      <program language="python">
+        <input>
+def play(ability, difficulty):
+    """Simulate a test-taker answering a question."""
+    p = prob_correct(ability, difficulty)
+    return np.random.random() &lt; p
+        </input>
+      </program>
+      <program language="python">
+        <input>
+prob_correct(600, 500)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+np.random.seed(18)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+num_questions = 51
+outcomes = [play(600, 500) for _ in range(num_questions)]
+np.mean(outcomes)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+from scipy.stats import norm
+
+mean = 500
+std = 300
+
+qs = np.linspace(0, 1000)
+ps = norm(mean, std).pdf(qs)
+
+prior = Pmf(ps, qs)
+prior.normalize()
+        </input>
+      </program>
+      <program language="python">
+        <input>
+prior.plot(label='std=300', color='C5')
+
+decorate(xlabel='Ability',
+         ylabel='PDF',
+         title='Prior distribution of ability',
+         ylim=[0, 0.032])
+        </input>
+      </program>
+      <program language="python">
+        <input>
+def update_ability(pmf, data):
+    """Update the distribution of ability."""
+    difficulty, outcome = data
+    
+    abilities = pmf.qs
+    ps = prob_correct(abilities, difficulty)
+    
+    if outcome:
+        pmf *= ps
+    else:
+        pmf *= 1 - ps
+        
+    pmf.normalize()
+        </input>
+      </program>
+      <program language="python">
+        <input>
+actual_600 = prior.copy()
+
+for outcome in outcomes:
+    data = (500, outcome)
+    update_ability(actual_600, data)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+actual_600.plot(color='C4')
+
+decorate(xlabel='Ability',
+         ylabel='PDF',
+         title='Posterior distribution of ability')
+        </input>
+      </program>
+      <program language="python">
+        <input>
+actual_600.mean()
+        </input>
+      </program>
+      <program language="python">
+        <input>
+def choose(i, belief):
+    """Choose the difficulty of the next question."""
+    return 500
+        </input>
+      </program>
+      <program language="python">
+        <input>
+def simulate_test(actual_ability):
+    """Simulate a person taking a test."""
+    belief = prior.copy()
+    trace = pd.DataFrame(columns=['difficulty', 'outcome'])
+
+    for i in range(num_questions):
+        difficulty = choose(i, belief)
+        outcome = play(actual_ability, difficulty)
+        data = (difficulty, outcome)
+        update_ability(belief, data)
+        trace.loc[i] = difficulty, outcome
+        
+    return belief, trace
+        </input>
+      </program>
+      <program language="python">
+        <input>
+belief, trace = simulate_test(600)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+trace['outcome'].sum()
+        </input>
+      </program>
+      <program language="python">
+        <input>
+belief.plot(color='C4', label='ability=600')
+
+decorate(xlabel='Ability',
+         ylabel='PDF',
+         title='Posterior distribution of ability')
+        </input>
+      </program>
+      <program language="python">
+        <input>
+belief.mean(), belief.std()
+        </input>
+      </program>
+      <program language="python">
+        <input>
+actual_abilities = np.linspace(200, 800)
+results = pd.DataFrame(columns=['ability', 'posterior_std'])
+series = pd.Series(index=actual_abilities, dtype=float, name='std')
+
+for actual_ability in actual_abilities:
+    belief, trace = simulate_test(actual_ability)
+    series[actual_ability] = belief.std()
+        </input>
+      </program>
+      <program language="python">
+        <input>
+from utils import plot_series_lowess
+
+plot_series_lowess(series, 'C1')
+
+decorate(xlabel='Actual ability',
+         ylabel='Standard deviation of posterior')
+        </input>
+      </program>
+      <program language="python">
+        <input>
+def sample_posterior(actual_ability, iters):
+    """Simulate multiple tests and compute posterior means.
+    
+    actual_ability: number
+    iters: number of simulated tests
+    
+    returns: array of scores
+    """
+    scores = []
+
+    for i in range(iters):
+        belief, trace = simulate_test(actual_ability)
+        score = belief.mean()
+        scores.append(score)
+        
+    return np.array(scores)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+sample_500 = sample_posterior(500, iters=100)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+sample_600 = sample_posterior(600, iters=100)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+sample_700 = sample_posterior(700, iters=100)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+sample_800 = sample_posterior(800, iters=100)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+from empiricaldist import Cdf
+
+cdf_500 = Cdf.from_seq(sample_500)
+cdf_600 = Cdf.from_seq(sample_600)
+cdf_700 = Cdf.from_seq(sample_700)
+cdf_800 = Cdf.from_seq(sample_800)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+cdf_500.plot(label='ability=500', color='C1',
+            linestyle='dashed')
+cdf_600.plot(label='ability=600', color='C3')
+cdf_700.plot(label='ability=700', color='C2',
+            linestyle='dashed')
+cdf_800.plot(label='ability=800', color='C0')
+
+decorate(xlabel='Test score',
+         ylabel='CDF',
+         title='Sampling distribution of test scores')
+        </input>
+      </program>
+      <program language="python">
+        <input>
+np.mean(sample_600 &gt; sample_500)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+np.mean(sample_700 &gt; sample_600)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+np.mean(sample_800 &gt; sample_700)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+num_questions = 51
+difficulties = np.linspace(200, 800, num_questions)
+
+def choose(i, belief):
+    """Choose the difficulty of the next question.
+    
+    i: index from [0..num_questions-1]
+    belief: Pmf representing current estimate of ability
+    
+    returns: difficulty
+    """
+    return difficulties[i]
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+def choose(i, belief):
+    """Choose the difficulty of the next question.
+    
+    i: index from [0..num_questions-1]
+    belief: Pmf representing current estimate of ability
+    
+    returns: difficulty
+    """
+    return belief.mean()
+        </input>
+      </program>
+    </solution>
     </exercise>
 
     <exercise xml:id="ex-ch10-2">

@@ -1215,6 +1215,209 @@ results.resid.std()
           Does the model fit the data well?  How much do we expect annual average temperatures to increase over my (expected) lifetime?
         </p>
       </statement>
+    <solution>
+      <program language="python">
+        <input>
+df = pd.read_csv('2239075.csv', parse_dates=[2])
+df.head(3)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+df['YEAR'] = df['DATE'].dt.year
+        </input>
+      </program>
+      <program language="python">
+        <input>
+df['TMID'] = (df['TMIN'] + df['TMAX']) / 2
+        </input>
+      </program>
+      <program language="python">
+        <input>
+tmid = df.groupby('YEAR')['TMID'].mean()
+len(tmid)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+complete = tmid.iloc[1:-1]
+len(complete)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+complete.plot(ls='', marker='o', alpha=0.5)
+
+decorate(xlabel='Year',
+         ylabel='Annual average of daily temperature (deg F)')
+        </input>
+      </program>
+      <program language="python">
+        <input>
+data = complete.reset_index()
+data.head()
+        </input>
+      </program>
+      <program language="python">
+        <input>
+offset = round(data['YEAR'].mean())
+offset
+        </input>
+      </program>
+      <program language="python">
+        <input>
+data['x'] = data['YEAR'] - offset
+data['x'].mean()
+        </input>
+      </program>
+      <program language="python">
+        <input>
+data['y'] = data['TMID']
+data['y'].std()
+        </input>
+      </program>
+      <program language="python">
+        <input>
+import statsmodels.formula.api as smf
+
+formula = 'y ~ x'
+results = smf.ols(formula, data=data).fit()
+results.params
+        </input>
+      </program>
+      <program language="python">
+        <input>
+results.resid.std()
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+qs = np.linspace(0, 0.1, num=51)
+prior_slope = make_uniform(qs, 'Slope')
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+qs = np.linspace(48, 52, num=41)
+prior_inter = make_uniform(qs, 'Intercept')
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+qs = np.linspace(0.5, 2, num=31)
+prior_sigma = make_uniform(qs, 'Sigma')
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+prior = make_joint3(prior_slope, prior_inter, prior_sigma)
+prior.head()
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+xs = data['x']
+ys = data['y']
+likelihood = prior.copy()
+
+for slope, inter, sigma in prior.index:
+    expected = slope * xs + inter
+    resid = ys - expected
+    densities = norm.pdf(resid, 0, sigma)
+    likelihood[slope, inter, sigma] = densities.prod()
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+posterior = prior * likelihood
+posterior.normalize()
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+posterior_slope = posterior.marginal(0)
+posterior_inter = posterior.marginal(1)
+posterior_sigma = posterior.marginal(2)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+posterior_inter.plot()
+decorate(xlabel='intercept (inches)',
+         ylabel='PDF',
+         title='Posterior marginal distribution of intercept')
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+posterior_inter.mean(), posterior_inter.credible_interval(0.9)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+posterior_slope.plot()
+decorate(xlabel='Slope (inches per year)',
+         ylabel='PDF',
+         title='Posterior marginal distribution of slope')
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+posterior_slope.mean(), posterior_slope.credible_interval(0.9)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+sample = posterior.choice(101)
+
+years = np.arange(1967, 2067, 2)
+xs = years - offset
+
+pred = np.empty((len(sample), len(xs)))
+for i, (slope, inter, sigma) in enumerate(sample):
+    pred[i] = inter + slope * xs + norm(0, sigma).rvs(len(xs))
+    
+pred.shape
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+low, median, high = np.percentile(pred, [5, 50, 95], axis=0)
+median.shape
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+plt.fill_between(years, low, high, alpha=0.1)
+plt.plot(years, median, color='C0')
+
+complete.plot(ls='', marker='o', alpha=0.5)
+
+decorate(xlabel='Year',
+         ylabel='Annual average of daily temperature (deg F)')
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+median[-1] - median[0]
+        </input>
+      </program>
+    </solution>
     </exercise>
 
     <program language="python">

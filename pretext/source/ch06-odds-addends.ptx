@@ -791,6 +791,26 @@ The question contains two pieces of information we can use to update this prior.
         </input>
       </program>
       </statement>
+    <solution>
+      <program language="python">
+        <input>
+
+prior_odds = odds(1/3)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+post_odds = prior_odds * 2 * 1.25
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+prob(post_odds)
+        </input>
+      </program>
+    </solution>
     </exercise>
 
     <exercise xml:id="ex-ch06-2">
@@ -826,6 +846,26 @@ The question contains two pieces of information we can use to update this prior.
         </input>
       </program>
       </statement>
+    <solution>
+      <program language="python">
+        <input>
+
+prior_odds = odds(0.1)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+post_odds = prior_odds * 2 * 2 * 2
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+prob(post_odds)
+        </input>
+      </program>
+    </solution>
     </exercise>
 
     <exercise xml:id="ex-ch06-3">
@@ -854,6 +894,26 @@ If you learn that someone has lung cancer, what is the probability they are a sm
         </input>
       </program>
       </statement>
+    <solution>
+      <program language="python">
+        <input>
+
+prior_odds = odds(0.14)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+post_odds = prior_odds * 25
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+prob(post_odds)
+        </input>
+      </program>
+    </solution>
     </exercise>
 
     <exercise xml:id="ex-ch06-4">
@@ -910,6 +970,61 @@ A goblin is defeated if the total damage you inflict is greater than or equal to
         </input>
       </program>
       </statement>
+    <solution>
+      <program language="python">
+        <input>
+
+d6 = make_die(6)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+# The amount the goblin started with is the sum of two d6
+hp_before = Pmf.add_dist(d6, d6)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+# Here's the number of hit points after the first attack
+hp_after = Pmf.sub_dist(hp_before, 3)
+hp_after
+        </input>
+      </program>
+      <program language="python">
+        <input>
+# So we have to zero them out and renormalize
+hp_after[[-1, 0]] = 0
+hp_after.normalize()
+hp_after
+        </input>
+      </program>
+      <program language="python">
+        <input>
+# The damage from the second attack is one d6
+damage = d6
+        </input>
+      </program>
+      <program language="python">
+        <input>
+# Here's what the distributions look like
+hp_after.bar(label='Hit points')
+damage.plot(label='Damage', color='C1')
+decorate_dice('The Goblin Problem')
+        </input>
+      </program>
+      <program language="python">
+        <input>
+# Here's the distribution of points the goblin has left
+points_left = Pmf.sub_dist(hp_after, damage)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+# And here's the probability the goblin is dead
+points_left.prob_le(0)
+        </input>
+      </program>
+    </solution>
     </exercise>
 
     <exercise xml:id="ex-ch06-5">
@@ -944,6 +1059,43 @@ What is the probability that I chose the 8-sided die?
         </input>
       </program>
       </statement>
+    <solution>
+      <program language="python">
+        <input>
+
+hypos = [6, 8, 12]
+prior = Pmf(1, hypos)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+d4 = make_die(4)
+Pmf.mul_dist(d4, d4)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+# Here's the likelihood of getting a 12 for each die
+likelihood = []
+
+for sides in hypos:
+    die = make_die(sides)
+    pmf = Pmf.mul_dist(die, die)
+    likelihood.append(pmf[12])
+    
+likelihood
+        </input>
+      </program>
+      <program language="python">
+        <input>
+# And here's the update
+posterior = prior * likelihood
+posterior.normalize()
+posterior
+        </input>
+      </program>
+    </solution>
     </exercise>
 
     <exercise xml:id="ex-ch06-6">
@@ -991,6 +1143,63 @@ What is the probability that I chose the 8-sided die?
         </input>
       </program>
       </statement>
+    <solution>
+      <program language="python">
+        <input>
+
+die = Pmf(1/3, [0,1,2])
+die
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+pmfs = {}
+pmfs['Bellows'] = add_dist_seq([die]*3)
+pmfs['Zostra'] = add_dist_seq([die]*4)
+pmfs['Longfellow'] = add_dist_seq([die]*5)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+pmfs['Zostra'](4)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+pmfs['Zostra']([3,4,5]).prod()
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+hypos = pmfs.keys()
+prior = Pmf(1/3, hypos)
+prior
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+likelihood = prior.copy()
+
+for hypo in hypos:
+    likelihood[hypo] = pmfs[hypo]([3,4,5]).prod()
+
+likelihood
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+posterior = (prior * likelihood)
+posterior.normalize()
+posterior
+        </input>
+      </program>
+    </solution>
     </exercise>
 
     <exercise xml:id="ex-ch06-7">
@@ -1045,6 +1254,71 @@ Let's assume that an honest member of Congress has only a 50% chance of out-perf
         </input>
       </program>
       </statement>
+    <solution>
+      <program language="python">
+        <input>
+
+n = 538
+
+ns = range(0, n+1)
+table = pd.DataFrame(index=ns, columns=ns, dtype=float)
+
+for n_honest in ns:
+    n_dishonest = n - n_honest
+
+    dist_honest = make_binomial(n_honest, 0.5)
+    dist_dishonest = make_binomial(n_dishonest, 0.9)
+    dist_total = Pmf.add_dist(dist_honest, dist_dishonest)    
+    table[n_honest] = dist_total
+    
+table.shape
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+data = 312
+likelihood = table.loc[312]
+len(likelihood)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+hypos = np.arange(n+1)
+prior = Pmf(1, hypos)
+len(prior)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+posterior = prior * likelihood
+posterior.normalize()
+posterior.mean()
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+posterior.plot(label='posterior')
+decorate(xlabel='Number of honest members of Congress',
+         ylabel='PMF')
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+posterior.max_prob()
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+posterior.credible_interval(0.9)
+        </input>
+      </program>
+    </solution>
     </exercise>
 
   </exercises>

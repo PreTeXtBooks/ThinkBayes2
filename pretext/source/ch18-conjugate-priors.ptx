@@ -434,6 +434,50 @@ The PDF of the exponential distribution is a function of <m>t</m> with <m>\lambd
         <p>Write a few lines of code to update <c>prior_gamma</c> with the data from this version of the problem, which was a first goal after 11 minutes and a second goal after an additional 12 minutes.</p>
         <p>Remember to express these quantities in units of games, which are approximately 90 minutes.</p>
       </statement>
+    <solution>
+      <program language="python">
+        <input>
+
+"""
+The unnormalized posterior is
+
+\lambda^{\alpha-1+1} e^{-(\beta + t) \lambda}
+
+which is an unnormalized gamma distribution with parameters
+`alpha+1` and `beta+t`, which means that we observed 1 goal
+in elapsed time `t`.
+
+So we can use the same update function and call it like this:
+"""
+
+data = 1, 11/90
+posterior1 = update_gamma(prior_gamma, data)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+data = 1, 12/90
+posterior2 = update_gamma(posterior1, data)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+prior_gamma.mean(), posterior1.mean(), posterior2.mean()
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+pmf_from_dist(prior_gamma, lams).plot(color='C5', label='prior')
+pmf_from_dist(posterior1, lams).plot(label='after 1 goal')
+pmf_from_dist(posterior2, lams).plot(label='after 2 goals')
+
+decorate_rate(title='World Cup Problem, Germany v Brazil')
+        </input>
+      </program>
+    </solution>
     </exercise>
 
     <exercise xml:id="ex-ch18-2">
@@ -493,6 +537,81 @@ decorate_euro('Prior distributions')
         </program>
         <p>Now you take it from there.</p>
       </statement>
+    <solution>
+      <program language="python">
+        <input>
+from empiricaldist import Pmf
+
+ramp_up = np.arange(50)
+ramp_down = np.arange(50, -1, -1)
+
+a = np.append(ramp_up, ramp_down)
+xs = uniform.qs
+
+triangle = Pmf(a, xs, name='triangle')
+triangle.normalize()
+        </input>
+      </program>
+      <program language="python">
+        <input>
+k, n = 140, 250
+likelihood = binom.pmf(k, n, xs)
+
+posterior = triangle * likelihood
+posterior.normalize()
+        </input>
+      </program>
+      <program language="python">
+        <input>
+alpha = 1
+beta = 1
+
+prior_beta = make_beta(alpha, beta)
+prior_beta.mean()
+        </input>
+      </program>
+      <program language="python">
+        <input>
+prior_pmf = pmf_from_dist(prior_beta, xs)
+
+triangle.plot(label='triangle')
+prior_pmf.plot(label='beta')
+
+decorate_euro('Prior distributions')
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+data = 140, 250
+posterior_beta = update_beta(prior_beta, data)
+posterior_beta.mean()
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+posterior_conjugate = pmf_from_dist(posterior_beta, xs)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+posterior.plot(label='grid posterior', ls=':')
+posterior_conjugate.plot(label='conjugate posterior')
+
+decorate(xlabel='Proportion of heads (x)',
+         ylabel='Probability',
+         title='Posterior distribution of x')
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+np.allclose(posterior, posterior_conjugate)
+        </input>
+      </program>
+    </solution>
     </exercise>
 
     <exercise xml:id="ex-ch18-3">
@@ -513,6 +632,83 @@ In <url href="https://www.youtube.com/watch?v=8idr1WZ1A7Q">this video</url> the 
         <p>5. Run the analysis again with this prior and see what effect it has on the results.</p>
         <p>Note: When you evaluate the beta distribution, you should restrict the range of <c>xs</c> so it does not include 0 and 1.  When the parameters of the beta distribution are less than 1, the probability density goes to infinity at 0 and 1.  From a mathematical point of view, that's not a problem; it is still a proper probability distribution.  But from a computational point of view, it means we have to avoid evaluating the PDF at 0 and 1.</p>
       </statement>
+    <solution>
+      <program language="python">
+        <input>
+
+prior = make_beta(8, 2)
+
+xs = np.linspace(0.005, 0.995, 199)
+prior_pmf = pmf_from_dist(prior, xs)
+prior_pmf.plot(color='C5', label='prior')
+
+decorate(xlabel='Probability of positive rating',
+         ylabel='PDF')
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+data1 = 10, 10
+data2 = 48, 50
+data3 = 186, 200
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+seller1 = update_beta(prior, data1)
+seller2 = update_beta(prior, data2)
+seller3 = update_beta(prior, data3)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+seller1_pmf = pmf_from_dist(seller1, xs)
+seller2_pmf = pmf_from_dist(seller2, xs)
+seller3_pmf = pmf_from_dist(seller3, xs)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+seller1_pmf.plot(label='seller 1')
+seller2_pmf.plot(label='seller 2')
+seller3_pmf.plot(label='seller 3')
+
+decorate(xlabel='Probability of positive rating',
+         ylabel='PDF',
+         xlim=(0.65, 1.0))
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+seller1.mean(), seller2.mean(), seller3.mean()
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+iters = 10000
+a = np.empty((3, iters))
+
+a[0] = seller1.rvs(iters)
+a[1] = seller2.rvs(iters)
+a[2] = seller3.rvs(iters)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+from empiricaldist import Pmf
+
+best = np.argmax(a, axis=0)
+Pmf.from_seq(best)
+        </input>
+      </program>
+    </solution>
     </exercise>
 
     <exercise xml:id="ex-ch18-4">
@@ -527,6 +723,43 @@ In <url href="https://www.youtube.com/watch?v=8idr1WZ1A7Q">this video</url> the 
         <p>Copyright 2020 Allen B. Downey</p>
         <p>License: <url href="https://creativecommons.org/licenses/by-nc-sa/4.0/">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)</url></p>
       </statement>
+    <solution>
+      <program language="python">
+        <input>
+
+prior_alpha = np.array([1, 1, 1])
+data = 3, 2, 1
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+posterior_alpha = prior_alpha + data
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+marginal_bear = marginal_beta(posterior_alpha, 2)
+marginal_bear.mean()
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+dist = dirichlet(posterior_alpha)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+import pandas as pd
+
+index = ['lion', 'tiger', 'bear']
+pd.DataFrame(dist.mean(), index, columns=['prob'])
+        </input>
+      </program>
+    </solution>
     </exercise>
 
   </section>

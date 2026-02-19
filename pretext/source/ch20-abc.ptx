@@ -1044,6 +1044,177 @@ n_pairs, n_odds
       Now you take it from there.
     </p>
       </statement>
+    <solution>
+      <program language="python">
+        <input>
+from scipy.stats import nbinom, beta
+
+mu = 30
+p = 0.8666666
+r = mu * (1-p) / p
+
+prior_n_socks = nbinom(r, 1-p)
+prior_n_socks.mean(), prior_n_socks.std()
+        </input>
+      </program>
+      <program language="python">
+        <input>
+prior_prop_pair = beta(15, 2)
+prior_prop_pair.mean()
+        </input>
+      </program>
+      <program language="python">
+        <input>
+qs = np.arange(90)
+ps = prior_n_socks.pmf(qs)
+pmf = Pmf(ps, qs)
+pmf.normalize()
+
+pmf.plot(label='prior', drawstyle='steps')
+
+decorate(xlabel='Number of socks',
+         ylabel='PMF')
+        </input>
+      </program>
+      <program language="python">
+        <input>
+from utils import pmf_from_dist
+
+qs = np.linspace(0, 1, 101)
+pmf = pmf_from_dist(prior_prop_pair, qs)
+pmf.plot(label='prior', color='C1')
+
+decorate(xlabel='Proportion of socks in pairs',
+         ylabel='PDF')
+        </input>
+      </program>
+      <program language="python">
+        <input>
+n_socks = prior_n_socks.rvs()
+prop_pairs = prior_prop_pair.rvs()
+
+n_socks, prop_pairs
+        </input>
+      </program>
+      <program language="python">
+        <input>
+n_pairs = np.round(n_socks//2 * prop_pairs)
+n_odds = n_socks - n_pairs*2
+
+n_pairs, n_odds
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+n_pairs = 9
+n_odds = 5
+
+socks = np.append(np.arange(n_pairs), 
+                  np.arange(n_pairs + n_odds))
+
+print(socks)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+picked_socks = np.random.choice(socks, size=11, replace=False)
+picked_socks
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+values, counts = np.unique(picked_socks, return_counts=True)
+values
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+counts
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+solo = np.sum(counts==1)
+pairs = np.sum(counts==2)
+
+solo, pairs
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+def pick_socks(n_pairs, n_odds, n_pick):
+    socks = np.append(np.arange(n_pairs), 
+                      np.arange(n_pairs + n_odds))
+    
+    picked_socks = np.random.choice(socks, 
+                                    size=n_pick, 
+                                    replace=False)
+    
+    values, counts = np.unique(picked_socks, 
+                               return_counts=True)
+    pairs = np.sum(counts==2)
+    odds = np.sum(counts==1)
+    return pairs, odds
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+pick_socks(n_pairs, n_odds, 11)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+data = (0, 11)
+res = []
+for i in range(10000):
+    n_socks = prior_n_socks.rvs()
+    if n_socks &lt; 11:
+        continue
+    prop_pairs = prior_prop_pair.rvs()
+    n_pairs = np.round(n_socks//2 * prop_pairs)
+    n_odds = n_socks - n_pairs*2
+    result = pick_socks(n_pairs, n_odds, 11)
+    if result == data:
+        res.append((n_socks, n_pairs, n_odds))
+
+len(res)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+columns = ['n_socks', 'n_pairs', 'n_odds']
+results = pd.DataFrame(res, columns=columns)
+results.head()
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+qs = np.arange(15, 100)
+posterior_n_socks = Pmf.from_seq(results['n_socks'])
+print(posterior_n_socks.median(),
+      posterior_n_socks.credible_interval(0.9))
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+posterior_n_socks.plot(label='posterior', drawstyle='steps')
+
+decorate(xlabel='Number of socks',
+         ylabel='PMF')
+        </input>
+      </program>
+    </solution>
     </exercise>
   </exercises>
 </chapter>

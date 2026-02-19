@@ -967,6 +967,21 @@
           </input>
         </program>
       </statement>
+    <solution>
+      <program language="python">
+        <input>
+
+n = 250
+k_obs = 140
+
+with pm.Model() as model5:
+    x = pm.Beta('x', alpha=1, beta=1)
+    k = pm.Binomial('k', n=n, p=x, observed=k_obs)
+    trace5 = pm.sample(500, **options)
+    az.plot_posterior(trace5)
+        </input>
+      </program>
+    </solution>
     </exercise>
 
     <exercise xml:id="ex-ch19-2">
@@ -998,6 +1013,22 @@
           </input>
         </program>
       </statement>
+    <solution>
+      <program language="python">
+        <input>
+
+k = 23
+n = 19
+x = 4
+
+with pm.Model() as model6:
+    N = pm.DiscreteUniform('N', 50, 500)
+    y = pm.HyperGeometric('y', N=N, k=k, n=n, observed=x)
+    trace6 = pm.sample(1000, **options)
+    az.plot_posterior(trace6)
+        </input>
+      </program>
+    </solution>
     </exercise>
 
     <exercise xml:id="ex-ch19-3">
@@ -1029,6 +1060,25 @@
           </input>
         </program>
       </statement>
+    <solution>
+      <program language="python">
+        <input>
+data = [0.80497283, 2.11577082, 0.43308797, 0.10862644, 5.17334866,
+       3.25745053, 3.05555883, 2.47401062, 0.05340806, 1.08386395]
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+with pm.Model() as model7:
+    lam = pm.Uniform('lam', 0.1, 10.1)
+    k = pm.Uniform('k', 0.1, 5.1)
+    y = pm.Weibull('y', alpha=k, beta=lam, observed=data)
+    trace7 = pm.sample(1000, **options)
+    az.plot_posterior(trace7)
+        </input>
+      </program>
+    </solution>
     </exercise>
 
     <exercise xml:id="ex-ch19-4">
@@ -1086,6 +1136,52 @@
           </input>
         </program>
       </statement>
+    <solution>
+      <program language="python">
+        <input>
+download('https://github.com/AllenDowney/ThinkBayes2/raw/master/data/drp_scores.csv')
+        </input>
+      </program>
+      <program language="python">
+        <input>
+import pandas as pd
+
+df = pd.read_csv('drp_scores.csv', skiprows=21, delimiter='\t')
+df.head()
+        </input>
+      </program>
+      <program language="python">
+        <input>
+grouped = df.groupby('Treatment')
+responses = {}
+
+for name, group in grouped:
+    responses[name] = group['Response']
+        </input>
+      </program>
+      <program language="python">
+        <input>
+data = responses['Treated']
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+with pm.Model() as model8:
+    mu = pm.Uniform('mu', 20, 80)
+    sigma = pm.Uniform('sigma', 5, 30)
+    y = pm.Normal('y', mu, sigma, observed=data)
+    trace8 = pm.sample(500, **options)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+with model8:
+    az.plot_posterior(trace8)
+        </input>
+      </program>
+    </solution>
     </exercise>
 
     <exercise xml:id="ex-ch19-5">
@@ -1173,6 +1269,52 @@
         </program>
 
       </statement>
+    <solution>
+      <program language="python">
+        <input>
+k10 = 20 - 3
+k01 = 15 - 3
+k11 = 3
+        </input>
+      </program>
+      <program language="python">
+        <input>
+num_seen = k01 + k10 + k11
+num_seen
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+with pm.Model() as model9:
+    p0 = pm.Beta('p0', alpha=1, beta=1)
+    p1 = pm.Beta('p1', alpha=1, beta=1)
+    N = pm.DiscreteUniform('N', num_seen, 350)
+    
+    q0 = 1-p0
+    q1 = 1-p1
+    ps = [q0*q1, q0*p1, p0*q1, p0*p1]
+    
+    k00 = N - num_seen
+    data = pm.math.stack((k00, k01, k10, k11))
+    y = pm.Multinomial('y', n=N, p=ps, observed=data)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+with model9:
+    trace9 = pm.sample(1000, **options)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+with model9:
+    az.plot_posterior(trace9)
+        </input>
+      </program>
+    </solution>
     </exercise>
   </exercises>
 
