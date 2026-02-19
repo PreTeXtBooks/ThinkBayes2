@@ -5,10 +5,731 @@
 
   <introduction>
     <p>
-      This chapter presents methods for comparing groups and analyzing differences between them.
+      The Elo rating system is a way to quantify the skill of players for games like chess (see <url href="https://en.wikipedia.org/wiki/Elo_rating_system">https://en.wikipedia.org/wiki/Elo_rating_system</url>).
+    </p>
+
+    <p>
+      It is based on a model of the relationship between the ratings of players and the outcome of a game.
+      Specifically, if <m>R_A</m> is the rating of player <c>A</c> and <m>R_B</m> is the rating of player <c>B</c>, the probability that <c>A</c> beats <c>B</c> is given by the logistic function (see <url href="https://en.wikipedia.org/wiki/Logistic_function">https://en.wikipedia.org/wiki/Logistic_function</url>):
+    </p>
+
+    <me>
+      P(\text{A beats B}) = 1 / (1 + 10^{(R_B-R_A)/400})
+    </me>
+
+    <p>
+      The parameters <m>10</m> and <m>400</m> are arbitrary choices that determine the range of the ratings.  In chess, the range is from 100 to 2800.
+    </p>
+
+    <p>
+      Suppose <c>A</c> has a current rating of 1600 and <c>B</c> has a current rating of 1800.
+      Then <c>A</c> and <c>B</c> play and <c>A</c> wins.  How should we update their ratings?
+    </p>
+
+    <p>
+      In this chapter I will solve a simpler version of this question; then you will have a chance to finish it off as an exercise.
+    </p>
+
+    <p>
+      This chapter introduces <term>joint distributions</term>, which represent the distributions of two or more variables and the relationships among them.
+    </p>
+
+    <p>
+      We'll extend the Bayesian update process we've seen in previous chapter and apply it to a joint distribution.
+    </p>
+
+    <p>
+      But first I will introduce a tool we will use to construct joint distributions and compute likelihoods: outer operations.
     </p>
   </introduction>
 
-  <!-- Sections will be added here -->
+  <section xml:id="sec-comparison-outer-operations">
+    <title>Outer operations</title>
+
+    <p>
+      Many useful operations can be expressed in the form of an <term>outer operation</term> of two sequences.
+      Suppose you have sequences like <c>t1</c> and <c>t2</c>:
+    </p>
+
+    <program language="python">
+      <input>
+t1 = [1,3,5]
+t2 = [2,4]
+      </input>
+    </program>
+
+    <p>
+      The most common outer operation is the outer product, which computes the product of every pair of values, one from each sequence.
+    </p>
+
+    <p>
+      For example, here is the outer product of <c>t1</c> and <c>t2</c>:
+    </p>
+
+    <program language="python">
+      <input>
+a = np.multiply.outer(t1, t2)
+      </input>
+    </program>
+
+    <p>
+      The result is a NumPy array, but it's easier to understand what it is if I put it in a DataFrame:
+    </p>
+
+    <program language="python">
+      <input>
+df = pd.DataFrame(a, index=t1, columns=t2)
+      </input>
+    </program>
+
+    <p>
+      Here's the result:
+    </p>
+
+    <!-- Table table09-02 -->
+
+    <p>
+      The values from <c>t1</c> appear along the rows; the values from <c>t2</c> appear along the columns.
+    </p>
+
+    <p>
+      Each element in the array is the product of an element from <c>t1</c> and an element from <c>t2</c>.
+    </p>
+
+    <p>
+      The outer sum is similar, except that each element is the <em>sum</em> of an element from <c>t1</c> and an element from <c>t2</c>.
+    </p>
+
+    <program language="python">
+      <input>
+a = np.add.outer(t1, t2)
+df = pd.DataFrame(a, index=t1, columns=t2)
+      </input>
+    </program>
+
+    <p>
+      Here's the result:
+    </p>
+
+    <!-- Table table09-02 -->
+
+    <p>
+      These outer operations work with Python lists and tuples, and NumPy arrays, but not Pandas <c>Series</c>.
+    </p>
+
+    <p>
+      So I'll use the following function, which takes two Pandas <c>Series</c> and puts the result into a <c>DataFrame</c>.
+    </p>
+
+    <program language="python">
+      <input>
+def outer_product(s1, s2):
+    a = np.multiply.outer(s1.to_numpy(), s2.to_numpy())
+    return pd.DataFrame(a, index=s1.index, columns=s2.index)
+      </input>
+    </program>
+
+    <p>
+      It might not be obvious yet why these operations are useful, but we'll see some examples soon.
+    </p>
+
+    <p>
+      With that, we are ready to take on a new Bayesian problem.
+    </p>
+  </section>
+
+  <section xml:id="sec-comparison-how-tall-is-a">
+    <title>How tall is A?</title>
+
+    <p>
+      Suppose I choose two people from the population of adult males in the United States, and call them A and B.  If we see that A taller than B, how tall is A?
+    </p>
+
+    <p>
+      To answer this question:
+    </p>
+
+    <ol>
+      <li>
+        <p>
+          I'll use background information about the height of men in the U.S. to form a prior distribution of height,
+        </p>
+      </li>
+
+      <li>
+        <p>
+          I'll construct a joint distribution of height for A and B (and I'll explain what that is);
+        </p>
+      </li>
+
+      <li>
+        <p>
+          Then I'll update the prior with the information that A is taller, and
+        </p>
+      </li>
+
+      <li>
+        <p>
+          From the posterior joint distribution I'll extract the posterior distribution of height for A.
+        </p>
+      </li>
+    </ol>
+
+    <p>
+      In the U.S. the average height of male adults in 178 cm and the standard deviation is 7.7 cm.  The distribution is not exactly normal, because nothing in the real world is, but the normal distribution is a pretty good model of the actual distribution, so we can use it as a prior distribution for A and B.
+    </p>
+
+    <p>
+      Here's an array of equally-spaced values from roughly 3 standard deviations below the mean to 3 standard deviations above.
+    </p>
+
+    <program language="python">
+      <input>
+mean = 178
+std = 7.7
+qs = np.arange(mean-24, mean+24, 0.5)
+      </input>
+    </program>
+
+    <p>
+      SciPy provides a function called <c>norm</c> that represents a normal distribution with a given mean and standard deviation, and provides <c>pdf</c>, which evaluates the normal probability distribution function (PDF), which we will use as the prior probabilities.
+    </p>
+
+    <program language="python">
+      <input>
+from scipy.stats import norm
+ps = norm(mean, std).pdf(qs)
+      </input>
+    </program>
+
+    <p>
+      I'll store the <c>ps</c> and <c>qs</c> in a <c>Pmf</c> that represents the prior distribution.
+    </p>
+
+    <program language="python">
+      <input>
+prior = Pmf(ps, qs)
+prior.normalize()
+      </input>
+    </program>
+
+    <p>
+      This distribution represents what we believe about the heights of <c>A</c> and <c>B</c> before we take into account the data that <c>A</c> is taller.
+    </p>
+  </section>
+
+  <section xml:id="sec-comparison-joint-distribution">
+    <title>Joint distribution</title>
+
+    <p>
+      The next step is to construct a distribution that represents the probability of every pair of heights, which is called a joint distribution.
+      The elements of the joint distribution are
+    </p>
+
+    <me>
+      P(A_y \text{ and } B_x)
+    </me>
+
+    <p>
+      which is the probability that <c>A</c> is <m>y</m> cm tall and <c>B</c> is <m>x</m> cm tall, for all values of <m>y</m> and <m>x</m>.
+    </p>
+
+    <p>
+      At this point all we know about <c>A</c> and <c>B</c> is that they are male residents of the U.S., so their heights are independent; that is, knowing the height of <c>A</c> provides no additional information about the height of <c>B</c>.
+      In that case, we can compute the joint probabilities like this:
+    </p>
+
+    <me>
+      P(A_y \text{ and } B_x) = P(A_y) P(B_x)
+    </me>
+
+    <p>
+      Each joint probability is the product of one element from the distribution for <c>A</c> and one element from the distribution for <c>B</c>.
+      So we can compute the joint distribution using <c>outer_product</c>:
+    </p>
+
+    <program language="python">
+      <input>
+joint = outer_product(prior, prior)
+joint.shape
+      </input>
+    </program>
+
+    <p>
+      The result is a <c>DataFrame</c> with possible heights of <c>A</c> along the rows, heights of <c>B</c> along the columns, and the joint probabilities as elements.
+    </p>
+
+    <p>
+      The following function uses <c>pcolormesh</c> to plot the joint distribution.
+    </p>
+
+    <program language="python">
+      <input>
+def plot_joint(joint):
+    plt.pcolormesh(joint.columns, joint.index, joint)
+    plt.colorbar()
+    decorate(ylabel='A height in cm',
+             xlabel='B height in cm')
+      </input>
+    </program>
+
+    <p>
+      Recall that <c>outer_product</c> puts the values of <c>A</c> along the rows and the values of <c>B</c> across the columns.
+    </p>
+
+    <!-- Figure fig09-01: Joint prior distribution of height for A and B. -->
+
+    <p>
+      Figure shows the results.
+    </p>
+
+    <p>
+      As you might expect, the probability is highest near the mean and drops off away from the mean.
+    </p>
+  </section>
+
+  <section xml:id="sec-comparison-likelihood">
+    <title>Likelihood</title>
+
+    <p>
+      Now that we have a joint prior distribution, we can update it with the data, which is that <c>A</c> is taller than <c>B</c>.
+    </p>
+
+    <p>
+      Each element in the joint distribution represents a hypothesis about the heights of <c>A</c> and <c>B</c>; for example:
+    </p>
+
+    <ol>
+      <li>
+        <p>
+          The element <c>(180, 170)</c> represents the hypothesis that <c>A</c> is 180 cm tall and <c>B</c> is 170 cm tall.  Under this hypothesis, the probability that <c>A</c> is taller than <c>B</c> is 1.
+        </p>
+      </li>
+
+      <li>
+        <p>
+          The element <c>(170, 180)</c> represents the hypothesis that <c>A</c> is 170 cm tall and <c>B</c> is 180 cm tall.  Under this hypothesis, the probability that <c>A</c> is taller than <c>B</c> is 0.
+        </p>
+      </li>
+    </ol>
+
+    <p>
+      To compute the likelihood of every pair of values, we can extract the quantities from the joint prior, like this:
+    </p>
+
+    <program language="python">
+      <input>
+Y = joint.index.to_numpy()
+X = joint.columns.to_numpy()
+      </input>
+    </program>
+
+    <p>
+      And then apply the <c>outer</c> version of <c>np.subtract</c>, which computes the difference between every element of <c>Y</c> (height of <c>A</c>) and every element of <c>X</c> (height of <c>B</c>).
+    </p>
+
+    <program language="python">
+      <input>
+diff = np.subtract.outer(Y, X)
+      </input>
+    </program>
+
+    <p>
+      The result is an array of differences.  To compute likelihoods, we use <c>np.where</c> which puts <c>1</c> where the <c>diff</c> is greater than 0 and 0 elsewhere.
+    </p>
+
+    <program language="python">
+      <input>
+a = np.where(diff>0, 1, 0)
+      </input>
+    </program>
+
+    <p>
+      The result is an array of likelihoods, which I will put in a <c>DataFrame</c> with the values of <c>Y</c> in the index and the values of <c>X</c> in the columns.
+    </p>
+
+    <program language="python">
+      <input>
+likelihood = pd.DataFrame(a, index=Y, columns=X)
+      </input>
+    </program>
+
+    <!-- Figure fig09-02: Likelihood that A is taller than B for each hypothetical pair of heights. -->
+
+    <p>
+      Figure shows the likelihood that A is taller than B for each hypothetical pair of heights.
+    </p>
+
+    <p>
+      We have a prior, we have a likelihood, and we are ready for the update.
+    </p>
+  </section>
+
+  <section xml:id="sec-comparison-the-update">
+    <title>The update</title>
+
+    <p>
+      As usual, the unnormalized posterior is the product of the prior and the likelihood.
+    </p>
+
+    <program language="python">
+      <input>
+posterior = joint * likelihood
+      </input>
+    </program>
+
+    <p>
+      I'll use the following function to normalize the posterior:
+    </p>
+
+    <program language="python">
+      <input>
+def normalize(joint):
+    prob_data = joint.to_numpy().sum()
+    joint /= prob_data
+      </input>
+    </program>
+
+    <p>
+      We have to convert the <c>DataFrame</c> to a NumPy array before calling <c>sum</c>.  Otherwise, <c>DataFrame.sum</c> would compute the sums of the columns and return a <c>Series</c>.
+    </p>
+
+    <p>
+      Now we can normalize the posterior:
+    </p>
+
+    <program language="python">
+      <input>
+normalize(posterior)
+      </input>
+    </program>
+
+    <!-- Figure fig09-03: Joint posterior distribution of height for A and B. -->
+
+    <p>
+      Figure shows the result.
+    </p>
+
+    <p>
+      For all hypotheses where <c>A</c> is not taller than <c>B</c>, the posterior probability is 0.
+    </p>
+  </section>
+
+  <section xml:id="sec-comparison-the-marginals">
+    <title>The marginals</title>
+
+    <p>
+      The joint posterior distribution represents what we believe about the heights of <c>A</c> and <c>B</c>, given the prior distributions and the information that <c>A</c> is taller.
+    </p>
+
+    <p>
+      From this joint distribution, we can compute posterior distributions for <c>A</c> and <c>B</c>.  To see how, let's start with a simpler problem.
+    </p>
+
+    <p>
+      Suppose we want to know the probability that <c>B</c> is 180 cm tall.  We can select the column from the joint distribution where <c>X=180</c>.
+    </p>
+
+    <program language="python">
+      <input>
+column = posterior[180]
+      </input>
+    </program>
+
+    <p>
+      This column contains posterior probabilities for all cases where <c>X=180</c>; if we add them up, we get the total probability that <c>B</c> is 180 cm tall.
+    </p>
+
+    <program language="python">
+      <input>
+column.sum()
+      </input>
+    </program>
+
+    <p>
+      Now, to get the posterior distribution of height for <c>B</c>, we can add up all of the columns, like this:
+    </p>
+
+    <program language="python">
+      <input>
+column_sums = posterior.sum(axis=0)
+      </input>
+    </program>
+
+    <p>
+      The argument <c>axis=0</c> means we want to sum the elements along the rows; that is, we want to add up the columns.
+    </p>
+
+    <p>
+      The result is a <c>Series</c> that contains every possible height for <c>B</c> and its probability.  In other words, it is the distribution of heights for <c>B</c>.
+    </p>
+
+    <p>
+      We can put it in a <c>Pmf</c> like this:
+    </p>
+
+    <program language="python">
+      <input>
+marginal_B = Pmf(column_sums)
+      </input>
+    </program>
+
+    <p>
+      When we extract the distribution of a single variable from a joint distribution, the result is called a <term>marginal distribution</term>.
+      The name comes from a common visualization that shows the joint distribution in the middle and the marginal distributions in the margins.
+    </p>
+
+    <p>
+      Similarly, we can get the posterior distribution of height for <c>A</c> by adding up the rows and putting the result in a <c>Pmf</c>.
+    </p>
+
+    <program language="python">
+      <input>
+row_sums = posterior.sum(axis=1)
+marginal_A = Pmf(row_sums)
+      </input>
+    </program>
+
+    <p>
+      The following function takes a joint distribution and an axis number, and returns a marginal distribution.
+    </p>
+
+    <program language="python">
+      <input>
+def marginal(joint, axis):
+    return Pmf(joint.sum(axis=axis))
+      </input>
+    </program>
+
+    <p>
+      So we can compute the marginal distributions like this.
+    </p>
+
+    <program language="python">
+      <input>
+marginal_B = marginal(posterior, axis=0)
+marginal_A = marginal(posterior, axis=1)
+      </input>
+    </program>
+
+    <!-- Figure fig09-04: Prior and posterior distributions for A and B. -->
+
+    <p>
+      Figure shows what they look like.
+    </p>
+
+    <p>
+      As you might expect, the posterior distribution for <c>A</c> is shifted to the right and the posterior distribution for <c>B</c> is shifted to the left.
+    </p>
+
+    <p>
+      Based on the observation that <c>A</c> is taller than <c>B</c>, we are inclined to believe that <c>A</c> is a little taller than average, and <c>B</c> is a little shorter.
+    </p>
+
+    <p>
+      Notice that the posterior distributions are a little narrower than the prior.
+      The standard deviations of the posterior distributions are a little smaller, which means we are a little more certain about the heights of <c>A</c> and <c>B</c> after we compare them.
+    </p>
+  </section>
+
+  <section xml:id="sec-comparison-conditional-posteriors">
+    <title>Conditional posteriors</title>
+
+    <p>
+      Now suppose we measure <c>B</c> and find that he is 180 cm tall.  What does that tell us about <c>A</c>?
+    </p>
+
+    <p>
+      In the joint distribution, each column corresponds a possible height for <c>B</c>.  We can select the column that corresponds to height 180 cm like this:
+    </p>
+
+    <program language="python">
+      <input>
+column_180 = posterior[180]
+      </input>
+    </program>
+
+    <p>
+      The result is a <c>Series</c> that represents possible heights for <c>A</c> and their relative likelihoods.
+      These likelihoods are not normalized, but we can normalize them like this:
+    </p>
+
+    <program language="python">
+      <input>
+cond_A = Pmf(column_180)
+cond_A.normalize()
+      </input>
+    </program>
+
+    <p>
+      The result is the <term>conditional distribution</term> of height for <c>A</c> given that <c>B</c> is 180 cm tall.
+      Figure shows what it looks like.
+    </p>
+
+    <p>
+      Note that when we make a <c>Pmf</c> it copies the data by default, so we can modify <c>cond_A</c> without affecting <c>column_180</c> or <c>posterior</c>.
+    </p>
+
+    <!-- Figure fig09-05: (caption not provided in source) -->
+
+    <p>
+      The conditional distribution is cut off at 180 cm, because we have established that <c>A</c> is taller than <c>B</c> and <c>B</c> is 180 cm.
+    </p>
+  </section>
+
+  <section xml:id="sec-comparison-dependence-independence">
+    <title>Dependence and independence</title>
+
+    <p>
+      When we constructed the joint prior distribution, I said that the heights of <c>A</c> and <c>B</c> were independent, which means that knowing one of them provides no information about the other.
+      In other words, the conditional probability <m>P(A_y | B_x)</m> is the same as the unconditioned probability <m>P(A_y)</m>.
+    </p>
+
+    <p>
+      That's why we can compute an element of the joint prior, <m>P(A_y \text{ and } B_x)</m>, by rewriting it in terms of conditional probability, <m>P(B_x) P(A_y | B_x)</m>, and using the independence of <m>A</m> and <m>B</m> to replace the conditional probability.
+    </p>
+
+    <p>
+      Putting it all together, we have
+    </p>
+
+    <me>
+      P(A_y \text{ and } B_x) = P(B_x) P(A_y)
+    </me>
+
+    <p>
+      But remember, that's only true if <m>A</m> and <m>B</m> are independent.
+      In the posterior distribution, they are not.
+      We know that <c>A</c> is taller than <c>B</c>, so if we know how tall <c>B</c> is, that gives us information about <c>A</c>.
+    </p>
+
+    <p>
+      The conditional distribution we just computed demonstrates this dependence.
+    </p>
+  </section>
+
+  <section xml:id="sec-comparison-summary">
+    <title>Summary</title>
+
+    <p>
+      In this chapter I started with the <q>outer</q> operations, like outer product, which we used to construct a joint distribution.
+    </p>
+
+    <p>
+      In general, you cannot construct a joint distribution from two marginal distributions, but in the special case where the distributions are independent, you can.
+    </p>
+
+    <p>
+      We extended the Bayesian update process we've seen in previous chapters and applied it to a joint distribution.  Then from the posterior joint distribution we extracted posterior marginal distributions and posterior conditional distributions.
+    </p>
+
+    <p>
+      As an exercise, you'll have a chance to apply the same process to a slightly more difficult problem, updating Elo ratings based on the outcome of a chess game.
+    </p>
+  </section>
+
+  <exercises xml:id="sec-comparison-exercises">
+    <title>Exercises</title>
+
+    <p>
+      The code for this chapter is in <c>chap09.ipynb</c>, which is in the repository for this book.  See Section for details.
+      You can run the notebook on Colab at <url href="https://colab.research.google.com/github/AllenDowney/ThinkBayes2/blob/master/code/chap09.ipynb">https://colab.research.google.com/github/AllenDowney/ThinkBayes2/blob/master/code/chap09.ipynb</url>.
+    </p>
+
+    <p>
+      The notebook provides space where you can work on the following problems.
+    </p>
+
+    <exercise xml:id="ex-comparison-1">
+      <statement>
+        <p>
+          Based on the results of the previous example, compute the posterior conditional distribution for <c>B</c> given that <c>A</c> is 190 cm.
+        </p>
+      </statement>
+    </exercise>
+
+    <exercise xml:id="ex-comparison-2">
+      <statement>
+        <p>
+          Suppose we have established that <c>A</c> is taller than <c>B</c>, but we don't know how tall <c>B</c> is.
+          Now we choose a random woman, <c>C</c>, and find that she is shorter than <c>A</c> by at least 15 cm.  Compute posterior distributions for the heights of <c>A</c> and <c>C</c>.
+        </p>
+        <p>
+          The average height for women in the U.S. is 163 cm; the standard deviation is 7.3 cm.
+        </p>
+      </statement>
+    </exercise>
+
+    <exercise xml:id="ex-comparison-3">
+      <statement>
+        <p>
+          At the beginning of this chapter, I introduced
+          the Elo rating system, which is used to quantify the skill level of players for games like chess.
+        </p>
+
+        <p>
+          It is based on a model of the relationship between the ratings of players and the outcome of a game.  Specifically, if <m>R_A</m> is the rating of player <c>A</c> and <m>R_B</m> is the rating of player <c>B</c>, the probability that <c>A</c> beats <c>B</c> is given by the logistic function:
+        </p>
+
+        <me>
+          P(\text{A beats B}) = 1 / (1 + 10^{(R_B-R_A)/400})
+        </me>
+
+        <p>
+          Suppose <c>A</c> has a current rating of 1600, but we are not sure it is accurate.  We could describe their true rating with a normal distribution with mean 1600 and standard deviation 100, to indicate our uncertainty.
+        </p>
+
+        <p>
+          And suppose <c>B</c> has a current rating of 1800, with the same level of uncertainty.
+        </p>
+
+        <p>
+          Then <c>A</c> and <c>B</c> play and <c>A</c> wins.  How should we update their ratings?
+        </p>
+
+        <p>
+          To answer this question:
+        </p>
+
+        <ol>
+          <li>
+            <p>
+              Construct prior distributions for <c>A</c> and <c>B</c>.
+            </p>
+          </li>
+
+          <li>
+            <p>
+              Use them to construct a joint distribution, assuming that the prior distributions are independent.
+            </p>
+          </li>
+
+          <li>
+            <p>
+              Use the logistic function above to compute the likelihood of the outcome under each joint hypothesis.
+            </p>
+          </li>
+
+          <li>
+            <p>
+              Use the joint prior and likelihood to compute the joint posterior.
+            </p>
+          </li>
+
+          <li>
+            <p>
+              Extract and plot the marginal posteriors for <c>A</c> and <c>B</c>.
+            </p>
+          </li>
+
+          <li>
+            <p>
+              Compute the posterior means for <c>A</c> and <c>B</c>.  How much should their ratings change based on this outcome?
+            </p>
+          </li>
+        </ol>
+      </statement>
+    </exercise>
+  </exercises>
 
 </chapter>
