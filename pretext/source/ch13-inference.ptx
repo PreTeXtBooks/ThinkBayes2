@@ -280,7 +280,7 @@
     <title>Posterior Marginal Distributions</title>
 
     <p>
-      I'll use <c>marginal</c>, which we saw in <<_MarginalDistributions>&gt;, to extract the posterior marginal distributions for the population means.
+      I'll use <c>marginal</c>, which we saw in &lt;&lt;_MarginalDistributions&gt;&gt;, to extract the posterior marginal distributions for the population means.
     </p>
     <program language="python">
       <input>
@@ -391,7 +391,7 @@
       <c>kde_from_pmf</c> takes as parameters a <c>Pmf</c> and the number of places to evaluate the KDE.
     </p>
     <p>
-      It uses <c>gaussian_kde</c>, which we saw in <<_KernelDensityEstimation>&gt;, passing the probabilities from the <c>Pmf</c> as weights. This makes the estimated densities higher where the probabilities in the <c>Pmf</c> are higher.
+      It uses <c>gaussian_kde</c>, which we saw in &lt;&lt;_KernelDensityEstimation&gt;&gt;, passing the probabilities from the <c>Pmf</c> as weights. This makes the estimated densities higher where the probabilities in the <c>Pmf</c> are higher.
     </p>
     <p>
       Here's what the kernel density estimate looks like for the <c>Pmf</c> of differences between the groups.
