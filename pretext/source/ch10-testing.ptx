@@ -52,6 +52,18 @@ set_pyplot_params()
     <title>Estimation</title>
 
     <p>
+      Let's review the solution to the Euro problem from <xref ref="_TheBinomialLikelihoodFunction" />.  We started with a uniform prior.
+    </p>
+    <program language="python">
+      <input>
+import numpy as np
+from empiricaldist import Pmf
+
+xs = np.linspace(0, 1, 101)
+uniform = Pmf(1, xs)
+      </input>
+    </program>
+    <p>
       And we used the binomial distribution to compute the probability of the data for each possible value of <m>x</m>.
     </p>
     <program language="python">
@@ -160,6 +172,12 @@ K
   <section xml:id="sec-ch10-uniformly-distributed-bias">
     <title>Uniformly Distributed Bias</title>
 
+    <p>
+      Suppose "biased" means that the probability of heads is anything except 50%, and all other values are equally likely.
+    </p>
+    <p>
+      We can represent that definition by making a uniform distribution and removing 50%.
+    </p>
     <program language="python">
       <input>
 biased_uniform = uniform.copy()
@@ -267,6 +285,21 @@ decorate(xlabel='Proportion of heads (x)',
     <title>Bayesian Hypothesis Testing</title>
 
     <p>
+      What we've done so far in this chapter is sometimes called "Bayesian hypothesis testing" in contrast with <url href="https://en.wikipedia.org/wiki/Statistical_hypothesis_testing">statistical hypothesis testing</url>.
+    </p>
+    <p>
+      In statistical hypothesis testing, we compute a p-value, which is hard to define concisely, and use it to determine whether the results are "statistically significant", which is also  hard to define concisely.
+    </p>
+    <p>
+      The Bayesian alternative is to report the Bayes factor, <m>K</m>, which summarizes the strength of the evidence in favor of one hypothesis or the other.
+    </p>
+    <p>
+      Some people think it is better to report <m>K</m> than a posterior probability because <m>K</m> does not depend on a prior probability. But as we saw in this example, <m>K</m> often depends on a precise definition of the hypotheses, which can be just as controversial as a prior probability.
+    </p>
+    <p>
+      In my opinion, Bayesian hypothesis testing is better because it measures the strength of the evidence on a continuum, rather that trying to make a binary determination. But it doesn't solve what I think is the fundamental problem, which is that hypothesis testing is not asking the question we really care about.
+    </p>
+    <p>
       To see why, suppose you test the coin and decide that it is biased after all.  What can you do with this answer?  In my opinion, not much. In contrast, there are two questions I think are more useful (and therefore more meaningful):
     </p>
     <ul>
@@ -309,6 +342,9 @@ decorate(xlabel='Proportion of heads (x)',
   <section xml:id="sec-ch10-prior-beliefs">
     <title>Prior Beliefs</title>
 
+    <p>
+      If we know nothing about the probability of winning, we can start with a uniform prior.
+    </p>
     <program language="python">
       <input>
 xs = np.linspace(0, 1, 101)
