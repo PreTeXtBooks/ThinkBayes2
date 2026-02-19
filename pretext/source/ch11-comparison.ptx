@@ -350,7 +350,7 @@ decorate(title='Joint prior distribution of height for A and B')
 
   </section>
 
-  <section xml:id="sec-likelihood">
+  <section xml:id="sec-ch11-likelihood">
     <title>Likelihood</title>
 
     <p>
@@ -428,7 +428,7 @@ decorate(title='Likelihood of A>B')
 
   </section>
 
-  <section xml:id="sec-the-update">
+  <section xml:id="sec-ch11-the-update">
     <title>The Update</title>
 
     <p>
@@ -478,7 +478,7 @@ decorate(title='Joint posterior distribution of height for A and B')
 
   </section>
 
-  <section xml:id="sec-marginal-distributions">
+  <section xml:id="sec-ch11-marginal-distributions">
     <title>Marginal Distributions</title>
 
     <p>
