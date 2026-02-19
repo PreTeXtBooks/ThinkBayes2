@@ -345,7 +345,7 @@ table2
     </program>
     
     <p>
-      Once you have priors and likelhoods, the remaining steps are always the same, so I'll put them in a function:
+      Once you have priors and likelihoods, the remaining steps are always the same, so I'll put them in a function:
     </p>
     
     <program language="python">
