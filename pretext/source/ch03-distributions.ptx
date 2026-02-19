@@ -653,6 +653,47 @@ posterior
           As a simplification, you can divide the range from 0 to 1 into 101 hypotheses with values 0, 0.01, 0.02, etc.
         </p>
       </statement>
+      <solution>
+        <p>Create a uniform prior over 101 hypotheses:</p>
+        <program language="python">
+          <input>
+hypos = np.linspace(0, 1, 101)
+prior = Pmf(1, hypos)
+          </input>
+        </program>
+        <p>Define likelihoods for heads and tails:</p>
+        <program language="python">
+          <input>
+likelihood_heads = hypos
+likelihood_tails = 1 - hypos
+
+likelihood = {
+    'H': likelihood_heads,
+    'T': likelihood_tails
+}
+          </input>
+        </program>
+        <p>Represent the data as a string:</p>
+        <program language="python">
+          <input>
+dataset = 'H' * 140 + 'T' * 110
+          </input>
+        </program>
+        <p>Update the prior with the data:</p>
+        <program language="python">
+          <input>
+def update_euro(pmf, dataset):
+    """Update pmf with a given sequence of H and T."""
+    for data in dataset:
+        pmf *= likelihood[data]
+    
+    pmf.normalize()
+
+posterior = prior.copy()
+update_euro(posterior, dataset)
+          </input>
+        </program>
+      </solution>
     </exercise>
 
     <exercise xml:id="ex-distributions-dice-sum">
@@ -678,6 +719,24 @@ posterior
           Use the posterior mean to estimate the probability that the coin comes up heads.
         </p>
       </statement>
+      <solution>
+        <p>Following the solution from <xref ref="ex-distributions-euro" />, the posterior distribution has already been computed. To get the posterior mean:</p>
+        <program language="python">
+          <input>
+# The posterior mean estimates the probability of heads
+posterior.mean()
+          </input>
+        </program>
+        <p>You can also visualize the posterior distribution:</p>
+        <program language="python">
+          <input>
+posterior.plot(label='140 heads out of 250', color='C4')
+plt.xlabel('Proportion of heads (x)')
+plt.ylabel('Probability')
+plt.title('Posterior distribution of x')
+          </input>
+        </program>
+      </solution>
     </exercise>
 
     <exercise xml:id="ex-distributions-dungeons">
@@ -692,6 +751,45 @@ posterior
           What is the most likely number of sides, and what is its probability?
         </p>
       </statement>
+      <solution>
+        <p>Create a prior distribution over the possible dice:</p>
+        <program language="python">
+          <input>
+dice = [4, 6, 8, 12, 20]
+prior = Pmf(1/5, dice)
+          </input>
+        </program>
+        <p>Define the update function:</p>
+        <program language="python">
+          <input>
+def update_dice(pmf, data):
+    """Update pmf based on new data."""
+    hypos = pmf.qs
+    likelihood = 1 / hypos
+    impossible = (data &gt; hypos)
+    likelihood[impossible] = 0
+    pmf *= likelihood
+    pmf.normalize()
+          </input>
+        </program>
+        <p>Update with each roll:</p>
+        <program language="python">
+          <input>
+posterior = prior.copy()
+for roll in [1, 3, 4, 5, 6, 1]:
+    update_dice(posterior, roll)
+
+posterior
+          </input>
+        </program>
+        <p>Find the most likely number of sides:</p>
+        <program language="python">
+          <input>
+# The most likely die and its probability
+posterior.idxmax(), posterior.max()
+          </input>
+        </program>
+      </solution>
     </exercise>
 
     <exercise xml:id="ex-distributions-price-showcase">

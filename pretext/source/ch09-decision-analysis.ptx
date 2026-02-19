@@ -786,6 +786,67 @@ expected_gain_series = pd.Series(gains, index=bids)
           In the notebook for this chapter, I provide some code to get you started.
         </p>
       </statement>
+      <solution>
+        <p>Choose a prior distribution (log-uniform from 1 to 100 books per week):</p>
+        <program language="python">
+          <input>
+# For a prior I chose a log-uniform distribution; 
+# that is, a distribution that is uniform in log-space
+# from 1 to 100 books per week.
+
+qs = np.logspace(0, 2, 101)
+prior = Pmf(1, qs)
+prior.normalize()
+          </input>
+        </program>
+        <p>Create an update function based on one week of orders:</p>
+        <program language="python">
+          <input>
+from scipy.stats import poisson
+
+def update_book(pmf, data):
+    """Update book ordering rate.
+    
+    pmf: Pmf of book ordering rates
+    data: observed number of orders in one week
+    """
+    k = data
+    lams = pmf.index
+    likelihood = poisson.pmf(k, lams)
+    pmf *= likelihood
+    pmf.normalize()
+          </input>
+        </program>
+        <p>Update after week 1 (12 sales) and week 2 (8 sales):</p>
+        <program language="python">
+          <input>
+posterior1 = prior.copy()
+update_book(posterior1, 12)
+
+posterior2 = posterior1.copy()
+update_book(posterior2, 8)
+          </input>
+        </program>
+        <p>Generate sample of 1000 values from the posterior and simulate 8 weeks:</p>
+        <program language="python">
+          <input>
+rates = posterior2.choice(1000)
+order_array = np.random.poisson(rates, size=(8, 1000)).transpose()
+          </input>
+        </program>
+        <p>Compute expected profits for different order quantities:</p>
+        <program language="python">
+          <input>
+printed_array = np.arange(70, 110)
+t = [compute_expected_profits(printed, order_array)
+                    for printed in printed_array]
+expected_profits = pd.Series(t, printed_array)
+
+# Find the optimal order
+expected_profits.idxmax()
+          </input>
+        </program>
+      </solution>
     </exercise>
   </exercises>
 </chapter>
