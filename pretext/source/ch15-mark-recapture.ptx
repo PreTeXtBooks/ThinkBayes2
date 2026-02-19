@@ -897,7 +897,7 @@ posterior_N.plot(color='C4')
 
 decorate(xlabel='Number of bugs (N)',
          ylabel='PMF',
-         title='Posterior marginal distribution of n with known p1, p2')
+         title='Posterior marginal distribution of N with known p0, p1')
       </input>
     </program>
     <program language="python">
@@ -1039,25 +1039,25 @@ posterior_N.mean()
     </p>
     <program language="python">
       <input>
-posterior_p1 = posterior_pmf.marginal(1)
-posterior_p2 = posterior_pmf.marginal(2)
+posterior_p0 = posterior_pmf.marginal(1)
+posterior_p1 = posterior_pmf.marginal(2)
 
+posterior_p0.plot(label='p0')
 posterior_p1.plot(label='p1')
-posterior_p2.plot(label='p2')
 
 decorate(xlabel='Probability of finding a bug',
          ylabel='PDF',
-         title='Posterior marginal distributions of p1 and p2')
+         title='Posterior marginal distributions of p0 and p1')
+      </input>
+    </program>
+    <program language="python">
+      <input>
+posterior_p0.mean(), posterior_p0.credible_interval(0.9)
       </input>
     </program>
     <program language="python">
       <input>
 posterior_p1.mean(), posterior_p1.credible_interval(0.9)
-      </input>
-    </program>
-    <program language="python">
-      <input>
-posterior_p2.mean(), posterior_p2.credible_interval(0.9)
       </input>
     </program>
     <p>
