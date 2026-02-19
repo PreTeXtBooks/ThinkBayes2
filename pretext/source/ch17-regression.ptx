@@ -524,7 +524,7 @@ summarize(posterior_slope)
       The posterior mean is about 0.51 inches, which is consistent with the estimate we got from least squared regression.
     </p>
     <p>
-      The 90% credible interval is from 0.1 to 0.9, which indicates that our uncertainty about this estimate is pretty high.  In fact, there is still a small posterior probability (about 2\%) that the slope is negative.
+      The 90% credible interval is from 0.1 to 0.9, which indicates that our uncertainty about this estimate is pretty high.  In fact, there is still a small posterior probability (about 2%) that the slope is negative.
     </p>
     <program language="python">
       <input>
