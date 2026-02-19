@@ -35,7 +35,7 @@
     </p>
 
     <p>
-      We'll extend the Bayesian update process we've seen in previous chapter and apply it to a joint distribution.
+      We'll extend the Bayesian update process we've seen in previous chapters and apply it to a joint distribution.
     </p>
 
     <p>
@@ -142,7 +142,7 @@ def outer_product(s1, s2):
     <title>How tall is A?</title>
 
     <p>
-      Suppose I choose two people from the population of adult males in the United States, and call them A and B.  If we see that A taller than B, how tall is A?
+      Suppose I choose two people from the population of adult males in the United States, and call them A and B.  If we see that A is taller than B, how tall is A?
     </p>
 
     <p>
@@ -176,7 +176,7 @@ def outer_product(s1, s2):
     </ol>
 
     <p>
-      In the U.S. the average height of male adults in 178 cm and the standard deviation is 7.7 cm.  The distribution is not exactly normal, because nothing in the real world is, but the normal distribution is a pretty good model of the actual distribution, so we can use it as a prior distribution for A and B.
+      In the U.S. the average height of male adults is 178 cm and the standard deviation is 7.7 cm.  The distribution is not exactly normal, because nothing in the real world is, but the normal distribution is a pretty good model of the actual distribution, so we can use it as a prior distribution for A and B.
     </p>
 
     <p>
