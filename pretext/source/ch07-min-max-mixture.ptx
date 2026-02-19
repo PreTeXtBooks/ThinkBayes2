@@ -8,7 +8,7 @@
       In the previous chapter we computed distributions of sums, differences, products, and quotients.
     </p>
     <p>
-      In this chapter, we'll compute distributions of minima and maxima use them to solve inference problems.
+      In this chapter, we'll compute distributions of minima and maxima and use them to solve inference problems.
       Then we'll look at distributions that are mixtures of other distributions, which will turn out to be particularly useful for making predictions.
     </p>
     <p>
@@ -573,7 +573,7 @@ def make_mixture(pmf, pmf_seq):
     </program>
 
     <p>
-      The first parameter is a <c>Pmf</c> that makes from each hypothesis to a probability.
+      The first parameter is a <c>Pmf</c> that maps from each hypothesis to a probability.
       The second parameter is a sequence of <c>Pmf</c> objects, one for each hypothesis.
       We can call it like this:
     </p>
