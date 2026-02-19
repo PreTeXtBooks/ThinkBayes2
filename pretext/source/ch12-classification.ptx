@@ -221,7 +221,7 @@ flipper_map.keys()
     </program>
 
     <p>
-      Now suppose we measure a penguin and find that its flipper is 193 cm.  What is the probability of that measurement under each hypothesis?
+      Now suppose we measure a penguin and find that its flipper is 193 mm.  What is the probability of that measurement under each hypothesis?
     </p>
     <p>
       The <c>norm</c> object provides <c>pdf</c>, which computes the probability density function (PDF) of the normal distribution.  We can use it to compute the likelihood of the observed data in a given distribution.
