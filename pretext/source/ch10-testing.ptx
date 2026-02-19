@@ -17,7 +17,7 @@ set_pyplot_params()
     </program>
 
     <p>
-      In <xref ref="_TheEuroProblem" /> I presented a problem from David MacKay's book, <url href="http://www.inference.org.uk/mackay/itila/p0.html"><em>Information Theory, Inference, and Learning Algorithms</em></url>:
+      In a previous chapter I presented a problem from David MacKay's book, <url href="http://www.inference.org.uk/mackay/itila/p0.html"><em>Information Theory, Inference, and Learning Algorithms</em></url>:
     </p>
     <p>
       "A statistical statement appeared in <em>The Guardian</em> on Friday January 4, 2002:
@@ -29,7 +29,7 @@ set_pyplot_params()
       "But [MacKay asks] do these data give evidence that the coin is biased rather than fair?"
     </p>
     <p>
-      We started to answer this question in <xref ref="_EstimatingProportions" />; to review, our answer was based on these modeling decisions:
+      We started to answer this question in an earlier chapter on estimating proportions; to review, our answer was based on these modeling decisions:
     </p>
     <ul>
       <li><p>If you spin a coin on edge, there is some probability, <m>x</m>, that it will land heads up.</p></li>
@@ -52,7 +52,7 @@ set_pyplot_params()
     <title>Estimation</title>
 
     <p>
-      Let's review the solution to the Euro problem from <xref ref="_TheBinomialLikelihoodFunction" />.  We started with a uniform prior.
+      Let's review the solution to the Euro problem from an earlier section.  We started with a uniform prior.
     </p>
     <program language="python">
       <input>
@@ -118,7 +118,7 @@ print(posterior.mean(),
     <title>Evidence</title>
 
     <p>
-      In <xref ref="_OliversBlood" />, I said that data are considered evidence in favor of a hypothesis, <m>A</m>, if the data are more likely under <m>A</m> than under the alternative, <m>B</m>; that is if
+      In an earlier chapter on Oliver's blood problem, I said that data are considered evidence in favor of a hypothesis, <m>A</m>, if the data are more likely under <m>A</m> than under the alternative, <m>B</m>; that is if
     </p>
     <me>P(D|A) &gt; P(D|B)</me>
     <p>
@@ -309,10 +309,10 @@ decorate(xlabel='Proportion of heads (x)',
       <li><p>Decision-making: Can we use those predictions to make better decisions?</p></li>
     </ul>
     <p>
-      At this point, we've seen a few examples of prediction.  For example, in <xref ref="_PoissonProcesses" /> we used the posterior distribution of goal-scoring rates to predict the outcome of soccer games.
+      At this point, we've seen a few examples of prediction.  For example, in a chapter on Poisson processes we used the posterior distribution of goal-scoring rates to predict the outcome of soccer games.
     </p>
     <p>
-      And we've seen one previous example of decision analysis: In <xref ref="_DecisionAnalysis" /> we used the distribution of prices to choose an optimal bid on <em>The Price is Right</em>.
+      And we've seen one previous example of decision analysis: In a chapter on decision analysis we used the distribution of prices to choose an optimal bid on <em>The Price is Right</em>.
     </p>
     <p>
       So let's finish this chapter with another example of Bayesian decision analysis, the Bayesian Bandit strategy.
@@ -735,7 +735,7 @@ summarize_counter(counter)
       Bayesian bandits and adaptive testing are examples of <url href="https://wiki.lesswrong.com/wiki/Bayesian_decision_theory">Bayesian decision theory</url>, which is the idea of using a posterior distribution as part of a decision-making process, often by choosing an action that minimizes the costs we expect on average (or maximizes a benefit).
     </p>
     <p>
-      The strategy we used in <xref ref="_MaximizingExpectedGain" /> to bid on <em>The Price is Right</em> is another example.
+      The strategy we used in an earlier section on maximizing expected gain to bid on <em>The Price is Right</em> is another example.
     </p>
     <p>
       These strategies demonstrate what I think is the biggest advantage of Bayesian methods over classical statistics. When we represent knowledge in the form of probability distributions, Bayes's theorem tells us how to change our beliefs as we get more data, and Bayesian decision theory tells us how to make that knowledge actionable.
