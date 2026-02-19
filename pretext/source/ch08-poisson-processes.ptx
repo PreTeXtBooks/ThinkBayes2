@@ -323,7 +323,7 @@ def prob_gt(pmf1, pmf2):
     </program>
 
     <p>
-      This is similar to the method we use in Section 6.5 to compute the distribution of a sum.
+      This is similar to the method we used earlier to compute the distribution of a sum.
       Here's how we use it:
     </p>
 
@@ -387,7 +387,7 @@ pmf_seq = [make_poisson_pmf(lam, 12) for lam in prior.qs]
     </program>
 
     <p>
-      Now we can use <c>make_mixture</c> from Section 7.5 to compute posterior predictive distributions for France and Croatia:
+      Now we can use <c>make_mixture</c> from <xref ref="sec-min-max-mixture-mixtures"/> to compute posterior predictive distributions for France and Croatia:
     </p>
 
     <program language="python">
