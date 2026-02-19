@@ -1214,6 +1214,9 @@ results.resid.std()
         <p>
           Does the model fit the data well?  How much do we expect annual average temperatures to increase over my (expected) lifetime?
         </p>
+      </statement>
+    </exercise>
+
     <program language="python">
       <input>
 # Solution
