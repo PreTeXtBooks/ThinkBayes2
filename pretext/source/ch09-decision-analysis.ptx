@@ -5,10 +5,787 @@
 
   <introduction>
     <p>
-      This chapter presents decision analysis methods for making optimal decisions under uncertainty.
+      In this chapter we estimate the price of prizes on a game show.
+      Once we compute a posterior distribution, we'll use it to optimize a decision-making process.
+    </p>
+    <p>
+      This example demonstrates the real power of Bayesian methods, not just computing posterior distributions, but using them to make better decisions.
     </p>
   </introduction>
 
-  <!-- Sections will be added here -->
+  <section xml:id="sec-price-is-right-problem">
+    <title>The <em>Price is Right</em> problem</title>
 
+    <p>
+      On November 1, 2007, contestants named Letia and Nathaniel appeared
+      on <em>The Price is Right</em>, an American game show.  They competed in
+      a game called <em>The Showcase</em>, where the objective is to guess the price
+      of a showcase of prizes.  The contestant who comes closest to the
+      actual price of the showcase, without going over, wins the prizes.
+    </p>
+
+    <p>
+      Nathaniel went first.  His showcase included a dishwasher, a wine
+      cabinet, a laptop computer, and a car.  He bid $26,000.
+    </p>
+
+    <p>
+      Letia's showcase included a pinball machine, a video arcade game, a
+      pool table, and a cruise of the Bahamas.  She bid $21,500.
+    </p>
+
+    <p>
+      The actual price of Nathaniel's showcase was $25,347.  His bid
+      was too high, so he lost.
+    </p>
+
+    <p>
+      The actual price of Letia's showcase was $21,578.  She was only
+      off by $78, so she won her showcase and, because
+      her bid was off by less than $250, she also won Nathaniel's
+      showcase.
+    </p>
+
+    <p>
+      For a Bayesian thinker, this scenario suggests several questions:
+    </p>
+
+    <ol>
+      <li><p>Before seeing the prizes, what prior beliefs should the
+        contestant have about the price of the showcase?</p></li>
+
+      <li><p>After seeing the prizes, how should the contestant update
+        those beliefs?</p></li>
+
+      <li><p>Based on the posterior distribution, what should the
+        contestant bid?</p></li>
+    </ol>
+
+    <p>
+      The third question demonstrates a common use of Bayesian analysis:
+      decision analysis.  Given a posterior distribution, we can choose
+      the bid that maximizes the contestant's expected return.
+    </p>
+
+    <p>
+      This problem is inspired by an example in Cameron Davidson-Pilon's
+      book, <em>Probabilistic Programming and Bayesian Methods for Hackers</em>
+      (see <url href="http://camdavidsonpilon.github.io/Probabilistic-Programming-and-Bayesian-Methods-for-Hackers">http://camdavidsonpilon.github.io/Probabilistic-Programming-and-Bayesian-Methods-for-Hackers</url>).
+    </p>
+  </section>
+
+  <section xml:id="sec-prior">
+    <title>The prior</title>
+
+    <p>
+      To choose a prior distribution of prices, we can take advantage
+      of data from previous episodes.
+      Fortunately, fans of the show keep detailed records (see <url href="https://web.archive.org/web/20121107204942/http://www.tpirsummaries.8m.com/">https://web.archive.org/web/20121107204942/http://www.tpirsummaries.8m.com/</url>).
+    </p>
+
+    <p>
+      For this example, I downloaded files containing the price of each showcase from the 2011 and 2012 seasons and the bids offered by the contestants.
+    </p>
+
+    <p>
+      This dataset contains the prices for 313 previous showcases, which we can think of as a sample from the population of possible prices.
+    </p>
+
+    <p>
+      We can use this sample to estimate the prior distribution of showcase prices.
+      One way to do that is <term>kernel density estimation</term> (KDE), which uses the sample to estimate a smooth distribution.
+    </p>
+
+    <p>
+      SciPy provides <c>gaussian_kde</c>, which takes a sample and returns an object that represents the estimated distribution.
+    </p>
+
+    <p>
+      The following function takes a sample, makes a KDE, evaluates it at a given sequence of quantities, and returns the result as a normalized <c>Pmf</c>:
+    </p>
+
+    <program language="python">
+      <input>
+from scipy.stats import gaussian_kde
+
+def make_kde(qs, sample):
+    kde = gaussian_kde(sample)
+    ps = kde(qs)
+    pmf = Pmf(ps, qs)
+    pmf.normalize()
+    return pmf
+      </input>
+    </program>
+
+    <p>
+      We can use it to estimate the distribution of total price for Showcase 1:
+    </p>
+
+    <program language="python">
+      <input>
+qs = np.linspace(0, 80000, 81)
+prior1 = make_kde(qs, df['Showcase 1'])
+      </input>
+    </program>
+
+    <p>
+      <!-- Figure fig08-01: Distribution of total price for Showcase 1 -->
+      Figure shows the estimated distribution.
+      The most common price is around
+      $28,000, but there might be a second mode near $50,000.
+    </p>
+
+    <p>
+      If you were a contestant on the
+      show, you could use this distribution to quantify your prior belief
+      about the price of each showcase (before you see the prizes).
+    </p>
+
+    <note>
+      <p>
+        Here is the PDF of a Gaussian distribution with
+        mean 0 and standard deviation 1:
+      </p>
+      <me>
+        f(x) = \frac{1}{\sqrt{2 \pi}} \exp(-x^2/2)
+      </me>
+    </note>
+  </section>
+
+  <section xml:id="sec-modeling-contestants">
+    <title>Modeling the contestants</title>
+
+    <p>
+      When the contestants see the prizes, they get information they can use to update their beliefs.
+      To do that, we have to answer these questions:
+    </p>
+
+    <ol>
+      <li><p>What data should we consider and how should we quantify it?</p></li>
+
+      <li><p>Can we compute a likelihood function; that is,
+        for each hypothetical value of <c>price</c>, can we compute
+        the conditional likelihood of the data?</p></li>
+    </ol>
+
+    <p>
+      To answer these questions, I model the contestant
+      as a price-guessing instrument with known error characteristics.
+      In other words, when the contestant sees the prizes, they
+      guess the price of each prize—ideally without taking into
+      consideration the fact that the prize is part of a showcase—and
+      add up the prices.  Let's call this total <c>guess</c>.
+    </p>
+
+    <p>
+      Under this model, the question we have to answer is, <q>If the
+      actual price is <c>price</c>, what is the likelihood that the
+      contestant's estimate would be <c>guess</c>?</q>
+    </p>
+
+    <p>
+      Or if we define <c>error = price - guess</c>, we can ask, <q>What is the likelihood that the contestant's estimate is off by <c>error</c>?</q>
+    </p>
+
+    <p>
+      To answer this question, I'll use the historical data again.
+      For each showcase in the dataset, let's look at the difference between the contestant's bid and the actual price:
+    </p>
+
+    <program language="python">
+      <input>
+sample_diff1 = df['Bid 1'] - df['Showcase 1']
+sample_diff2 = df['Bid 2'] - df['Showcase 2']
+      </input>
+    </program>
+
+    <p>
+      To visualize the distribution of these differences, we can use KDE again.
+    </p>
+
+    <program language="python">
+      <input>
+qs = np.linspace(-40000, 20000, 61)
+kde_diff1 = make_kde(qs, sample_diff1)
+kde_diff2 = make_kde(qs, sample_diff2)
+      </input>
+    </program>
+
+    <p>
+      <!-- Figure fig08-02: Distribution of differences for the two contestants. -->
+      Figure shows the results.
+    </p>
+
+    <p>
+      It looks like the bids are too low more often than too high, which makes sense.
+      Remember that under the rules of the game, you lose if you overbid, so contestants probably underbid to some degree deliberately.
+    </p>
+
+    <p>
+      We can use the observed distribution of differences to model the contestant's distribution of errors.
+      This step is a little tricky because we don't actually know the contestant's guesses; we only know what they bid.
+      So we have to make some assumptions:
+    </p>
+
+    <ol>
+      <li><p>I'll assume that contestants underbid because they are being strategic, and that on average their guesses are accurate.  In other words, the mean of their errors is 0.</p></li>
+
+      <li><p>But I'll assume that the spread of the differences reflects the actual spread of their errors.  So, I'll use the standard deviation of the differences as the standard deviation of their errors.</p></li>
+    </ol>
+
+    <p>
+      Based on these assumptions, I'll make a normal distribution with mean 0 and standard deviation <c>std_diff1</c>:
+    </p>
+
+    <program language="python">
+      <input>
+from scipy.stats import norm
+
+error_dist1 = norm(0, std_diff1)
+      </input>
+    </program>
+
+    <p>
+      The result is an object that represents the distribution of errors for Player 1.
+      Among other things, this object can compute the PDF of a normal distribution, which we will use in the next section.
+    </p>
+
+    <p>
+      This model is not perfect because contestants' bids are sometimes strategic; for example, if Player 2 thinks that Player 1
+      has overbid, Player 2 might make a very low bid.
+      In that case <c>diff</c> does not reflect <c>error</c>.
+      If this happens a lot, the observed variance in <c>diff</c> might overestimate the variance in <c>error</c>.
+      Nevertheless, I think it is a reasonable modeling decision.
+    </p>
+
+    <p>
+      As an alternative, someone preparing to appear on the show could
+      estimate their own distribution of <c>error</c> by watching previous shows
+      and recording their guesses and the actual prices.
+    </p>
+  </section>
+
+  <section xml:id="sec-update">
+    <title>Update</title>
+
+    <p>
+      Now we are ready to do the update.
+    </p>
+
+    <p>
+      Suppose you are Player 1.  You see the prizes in your showcase and your estimate of the total price is $23,000.
+    </p>
+
+    <p>
+      For each hypothetical price in the prior distribution, I'll subtract away your guess.
+      The result is your error under each hypothesis.
+    </p>
+
+    <program language="python">
+      <input>
+guess1 = 23000
+qs = prior1.index
+error1 = guess1 - qs
+      </input>
+    </program>
+
+    <p>
+      Now suppose you know based on past performance that your estimation error is well modeled by <c>error_dist1</c>.
+    </p>
+
+    <p>
+      Under that assumption we can compute the likelihood of your estimate under each hypothesis.
+    </p>
+
+    <program language="python">
+      <input>
+likelihood1 = error_dist1.pdf(error1)
+      </input>
+    </program>
+
+    <p>
+      And we can use that likelihood to update the prior.
+    </p>
+
+    <program language="python">
+      <input>
+posterior1 = prior1 * likelihood1
+posterior1.normalize()
+      </input>
+    </program>
+
+    <p>
+      <!-- Figure fig08-03: Prior and posterior distributions for Player 1. -->
+      Figure shows this posterior distribution along with the prior.
+      Because your estimate is in the lower end of the range, the posterior distribution has shifted to the left.
+    </p>
+
+    <p>
+      Based on the prior mean, before you saw the prizes you expected to see a showcase with a value close to $30,000.
+    </p>
+
+    <p>
+      After making an estimate of $23,000, you updated the prior distribution.
+      Based on the combination of the prior and your estimate, you now expect the actual price to be about $26,000.
+    </p>
+
+    <p>
+      On one level, this result makes sense.
+      The posterior mean is near the midpoint of your estimate and the prior mean.
+    </p>
+
+    <p>
+      On another level, you might find this result strange because it
+      suggests that if you <em>think</em> the price is $23,000, then you
+      should <em>believe</em> the price is $26,000.
+    </p>
+
+    <p>
+      To resolve this apparent paradox, remember that you are combining two
+      sources of information, historical data about past showcases and
+      guesses about the prizes you see.
+    </p>
+
+    <p>
+      We are treating the historical data as the prior and updating it
+      based on your guesses, but we could equivalently use your guess
+      as a prior and update it based on historical data.
+    </p>
+
+    <p>
+      If you think of it that way, maybe it is less surprising that the
+      most likely value in the posterior is not your original guess.
+    </p>
+  </section>
+
+  <section xml:id="sec-strategy">
+    <title>Strategy</title>
+
+    <p>
+      Now that we have a posterior distribution, let's think about strategy.
+    </p>
+  </section>
+
+  <section xml:id="sec-probability-of-winning">
+    <title>Probability of Winning</title>
+
+    <p>
+      First, from the point of view of Player 1, let's compute the probability that Player 2 overbids.
+      To keep it simple, I'll use only the performance of past players, ignoring the estimated price of the showcase.
+    </p>
+
+    <p>
+      The following function takes a sequence of past bids and returns the fraction that overbid.
+    </p>
+
+    <program language="python">
+      <input>
+def prob_overbid(sample_diff):
+    return np.mean(sample_diff > 0)
+      </input>
+    </program>
+
+    <p>
+      In the dataset, Player 2 overbids about 30% of the time.
+    </p>
+
+    <p>
+      Now suppose Player 1 underbids by $5000.
+      What is the probability that Player 2 underbids by more?
+    </p>
+
+    <p>
+      The following function uses past performance to estimate the probability that a player underbids by more than a given amount, <c>diff</c>:
+    </p>
+
+    <program language="python">
+      <input>
+def prob_worse_than(diff, sample_diff):
+    return np.mean(sample_diff &lt; diff)
+      </input>
+    </program>
+
+    <p>
+      Player 2 underbids by more than $5000 about 40% of the time.
+    </p>
+
+    <p>
+      We can combine these functions to compute the probability that Player 1 wins, given the difference between their bid and the actual price:
+    </p>
+
+    <program language="python">
+      <input>
+def compute_prob_win(diff, sample_diff):
+    # if you overbid you lose
+    if diff > 0:
+        return 0
+
+    # if the opponent overbids, you win
+    p1 = prob_overbid(sample_diff)
+
+    # or if their bid is worse than yours, you win
+    p2 = prob_worse_than(diff, sample_diff)
+    return p1 + p2
+      </input>
+    </program>
+
+    <p>
+      Let's look at this from your point of view as a contestant.
+      <c>diff</c> is the difference between your bid and the actual price; if it's greater than 0, you overbid, so you lose.
+    </p>
+
+    <p>
+      <c>sample_diff</c> is a sample of differences for your opponent.
+      If they overbid (and you didn't) you win.
+    </p>
+
+    <p>
+      Otherwise, we have to see whose bid is closer, yours or your opponent's.  If their bid is worse than yours, you win.
+    </p>
+
+    <p>
+      As an example, you can call it like this:
+    </p>
+
+    <program language="python">
+      <input>
+compute_prob_win(-5000, sample_diff2)
+      </input>
+    </program>
+
+    <p>
+      If Player 1 underbids by $5000, their chance of winning is about 67%.
+      Now let's look at the probability of winning for a range of possible differences.
+    </p>
+
+    <program language="python">
+      <input>
+xs = np.linspace(-30000, 5000, 121)
+ys = [compute_prob_win(x, sample_diff2) for x in xs]
+      </input>
+    </program>
+
+    <p>
+      <!-- Figure fig08-04: For Player 1, the probability of winning as a function of the difference between their bid and the actual price. -->
+      From the point of view of Player 1, Figure shows the probability of winning as a function of the difference between their bid and the actual price.
+    </p>
+  </section>
+
+  <section xml:id="sec-decision-analysis">
+    <title>Decision Analysis</title>
+
+    <p>
+      In the previous section we computed the probability of winning given that we have underbid by a particular amount.
+    </p>
+
+    <p>
+      In reality the contestants don't know how much they have underbid by because they don't know the actual price.
+    </p>
+
+    <p>
+      But they do have a posterior distribution that represents their beliefs about the actual price, and they can use that to estimate their probability of winning with a given bid.
+    </p>
+
+    <p>
+      The following function take a possible bid, a posterior distribution of actual prices, and a sample of differences for the opponent.
+    </p>
+
+    <program language="python">
+      <input>
+def total_prob_win(bid, posterior, sample_diff):
+    total = 0
+    for price, prob in posterior.items():
+        diff = bid - price
+        total += prob * compute_prob_win(diff, sample_diff)
+    return total
+      </input>
+    </program>
+
+    <p>
+      It loops through the hypothetical prices in the posterior distribution and for each price:
+    </p>
+
+    <ol>
+      <li><p>Computes the difference between the bid and the hypothetical price.</p></li>
+
+      <li><p>Computes the probability that the player wins, given that difference.</p></li>
+
+      <li><p>Adds up the weighted sum of the probabilities, where the weights are the probabilities in the posterior distribution.</p></li>
+    </ol>
+
+    <p>
+      This loop implements the law of total probability:
+    </p>
+
+    <me>
+      P(\text{win}) = \sum_{\text{price}} P(\text{price}) ~ P(\text{win} \mid \text{price})
+    </me>
+
+    <p>
+      Now we can loop through a range of possible bids and compute the probability of winning:
+    </p>
+
+    <program language="python">
+      <input>
+bids = posterior1.index
+probs = [total_prob_win(bid, posterior1, sample_diff2)
+         for bid in bids]
+      </input>
+    </program>
+
+    <p>
+      <!-- Figure fig08-05: For Player 1, the probability of winning as a function of their bid. -->
+      For Player 1, Figure shows the probability of winning as a function of their bid.
+    </p>
+
+    <p>
+      Recall that your estimate was $23,000.
+    </p>
+
+    <p>
+      After using your estimate to compute the posterior distribution, the posterior mean is about $26,000.
+    </p>
+
+    <p>
+      But the bid that maximizes your chance of winning is $21,000; with that bid, the probability of winning is 52%.
+    </p>
+  </section>
+
+  <section xml:id="sec-expected-gain">
+    <title>Expected Gain</title>
+
+    <p>
+      In the previous section we computed the bid that maximizes your chance of winning.
+      And if that's your goal, the bid we computed is optimal.
+    </p>
+
+    <p>
+      But winning isn't everything.
+      Remember that if your bid is off by $250 or less, you win both showcases.
+      So it might be a good idea to increase your bid a little: it increases the chance you overbid and lose, but it also increases the chance of winning both showcases.
+    </p>
+
+    <p>
+      Let's see how that works out.
+      The following function computes how much you will win, on average, given your bid, the actual price, and a sample of errors for your opponent.
+    </p>
+
+    <program language="python">
+      <input>
+def compute_gain(bid, price, sample_diff):
+    diff = bid - price
+    prob = compute_prob_win(diff, sample_diff)
+
+    # if you are within 250 dollars, you win both showcases
+    if -250 &lt;= diff &lt;= 0:
+        return 2 * price * prob
+    else:
+        return price * prob
+      </input>
+    </program>
+
+    <p>
+      For simplicity, I assume that both showcases have the same value.
+      Since the probability of winning both showcases is small, the the effect of this simplification should be small.
+    </p>
+
+    <p>
+      As an example, if the actual price is $35000
+      and you bid $30000,
+      you will win about $23,600 worth of prizes on average.
+    </p>
+
+    <p>
+      In reality we don't know the actual price, but we have a posterior distribution that represents what we know about it.
+      By averaging over the prices and probabilities in the posterior distribution, we can compute the <term>expected gain</term> for a particular bid.
+    </p>
+
+    <program language="python">
+      <input>
+def expected_gain(bid, posterior, sample_diff):
+    total = 0
+    for price, prob in posterior.items():
+        total += prob * compute_gain(bid, price, sample_diff)
+    return total
+      </input>
+    </program>
+
+    <p>
+      The first argument is your bid; the second is the posterior distribution that represents your belief about the price of the showcase; and <c>sample_diff</c> is a sample of differences for your opponent.
+    </p>
+
+    <p>
+      For the posterior we computed earlier, based on an estimate of $23,000,
+      the expected gain for a bid of $21,000
+      is about $16,900.
+    </p>
+
+    <p>
+      But can we do better?
+      To find out, we can loop through a range of bids and find the one that maximizes expected gain.
+    </p>
+
+    <program language="python">
+      <input>
+bids = posterior1.index
+
+gains = [expected_gain(bid, posterior1, sample_diff2) for bid in bids]
+
+expected_gain_series = pd.Series(gains, index=bids)
+      </input>
+    </program>
+
+    <p>
+      <!-- Figure fig08-06: Expected gain for a range of possible bids. -->
+      Figure shows expected gain for a range of possible bids.
+    </p>
+
+    <p>
+      Recall that the estimated value of the prizes is $23,000 and the bid that maximizes the chance of winning is $21,000.
+      The bid that maximizes your expected gain is $22,000; with that bid, your expected gain is about $17,400.
+    </p>
+  </section>
+
+  <section xml:id="sec-discussion">
+    <title>Discussion</title>
+
+    <p>
+      One of the features of Bayesian estimation is that the
+      result comes in the form of a posterior distribution.  Classical
+      estimation usually generates a single point estimate or a confidence
+      interval, which is sufficient if estimation is the last step in the
+      process, but if you want to use an estimate as an input to a
+      subsequent analysis, point estimates and intervals are often not much
+      help.
+    </p>
+
+    <p>
+      In this example, we use the posterior distribution
+      to compute an optimal bid.  The return on a given bid is asymmetric
+      and discontinuous (if you overbid, you lose), so it would be hard to
+      solve this problem analytically.  But it is relatively simple to do
+      computationally.
+    </p>
+
+    <p>
+      Newcomers to Bayesian thinking are often tempted to summarize the
+      posterior distribution by computing the mean or the maximum
+      likelihood estimate.  These summaries can be useful, but if that's
+      all you need, then you probably don't need Bayesian methods in the
+      first place.
+    </p>
+
+    <p>
+      Bayesian methods are most useful when you can carry the posterior
+      distribution into the next step of the analysis to perform some
+      kind of decision analysis, as we did in this chapter, or some kind of
+      prediction, as we see in the next chapter.
+    </p>
+  </section>
+
+  <exercises xml:id="exercises-decision-analysis">
+    <title>Exercises</title>
+
+    <p>
+      The code for this chapter is in <c>chap09.ipynb</c>, which is in the repository for this book.  See Section 0.3 for details.
+      You can run the notebook on Colab at <url href="https://colab.research.google.com/github/AllenDowney/ThinkBayes2/blob/master/code/chap09.ipynb">https://colab.research.google.com/github/AllenDowney/ThinkBayes2/blob/master/code/chap09.ipynb</url>.
+    </p>
+
+    <p>
+      The notebook provides space where you can work on the following problems.
+    </p>
+
+    <exercise xml:id="ex-decision-player-2">
+      <statement>
+        <p>
+          Following the instructions in the notebook, replicate the analysis in this chapter from the point of view of Player 2.
+        </p>
+      </statement>
+    </exercise>
+
+    <exercise xml:id="ex-decision-book-printing">
+      <statement>
+        <p>
+          This exercise is inspired by a true story.  In 2001 I created Green Tea Press to publish my books, starting with <c>Think Python</c>.
+          I ordered 100 copies from a short-run printer and made the book available for through a distributor.  After the first week, the distributor reported that 12 copies were sold.  Based that report, I thought I would run out of copies in about 8 weeks, so I got ready to order more.  My printer offered me a discount if I ordered more than 1000 copies, so I went a little crazy and ordered 2000 copies.  A few days later, my mother called to tell me that her copies of the book had arrived.  Surprised, I asked how many <q>copies</q>.  She said ten.
+        </p>
+
+        <p>
+          It turned out I had sold only two copies to non-relatives.  And it took a lot longer than I expected to sell 2000 copies.
+        </p>
+
+        <p>
+          The details of this story are unique, but the general problem is something almost every retailer has to figure out.  Based on past sales, how do you predict future sales?  And based on those predictions, how do you decide how much to order and when?
+        </p>
+
+        <p>
+          Often the cost of a bad decision is complicated.  If you place a lot of small orders rather than one big one, your costs are likely to be higher.  If you run out of inventory, you might lose customers.  And if you order too much, you have to pay the various costs of holding inventory.
+        </p>
+
+        <p>
+          So, let's solve a version of the problem I faced.  Suppose you start selling books online.  During the first week you sell 12 copies (and let's assume that none of the customers are your mother).  During the second week you sell 8 copies.
+        </p>
+
+        <p>
+          Assuming that the arrival of orders is a Poisson process, we can think of the weekly orders as samples from a Poisson distribution with an unknown rate.
+          Choose a prior you think is appropriate and use the data to compute the posterior distribution of the order rate.
+          Then generate a posterior predictive distribution for the number of copies you expect during the next 8 weeks.
+        </p>
+
+        <ul>
+          <li><p>Suppose the cost of printing the book is $5 per copy,</p></li>
+
+          <li><p>But if you order 100 or more, it's $4.50 per copy.</p></li>
+
+          <li><p>For every book you sell, you get $10.</p></li>
+
+          <li><p>But if you run out of books before the end of 8 weeks, you lose $50 in future sales for every week you are out of stock.</p></li>
+
+          <li><p>If you have books left over at the end of 8 weeks, you lose $2 in inventory costs per extra book.</p></li>
+        </ul>
+
+        <p>
+          For example, suppose you get orders for 10 books per week, every week.
+        </p>
+
+        <p>
+          If you order 60 books,
+        </p>
+        <ul>
+          <li><p>The total cost is $300.</p></li>
+
+          <li><p>You sell 60 books, so you make $600.</p></li>
+
+          <li><p>But the book is out of stock for two weeks, so you lose $100 in future sales.</p></li>
+        </ul>
+
+        <p>
+          In total, your profit is $200.
+        </p>
+
+        <p>
+          If you order 100 books,
+        </p>
+        <ul>
+          <li><p>The total cost is $450.</p></li>
+
+          <li><p>You sell 80 books, again, so you make $800.</p></li>
+
+          <li><p>But you have 20 books left over at the end, so you lose $40.</p></li>
+        </ul>
+
+        <p>
+          In total, your profit is $310.
+        </p>
+
+        <p>
+          Combining these costs with your predictive distribution, how many books should you order to maximize your expected profit?
+        </p>
+
+        <p>
+          In the notebook for this chapter, I provide some code to get you started.
+        </p>
+      </statement>
+    </exercise>
+  </exercises>
 </chapter>
