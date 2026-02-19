@@ -5,10 +5,582 @@
 
   <introduction>
     <p>
-      This chapter introduces Bayes's theorem and demonstrates its power for solving a wide range of problems.
+      In the previous chapter, we derived Bayes's Theorem:
+    </p>
+    <me>P(A|B) = \frac{P(A) P(B|A)}{P(B)}</me>
+    <p>
+      As an example, we used data from the General Social Survey and Bayes's Theorem to compute conditional probabilities.
+      But since we had the complete dataset, we didn't really need Bayes's Theorem.
+      It was easy enough to compute the left side of the equation directly, and no easier to compute the right side.
+    </p>
+    <p>
+      But often we don't have a complete dataset, and in that case Bayes's Theorem is more useful. In this chapter, we'll use it to solve several more challenging problems related to conditional probability.
     </p>
   </introduction>
 
-  <!-- Sections will be added here -->
+  <section xml:id="sec-cookie-problem">
+    <title>The Cookie Problem</title>
+    
+    <p>
+      We'll start with a thinly disguised version of an urn problem:
+    </p>
+    
+    <blockquote>
+      <p>
+        Suppose there are two bowls of cookies.
+      </p>
+      <p>
+        <ul>
+          <li><p>Bowl 1 contains 30 vanilla cookies and 10 chocolate cookies.</p></li>
+          <li><p>Bowl 2 contains 20 vanilla cookies and 20 chocolate cookies.</p></li>
+        </ul>
+      </p>
+      <p>
+        Now suppose you choose one of the bowls at random and, without looking, choose a cookie at random. If the cookie is vanilla, what is the probability that it came from Bowl 1?
+      </p>
+    </blockquote>
+    
+    <p>
+      What we want is the conditional probability that we chose from Bowl 1 given that we got a vanilla cookie, <m>P(B_1 | V)</m>.
+    </p>
+    
+    <p>
+      But what we get from the statement of the problem is:
+    </p>
+    
+    <p>
+      <ul>
+        <li><p>The conditional probability of getting a vanilla cookie, given that we chose from Bowl 1, <m>P(V | B_1)</m> and</p></li>
+        <li><p>The conditional probability of getting a vanilla cookie, given that we chose from Bowl 2, <m>P(V | B_2)</m>.</p></li>
+      </ul>
+    </p>
+    
+    <p>
+      Bayes's Theorem tells us how they are related:
+    </p>
+    
+    <me>P(B_1|V) = \frac{P(B_1)~P(V|B_1)}{P(V)}</me>
+    
+    <p>
+      The term on the left is what we want. The terms on the right are:
+    </p>
+    
+    <p>
+      <ul>
+        <li><p><m>P(B_1)</m>, the probability that we chose Bowl 1, unconditioned by what kind of cookie we got. Since the problem says we chose a bowl at random, we assume <m>P(B_1) = 1/2</m>.</p></li>
+        <li><p><m>P(V|B_1)</m>, the probability of getting a vanilla cookie from Bowl 1, which is 3/4.</p></li>
+        <li><p><m>P(V)</m>, the probability of drawing a vanilla cookie from either bowl.</p></li>
+      </ul>
+    </p>
+    
+    <p>
+      To compute <m>P(V)</m>, we can use the law of total probability:
+    </p>
+    
+    <me>P(V) = P(B_1)~P(V|B_1) ~+~ P(B_2)~P(V|B_2)</me>
+    
+    <p>
+      Plugging in the numbers from the statement of the problem, we have
+    </p>
+    
+    <me>P(V) = (1/2)~(3/4) ~+~ (1/2)~(1/2) = 5/8</me>
+    
+    <p>
+      We can also compute this result directly, like this:
+    </p>
+    
+    <p>
+      <ul>
+        <li><p>Since we had an equal chance of choosing either bowl and the bowls contain the same number of cookies, we had the same chance of choosing any cookie.</p></li>
+        <li><p>Between the two bowls there are 50 vanilla and 30 chocolate cookies, so <m>P(V) = 5/8</m>.</p></li>
+      </ul>
+    </p>
+    
+    <p>
+      Finally, we can apply Bayes's Theorem to compute the posterior probability of Bowl 1:
+    </p>
+    
+    <me>P(B_1|V) = (1/2)~(3/4)~/~(5/8) = 3/5</me>
+    
+    <p>
+      This example demonstrates one use of Bayes's theorem: it provides a way to get from <m>P(B|A)</m> to <m>P(A|B)</m>. This strategy is useful in cases like this where it is easier to compute the terms on the right side than the term on the left.
+    </p>
+  </section>
+
+  <section xml:id="sec-diachronic-bayes">
+    <title>Diachronic Bayes</title>
+    
+    <p>
+      There is another way to think of Bayes's theorem: it gives us a way to update the probability of a hypothesis, <m>H</m>, given some body of data, <m>D</m>.
+    </p>
+    
+    <p>
+      This interpretation is <term>diachronic</term>, which means <q>related to change over time</q>; in this case, the probability of the hypotheses changes as we see new data.
+    </p>
+    
+    <p>
+      Rewriting Bayes's theorem with <m>H</m> and <m>D</m> yields:
+    </p>
+    
+    <me>P(H|D) = \frac{P(H)~P(D|H)}{P(D)}</me>
+    
+    <p>
+      In this interpretation, each term has a name:
+    </p>
+    
+    <p>
+      <ul>
+        <li><p><m>P(H)</m> is the probability of the hypothesis before we see the data, called the prior probability, or just <term>prior</term>.</p></li>
+        <li><p><m>P(H|D)</m> is the probability of the hypothesis after we see the data, called the <term>posterior</term>.</p></li>
+        <li><p><m>P(D|H)</m> is the probability of the data under the hypothesis, called the <term>likelihood</term>.</p></li>
+        <li><p><m>P(D)</m> is the <term>total probability of the data</term>, under any hypothesis.</p></li>
+      </ul>
+    </p>
+    
+    <p>
+      Sometimes we can compute the prior based on background information. For example, the cookie problem specifies that we choose a bowl at random with equal probability.
+    </p>
+    
+    <p>
+      In other cases the prior is subjective; that is, reasonable people might disagree, either because they use different background information or because they interpret the same information differently.
+    </p>
+    
+    <p>
+      The likelihood is usually the easiest part to compute. In the cookie problem, we are given the number of cookies in each bowl, so we can compute the probability of the data under each hypothesis.
+    </p>
+    
+    <p>
+      Computing the total probability of the data can be tricky. It is supposed to be the probability of seeing the data under any hypothesis at all, but it can be hard to nail down what that means.
+    </p>
+    
+    <p>
+      Most often we simplify things by specifying a set of hypotheses that are:
+    </p>
+    
+    <p>
+      <ul>
+        <li><p>Mutually exclusive, which means that only one of them can be true, and</p></li>
+        <li><p>Collectively exhaustive, which means one of them must be true.</p></li>
+      </ul>
+    </p>
+    
+    <p>
+      When these conditions apply, we can compute <m>P(D)</m> using the law of total probability. For example, with two hypotheses, <m>H_1</m> and <m>H_2</m>:
+    </p>
+    
+    <me>P(D) = P(H_1)~P(D|H_1) + P(H_2)~P(D|H_2)</me>
+    
+    <p>
+      And more generally, with any number of hypotheses:
+    </p>
+    
+    <me>P(D) = \sum_i P(H_i)~P(D|H_i)</me>
+    
+    <p>
+      The process in this section, using data and a prior probability to compute a posterior probability, is called a <term>Bayesian update</term>.
+    </p>
+  </section>
+
+  <section xml:id="sec-bayes-tables">
+    <title>Bayes Tables</title>
+    
+    <p>
+      A convenient tool for doing a Bayesian update is a Bayes table. You can write a Bayes table on paper or use a spreadsheet, but in this section I'll use a Pandas <c>DataFrame</c>.
+    </p>
+    
+    <p>
+      First I'll make empty <c>DataFrame</c> with one row for each hypothesis:
+    </p>
+    
+    <program language="python">
+      <input>
+import pandas as pd
+
+table = pd.DataFrame(index=['Bowl 1', 'Bowl 2'])
+      </input>
+    </program>
+    
+    <p>
+      Now I'll add a column to represent the priors:
+    </p>
+    
+    <program language="python">
+      <input>
+table['prior'] = 1/2, 1/2
+table
+      </input>
+    </program>
+    
+    <p>
+      And a column for the likelihoods:
+    </p>
+    
+    <program language="python">
+      <input>
+table['likelihood'] = 3/4, 1/2
+table
+      </input>
+    </program>
+    
+    <p>
+      Here we see a difference from the previous method: we compute likelihoods for both hypotheses, not just Bowl 1:
+    </p>
+    
+    <p>
+      <ul>
+        <li><p>The chance of getting a vanilla cookie from Bowl 1 is 3/4.</p></li>
+        <li><p>The chance of getting a vanilla cookie from Bowl 2 is 1/2.</p></li>
+      </ul>
+    </p>
+    
+    <p>
+      You might notice that the likelihoods don't add up to 1. That's OK; each of them is a probability conditioned on a different hypothesis. There's no reason they should add up to 1 and no problem if they don't.
+    </p>
+    
+    <p>
+      The next step is similar to what we did with Bayes's Theorem; we multiply the priors by the likelihoods:
+    </p>
+    
+    <program language="python">
+      <input>
+table['unnorm'] = table['prior'] * table['likelihood']
+table
+      </input>
+    </program>
+    
+    <p>
+      I call the result <c>unnorm</c> because these values are the <q>unnormalized posteriors</q>. Each of them is the product of a prior and a likelihood:
+    </p>
+    
+    <me>P(H_i)~P(D|H_i)</me>
+    
+    <p>
+      which is the numerator of Bayes's Theorem. If we add them up, we have
+    </p>
+    
+    <me>P(H_1)~P(D|H_1) + P(H_2)~P(D|H_2)</me>
+    
+    <p>
+      which is the denominator of Bayes's Theorem, <m>P(D)</m>.
+    </p>
+    
+    <p>
+      So we can compute the total probability of the data like this:
+    </p>
+    
+    <program language="python">
+      <input>
+prob_data = table['unnorm'].sum()
+prob_data
+      </input>
+    </program>
+    
+    <p>
+      Notice that we get 5/8, which is what we got by computing <m>P(D)</m> directly.
+    </p>
+    
+    <p>
+      And we can compute the posterior probabilities like this:
+    </p>
+    
+    <program language="python">
+      <input>
+table['posterior'] = table['unnorm'] / prob_data
+table
+      </input>
+    </program>
+    
+    <p>
+      The posterior probability for Bowl 1 is 0.6, which is what we got using Bayes's Theorem explicitly. As a bonus, we also get the posterior probability of Bowl 2, which is 0.4.
+    </p>
+    
+    <p>
+      When we add up the unnormalized posteriors and divide through, we force the posteriors to add up to 1. This process is called <term>normalization</term>, which is why the total probability of the data is also called the <term>normalizing constant</term>.
+    </p>
+  </section>
+
+  <section xml:id="sec-dice-problem">
+    <title>The Dice Problem</title>
+    
+    <p>
+      A Bayes table can also solve problems with more than two hypotheses. For example:
+    </p>
+    
+    <blockquote>
+      <p>
+        Suppose I have a box with a 6-sided die, an 8-sided die, and a 12-sided die. I choose one of the dice at random, roll it, and report that the outcome is a 1. What is the probability that I chose the 6-sided die?
+      </p>
+    </blockquote>
+    
+    <p>
+      In this example, there are three hypotheses with equal prior probabilities. The data is my report that the outcome is a 1.
+    </p>
+    
+    <p>
+      If I chose the 6-sided die, the probability of the data is 1/6. If I chose the 8-sided die, the probability is 1/8, and if I chose the 12-sided die, it's 1/12.
+    </p>
+    
+    <p>
+      Here's a Bayes table that uses integers to represent the hypotheses:
+    </p>
+    
+    <program language="python">
+      <input>
+table2 = pd.DataFrame(index=[6, 8, 12])
+      </input>
+    </program>
+    
+    <p>
+      I'll use fractions to represent the prior probabilities and the likelihoods. That way they don't get rounded off to floating-point numbers.
+    </p>
+    
+    <program language="python">
+      <input>
+from fractions import Fraction
+
+table2['prior'] = Fraction(1, 3)
+table2['likelihood'] = Fraction(1, 6), Fraction(1, 8), Fraction(1, 12)
+table2
+      </input>
+    </program>
+    
+    <p>
+      Once you have priors and likelhoods, the remaining steps are always the same, so I'll put them in a function:
+    </p>
+    
+    <program language="python">
+      <input>
+def update(table):
+    """Compute the posterior probabilities."""
+    table['unnorm'] = table['prior'] * table['likelihood']
+    prob_data = table['unnorm'].sum()
+    table['posterior'] = table['unnorm'] / prob_data
+    return prob_data
+      </input>
+    </program>
+    
+    <p>
+      And call it like this.
+    </p>
+    
+    <program language="python">
+      <input>
+prob_data = update(table2)
+      </input>
+    </program>
+    
+    <p>
+      Here is the final Bayes table:
+    </p>
+    
+    <program language="python">
+      <input>
+table2
+      </input>
+    </program>
+    
+    <p>
+      The posterior probability of the 6-sided die is 4/9, which is a little more than the probabilities for the other dice, 3/9 and 2/9. Intuitively, the 6-sided die is the most likely because it had the highest likelihood of producing the outcome we saw.
+    </p>
+  </section>
+
+  <section xml:id="sec-monty-hall">
+    <title>The Monty Hall Problem</title>
+    
+    <p>
+      Next we'll use a Bayes table to solve one of the most contentious problems in probability.
+    </p>
+    
+    <p>
+      The Monty Hall problem is based on a game show called <em>Let's Make a Deal</em>. If you are a contestant on the show, here's how the game works:
+    </p>
+    
+    <p>
+      <ul>
+        <li><p>The host, Monty Hall, shows you three closed doors <mdash/> numbered 1, 2, and 3 <mdash/> and tells you that there is a prize behind each door.</p></li>
+        <li><p>One prize is valuable (traditionally a car), the other two are less valuable (traditionally goats).</p></li>
+        <li><p>The object of the game is to guess which door has the car. If you guess right, you get to keep the car.</p></li>
+      </ul>
+    </p>
+    
+    <p>
+      Suppose you pick Door 1. Before opening the door you chose, Monty opens Door 3 and reveals a goat. Then Monty offers you the option to stick with your original choice or switch to the remaining unopened door.
+    </p>
+    
+    <p>
+      To maximize your chance of winning the car, should you stick with Door 1 or switch to Door 2?
+    </p>
+    
+    <p>
+      To answer this question, we have to make some assumptions about the behavior of the host:
+    </p>
+    
+    <p>
+      <ol>
+        <li><p>Monty always opens a door and offers you the option to switch.</p></li>
+        <li><p>He never opens the door you picked or the door with the car.</p></li>
+        <li><p>If you choose the door with the car, he chooses one of the other doors at random.</p></li>
+      </ol>
+    </p>
+    
+    <p>
+      Under these assumptions, you are better off switching. If you stick, you win <m>1/3</m> of the time. If you switch, you win <m>2/3</m> of the time.
+    </p>
+    
+    <p>
+      If you have not encountered this problem before, you might find that answer surprising. You would not be alone; many people have the strong intuition that it doesn't matter if you stick or switch. There are two doors left, they reason, so the chance that the car is behind Door A is 50%. But that is wrong.
+    </p>
+    
+    <p>
+      To see why, it can help to use a Bayes table. We start with three hypotheses: the car might be behind Door 1, 2, or 3. According to the statement of the problem, the prior probability for each door is 1/3.
+    </p>
+    
+    <program language="python">
+      <input>
+table3 = pd.DataFrame(index=['Door 1', 'Door 2', 'Door 3'])
+table3['prior'] = Fraction(1, 3)
+table3
+      </input>
+    </program>
+    
+    <p>
+      The data is that Monty opened Door 3 and revealed a goat. So let's consider the probability of the data under each hypothesis:
+    </p>
+    
+    <p>
+      <ul>
+        <li><p>If the car is behind Door 1, Monty chooses Door 2 or 3 at random, so the probability he opens Door 3 is <m>1/2</m>.</p></li>
+        <li><p>If the car is behind Door 2, Monty has to open Door 3, so the probability of the data under this hypothesis is 1.</p></li>
+        <li><p>If the car is behind Door 3, Monty does not open it, so the probability of the data under this hypothesis is 0.</p></li>
+      </ul>
+    </p>
+    
+    <p>
+      Here are the likelihoods.
+    </p>
+    
+    <program language="python">
+      <input>
+table3['likelihood'] = Fraction(1, 2), 1, 0
+table3
+      </input>
+    </program>
+    
+    <p>
+      Now that we have priors and likelihoods, we can use <c>update</c> to compute the posterior probabilities.
+    </p>
+    
+    <program language="python">
+      <input>
+update(table3)
+table3
+      </input>
+    </program>
+    
+    <p>
+      After Monty opens Door 3, the posterior probability of Door 1 is <m>1/3</m>; the posterior probability of Door 2 is <m>2/3</m>. So you are better off switching from Door 1 to Door 2.
+    </p>
+    
+    <p>
+      As this example shows, our intuition for probability is not always reliable. Bayes's Theorem can help by providing a divide-and-conquer strategy:
+    </p>
+    
+    <p>
+      <ol>
+        <li><p>First, write down the hypotheses and the data.</p></li>
+        <li><p>Next, figure out the prior probabilities.</p></li>
+        <li><p>Finally, compute the likelihood of the data under each hypothesis.</p></li>
+      </ol>
+    </p>
+    
+    <p>
+      The Bayes table does the rest.
+    </p>
+  </section>
+
+  <section xml:id="sec-summary-ch02">
+    <title>Summary</title>
+    
+    <p>
+      In this chapter we solved the Cookie Problem using Bayes's theorem explicitly and using a Bayes table. There's no real difference between these methods, but the Bayes table can make it easier to compute the total probability of the data, especially for problems with more than two hypotheses.
+    </p>
+    
+    <p>
+      Then we solved the Dice Problem, which we will see again in the next chapter, and the Monty Hall problem, which you might hope you never see again.
+    </p>
+    
+    <p>
+      If the Monty Hall problem makes your head hurt, you are not alone. But I think it demonstrates the power of Bayes's Theorem as a divide-and-conquer strategy for solving tricky problems. And I hope it provides some insight into <em>why</em> the answer is what it is.
+    </p>
+    
+    <p>
+      When Monty opens a door, he provides information we can use to update our belief about the location of the car. Part of the information is obvious. If he opens Door 3, we know the car is not behind Door 3. But part of the information is more subtle. Opening Door 3 is more likely if the car is behind Door 2, and less likely if it is behind Door 1. So the data is evidence in favor of Door 2. We will come back to this notion of evidence in future chapters.
+    </p>
+    
+    <p>
+      In the next chapter we'll extend the Cookie Problem and the Dice Problem, and take the next step from basic probability to Bayesian statistics.
+    </p>
+    
+    <p>
+      But first, you might want to work on the exercises.
+    </p>
+  </section>
+
+  <exercises xml:id="exercises-ch02">
+    <title>Exercises</title>
+    
+    <exercise xml:id="ex-trick-coin">
+      <statement>
+        <p>
+          Suppose you have two coins in a box. One is a normal coin with heads on one side and tails on the other, and one is a trick coin with heads on both sides. You choose a coin at random and see that one of the sides is heads. What is the probability that you chose the trick coin?
+        </p>
+      </statement>
+    </exercise>
+    
+    <exercise xml:id="ex-two-children">
+      <statement>
+        <p>
+          Suppose you meet someone and learn that they have two children. You ask if either child is a girl and they say yes. What is the probability that both children are girls?
+        </p>
+        <p>
+          Hint: Start with four equally likely hypotheses.
+        </p>
+      </statement>
+    </exercise>
+    
+    <exercise xml:id="ex-monty-hall-variant">
+      <statement>
+        <p>
+          There are many variations of the Monty Hall problem. For example, suppose Monty always chooses Door 2 if he can, and only chooses Door 3 if he has to (because the car is behind Door 2).
+        </p>
+        <p>
+          If you choose Door 1 and Monty opens Door 2, what is the probability the car is behind Door 3?
+        </p>
+        <p>
+          If you choose Door 1 and Monty opens Door 3, what is the probability the car is behind Door 2?
+        </p>
+      </statement>
+    </exercise>
+    
+    <exercise xml:id="ex-m-and-ms">
+      <statement>
+        <p>
+          M&amp;M's are small candy-coated chocolates that come in a variety of colors. Mars, Inc., which makes M&amp;M's, changes the mixture of colors from time to time. In 1995, they introduced blue M&amp;M's.
+        </p>
+        <p>
+          <ul>
+            <li><p>In 1994, the color mix in a bag of plain M&amp;M's was 30% Brown, 20% Yellow, 20% Red, 10% Green, 10% Orange, 10% Tan.</p></li>
+            <li><p>In 1996, it was 24% Blue, 20% Green, 16% Orange, 14% Yellow, 13% Red, 13% Brown.</p></li>
+          </ul>
+        </p>
+        <p>
+          Suppose a friend of mine has two bags of M&amp;M's, and he tells me that one is from 1994 and one from 1996. He won't tell me which is which, but he gives me one M&amp;M from each bag. One is yellow and one is green. What is the probability that the yellow one came from the 1994 bag?
+        </p>
+        <p>
+          Hint: The trick to this question is to define the hypotheses and the data carefully.
+        </p>
+      </statement>
+    </exercise>
+  </exercises>
 
 </chapter>
