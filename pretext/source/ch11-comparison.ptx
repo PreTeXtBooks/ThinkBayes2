@@ -75,7 +75,7 @@ X * Y
     </program>
 
     <p>
-      This is result is the outer product of <c>x</c> and <c>y</c>. We can see that more clearly if we put it in a <c>DataFrame</c>:
+      This result is the outer product of <c>x</c> and <c>y</c>. We can see that more clearly if we put it in a <c>DataFrame</c>:
     </p>
 
     <program language="python">
@@ -261,7 +261,7 @@ joint.shape
       The result is a <c>DataFrame</c> with possible heights of <c>A</c> along the columns, heights of <c>B</c> along the rows, and the joint probabilities as elements.
     </p>
     <p>
-      If the prior is normalized, the joint prior is also be normalized.
+      If the prior is normalized, the joint prior is also normalized.
     </p>
 
     <program language="python">
