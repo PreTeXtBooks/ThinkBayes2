@@ -1214,92 +1214,174 @@ results.resid.std()
         <p>
           Does the model fit the data well?  How much do we expect annual average temperatures to increase over my (expected) lifetime?
         </p>
-        <program language="python">
-          <input>
-# Solution goes here
-          </input>
-        </program>
-        <program language="python">
-          <input>
-# Solution goes here
-          </input>
-        </program>
-        <program language="python">
-          <input>
-# Solution goes here
-          </input>
-        </program>
-        <program language="python">
-          <input>
-# Solution goes here
-          </input>
-        </program>
-        <program language="python">
-          <input>
-# Solution goes here
-          </input>
-        </program>
-        <program language="python">
-          <input>
-# Solution goes here
-          </input>
-        </program>
-        <program language="python">
-          <input>
-# Solution goes here
-          </input>
-        </program>
-        <program language="python">
-          <input>
-# Solution goes here
-          </input>
-        </program>
-        <program language="python">
-          <input>
-# Solution goes here
-          </input>
-        </program>
-        <program language="python">
-          <input>
-# Solution goes here
-          </input>
-        </program>
-        <program language="python">
-          <input>
-# Solution goes here
-          </input>
-        </program>
-        <program language="python">
-          <input>
-# Solution goes here
-          </input>
-        </program>
-        <program language="python">
-          <input>
-# Solution goes here
-          </input>
-        </program>
-        <program language="python">
-          <input>
-# Solution goes here
-          </input>
-        </program>
-        <program language="python">
-          <input>
-# Solution goes here
-          </input>
-        </program>
-        <p>
-          *Think Bayes*, Second Edition
-        </p>
-        <p>
-          Copyright 2020 Allen B. Downey
-        </p>
-        <p>
-          License: <url href="https://creativecommons.org/licenses/by-nc-sa/4.0/">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)</url>
-        </p>
-      </statement>
-    </exercise>
+    <program language="python">
+      <input>
+# Solution
+
+qs = np.linspace(0, 0.1, num=51)
+prior_slope = make_uniform(qs, 'Slope')
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+# Solution
+
+qs = np.linspace(48, 52, num=41)
+prior_inter = make_uniform(qs, 'Intercept')
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+# Solution
+
+qs = np.linspace(0.5, 2, num=31)
+prior_sigma = make_uniform(qs, 'Sigma')
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+# Solution
+
+prior = make_joint3(prior_slope, prior_inter, prior_sigma)
+prior.head()
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+# Solution
+
+xs = data['x']
+ys = data['y']
+likelihood = prior.copy()
+
+for slope, inter, sigma in prior.index:
+    expected = slope * xs + inter
+    resid = ys - expected
+    densities = norm.pdf(resid, 0, sigma)
+    likelihood[slope, inter, sigma] = densities.prod()
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+# Solution
+
+posterior = prior * likelihood
+posterior.normalize()
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+# Solution
+
+posterior_slope = posterior.marginal(0)
+posterior_inter = posterior.marginal(1)
+posterior_sigma = posterior.marginal(2)
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+# Solution
+
+posterior_inter.plot()
+decorate(xlabel='intercept (inches)',
+         ylabel='PDF',
+         title='Posterior marginal distribution of intercept')
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+# Solution
+
+posterior_inter.mean(), posterior_inter.credible_interval(0.9)
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+# Solution
+
+posterior_slope.plot()
+decorate(xlabel='Slope (inches per year)',
+         ylabel='PDF',
+         title='Posterior marginal distribution of slope')
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+# Solution
+
+posterior_slope.mean(), posterior_slope.credible_interval(0.9)
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+# Solution
+
+sample = posterior.choice(101)
+
+years = np.arange(1967, 2067, 2)
+xs = years - offset
+
+pred = np.empty((len(sample), len(xs)))
+for i, (slope, inter, sigma) in enumerate(sample):
+    pred[i] = inter + slope * xs + norm(0, sigma).rvs(len(xs))
+    
+pred.shape
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+# Solution
+
+low, median, high = np.percentile(pred, [5, 50, 95], axis=0)
+median.shape
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+# Solution
+
+plt.fill_between(years, low, high, alpha=0.1)
+plt.plot(years, median, color='C0')
+
+complete.plot(ls='', marker='o', alpha=0.5)
+
+decorate(xlabel='Year',
+         ylabel='Annual average of daily temperature (deg F)')
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+# Solution
+
+# median increase over my lifetime in degrees F
+
+median[-1] - median[0]
+      </input>
+    </program>
+
+    <p>
+      <em>Think Bayes</em>, Second Edition
+    </p>
+    <p>
+      Copyright 2020 Allen B. Downey
+    </p>
+    <p>
+      License: <url href="https://creativecommons.org/licenses/by-nc-sa/4.0/">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)</url>
+    </p>
 
   </section>
 
