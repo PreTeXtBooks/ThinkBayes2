@@ -5,10 +5,1138 @@
 
   <introduction>
     <p>
-      This chapter explores Bayesian approaches to hypothesis testing and comparing models.
+      You can order print and ebook versions of <em>Think Bayes 2e</em> from
+      <url href="https://bookshop.org/a/98697/9781492089469">Bookshop.org</url> and
+      <url href="https://amzn.to/334eqGo">Amazon</url>.
+    </p>
+    <program language="python">
+      <input>
+from utils import set_pyplot_params
+set_pyplot_params()
+      </input>
+    </program>
+
+    <p>
+      In <xref ref="_TheEuroProblem" /> I presented a problem from David MacKay's book, <url href="http://www.inference.org.uk/mackay/itila/p0.html"><em>Information Theory, Inference, and Learning Algorithms</em></url>:
+    </p>
+    <p>
+      "A statistical statement appeared in <em>The Guardian</em> on Friday January 4, 2002:
+    </p>
+    <blockquote>
+      <p>When spun on edge 250 times, a Belgian one-euro coin came up heads 140 times and tails 110.  'It looks very suspicious to me,' said Barry Blight, a statistics lecturer at the London School of Economics.  'If the coin were unbiased, the chance of getting a result as extreme as that would be less than 7%.'</p>
+    </blockquote>
+    <p>
+      "But [MacKay asks] do these data give evidence that the coin is biased rather than fair?"
+    </p>
+    <p>
+      We started to answer this question in <xref ref="_EstimatingProportions" />; to review, our answer was based on these modeling decisions:
+    </p>
+    <ul>
+      <li><p>If you spin a coin on edge, there is some probability, <m>x</m>, that it will land heads up.</p></li>
+    </ul>
+    <ul>
+      <li><p>The value of <m>x</m> varies from one coin to the next, depending on how the coin is balanced and possibly other factors.</p></li>
+    </ul>
+    <p>
+      Starting with a uniform prior distribution for <m>x</m>, we updated it with the given data, 140 heads and 110 tails.  Then we used the posterior distribution to compute the most likely value of <m>x</m>, the posterior mean, and a credible interval.
+    </p>
+    <p>
+      But we never really answered MacKay's question: "Do these data give evidence that the coin is biased rather than fair?"
+    </p>
+    <p>
+      In this chapter, finally, we will.
     </p>
   </introduction>
 
-  <!-- Sections will be added here -->
+  <section xml:id="sec-ch10-estimation">
+    <title>Estimation</title>
+
+    <p>
+      And we used the binomial distribution to compute the probability of the data for each possible value of <m>x</m>.
+    </p>
+    <program language="python">
+      <input>
+from scipy.stats import binom
+
+k, n = 140, 250
+likelihood = binom.pmf(k, n, xs)
+      </input>
+    </program>
+    <p>
+      We computed the posterior distribution in the usual way.
+    </p>
+    <program language="python">
+      <input>
+posterior = uniform * likelihood
+posterior.normalize()
+      </input>
+    </program>
+    <p>
+      And here's what it looks like.
+    </p>
+    <program language="python">
+      <input>
+from utils import decorate
+
+posterior.plot(label='140 heads out of 250')
+
+decorate(xlabel='Proportion of heads (x)',
+         ylabel='Probability',
+         title='Posterior distribution of x')
+      </input>
+    </program>
+    <p>
+      Again, the posterior mean is about 0.56, with a 90% credible interval from 0.51 to 0.61.
+    </p>
+    <program language="python">
+      <input>
+print(posterior.mean(), 
+      posterior.credible_interval(0.9))
+      </input>
+    </program>
+    <p>
+      The prior mean was 0.5, and the posterior mean is 0.56, so it seems like the data is evidence that the coin is biased.
+    </p>
+    <p>
+      But, it turns out not to be that simple.
+    </p>
+  </section>
+
+  <section xml:id="sec-ch10-evidence">
+    <title>Evidence</title>
+
+    <p>
+      In <xref ref="_OliversBlood" />, I said that data are considered evidence in favor of a hypothesis, <m>A</m>, if the data are more likely under <m>A</m> than under the alternative, <m>B</m>; that is if
+    </p>
+    <me>P(D|A) &gt; P(D|B)</me>
+    <p>
+      Furthermore, we can quantify the strength of the evidence by computing the ratio of these likelihoods, which is known as the <url href="https://en.wikipedia.org/wiki/Bayes_factor">Bayes factor</url> and often denoted <m>K</m>:
+    </p>
+    <me>K = \frac{P(D|A)}{P(D|B)}</me>
+    <p>
+      So, for the Euro problem, let's consider two hypotheses, <c>fair</c> and <c>biased</c>, and compute the likelihood of the data under each hypothesis.
+    </p>
+    <p>
+      If the coin is fair, the probability of heads is 50%, and we can compute the probability of the data (140 heads out of 250 spins) using the binomial distribution:
+    </p>
+    <program language="python">
+      <input>
+k = 140
+n = 250
+
+like_fair = binom.pmf(k, n, p=0.5)
+like_fair
+      </input>
+    </program>
+    <p>
+      That's the probability of the data, given that the coin is fair.
+    </p>
+    <p>
+      But if the coin is biased, what's the probability of the data?  That depends on what "biased" means. If we know ahead of time that "biased" means the probability of heads is 56%, we can use the binomial distribution again:
+    </p>
+    <program language="python">
+      <input>
+like_biased = binom.pmf(k, n, p=0.56)
+like_biased
+      </input>
+    </program>
+    <p>
+      Now we can compute the likelihood ratio:
+    </p>
+    <program language="python">
+      <input>
+K = like_biased / like_fair
+K
+      </input>
+    </program>
+    <p>
+      The data are about 6 times more likely if the coin is biased, by this definition, than if it is fair.
+    </p>
+    <p>
+      But we used the data to define the hypothesis, which seems like cheating.  To be fair, we should define "biased" before we see the data.
+    </p>
+  </section>
+
+  <section xml:id="sec-ch10-uniformly-distributed-bias">
+    <title>Uniformly Distributed Bias</title>
+
+    <program language="python">
+      <input>
+biased_uniform = uniform.copy()
+biased_uniform[0.5] = 0
+biased_uniform.normalize()
+      </input>
+    </program>
+    <p>
+      To compute the total probability of the data under this hypothesis, we compute the conditional probability of the data for each value of <m>x</m>.
+    </p>
+    <program language="python">
+      <input>
+xs = biased_uniform.qs
+likelihood = binom.pmf(k, n, xs)
+      </input>
+    </program>
+    <p>
+      Then multiply by the prior probabilities and add up the products:
+    </p>
+    <program language="python">
+      <input>
+like_uniform = np.sum(biased_uniform * likelihood)
+like_uniform
+      </input>
+    </program>
+    <p>
+      So that's the probability of the data under the "biased uniform" hypothesis.
+    </p>
+    <p>
+      Now we can compute the likelihood ratio of the data under the <c>fair</c> and <c>biased uniform</c> hypotheses:
+    </p>
+    <program language="python">
+      <input>
+K = like_fair / like_uniform
+K
+      </input>
+    </program>
+    <p>
+      The data are about two times more likely if the coin is fair than if it is biased, by this definition of "biased".
+    </p>
+    <p>
+      To get a sense of how strong that evidence is, we can apply Bayes's rule. For example, if the prior probability is 50% that the coin is biased, the prior odds are 1, so the posterior odds are about 2.1 to 1 and the posterior probability is about 68%.
+    </p>
+    <program language="python">
+      <input>
+prior_odds = 1
+posterior_odds = prior_odds * K
+posterior_odds
+      </input>
+    </program>
+    <program language="python">
+      <input>
+def prob(o):
+    return o / (o+1)
+      </input>
+    </program>
+    <program language="python">
+      <input>
+posterior_probability = prob(posterior_odds)
+posterior_probability
+      </input>
+    </program>
+    <p>
+      Evidence that "moves the needle" from 50% to 68% is not very strong.
+    </p>
+    <p>
+      Now suppose "biased" doesn't mean every value of <m>x</m> is equally likely.  Maybe values near 50% are more likely and values near the extremes are less likely. We could use a triangle-shaped distribution to represent this alternative definition of "biased":
+    </p>
+    <program language="python">
+      <input>
+ramp_up = np.arange(50)
+ramp_down = np.arange(50, -1, -1)
+a = np.append(ramp_up, ramp_down)
+
+triangle = Pmf(a, xs, name='triangle')
+triangle.normalize()
+      </input>
+    </program>
+    <p>
+      As we did with the uniform distribution, we can remove 50% as a possible value of <m>x</m> (but it doesn't make much difference if we skip this detail).
+    </p>
+    <program language="python">
+      <input>
+biased_triangle = triangle.copy()
+biased_triangle[0.5] = 0
+biased_triangle.normalize()
+      </input>
+    </program>
+    <p>
+      Here's what the triangle prior looks like, compared to the uniform prior.
+    </p>
+    <program language="python">
+      <input>
+biased_uniform.plot(label='uniform prior')
+biased_triangle.plot(label='triangle prior')
+
+decorate(xlabel='Proportion of heads (x)',
+         ylabel='Probability',
+         title='Uniform and triangle prior distributions')
+      </input>
+    </program>
+  </section>
+
+  <section xml:id="sec-ch10-bayesian-hypothesis-testing">
+    <title>Bayesian Hypothesis Testing</title>
+
+    <p>
+      To see why, suppose you test the coin and decide that it is biased after all.  What can you do with this answer?  In my opinion, not much. In contrast, there are two questions I think are more useful (and therefore more meaningful):
+    </p>
+    <ul>
+      <li><p>Prediction: Based on what we know about the coin, what should we expect to happen in the future?</p></li>
+    </ul>
+    <ul>
+      <li><p>Decision-making: Can we use those predictions to make better decisions?</p></li>
+    </ul>
+    <p>
+      At this point, we've seen a few examples of prediction.  For example, in <xref ref="_PoissonProcesses" /> we used the posterior distribution of goal-scoring rates to predict the outcome of soccer games.
+    </p>
+    <p>
+      And we've seen one previous example of decision analysis: In <xref ref="_DecisionAnalysis" /> we used the distribution of prices to choose an optimal bid on <em>The Price is Right</em>.
+    </p>
+    <p>
+      So let's finish this chapter with another example of Bayesian decision analysis, the Bayesian Bandit strategy.
+    </p>
+  </section>
+
+  <section xml:id="sec-ch10-bayesian-bandits">
+    <title>Bayesian Bandits</title>
+
+  </section>
+
+  <section xml:id="sec-ch10-prior-beliefs">
+    <title>Prior Beliefs</title>
+
+    <program language="python">
+      <input>
+xs = np.linspace(0, 1, 101)
+prior = Pmf(1, xs)
+prior.normalize()
+      </input>
+    </program>
+    <p>
+      Supposing we are choosing from four slot machines, I'll make four copies of the prior, one for each machine.
+    </p>
+    <program language="python">
+      <input>
+beliefs = [prior.copy() for i in range(4)]
+      </input>
+    </program>
+    <p>
+      This function displays four distributions in a grid.
+    </p>
+    <program language="python">
+      <input>
+import matplotlib.pyplot as plt
+
+options = dict(xticklabels='invisible', yticklabels='invisible')
+
+def plot(beliefs, **options):
+    for i, pmf in enumerate(beliefs):
+        plt.subplot(2, 2, i+1)
+        pmf.plot(label='Machine %s' % i)
+        decorate(yticklabels=[])
+        
+        if i in [0, 2]:
+            decorate(ylabel='PDF')
+        
+        if i in [2, 3]:
+            decorate(xlabel='Probability of winning')
+        
+    plt.tight_layout()
+      </input>
+    </program>
+    <p>
+      Here's what the prior distributions look like for the four machines.
+    </p>
+    <program language="python">
+      <input>
+plot(beliefs)
+      </input>
+    </program>
+  </section>
+
+  <section xml:id="sec-ch10-update-1">
+    <title>The Update</title>
+
+    <program language="python">
+      <input>
+likelihood = {
+    'W': xs,
+    'L': 1 - xs
+}
+      </input>
+    </program>
+    <program language="python">
+      <input>
+def update(pmf, data):
+    """Update the probability of winning."""
+    pmf *= likelihood[data]
+    pmf.normalize()
+      </input>
+    </program>
+    <p>
+      This function updates the prior distribution in place. <c>pmf</c> is a <c>Pmf</c> that represents the prior distribution of <c>x</c>, which is the probability of winning.
+    </p>
+    <p>
+      <c>data</c> is a string, either <c>W</c> if the outcome is a win or <c>L</c> if the outcome is a loss.
+    </p>
+    <p>
+      The likelihood of the data is either <c>xs</c> or <c>1-xs</c>, depending on the outcome.
+    </p>
+    <p>
+      Suppose we choose a machine, play 10 times, and win once.  We can compute the posterior distribution of <c>x</c>, based on this outcome, like this:
+    </p>
+    <program language="python">
+      <input>
+np.random.seed(17)
+      </input>
+    </program>
+    <program language="python">
+      <input>
+bandit = prior.copy()
+
+for outcome in 'WLLLLLLLLL':
+    update(bandit, outcome)
+      </input>
+    </program>
+    <p>
+      Here's what the posterior looks like.
+    </p>
+    <program language="python">
+      <input>
+bandit.plot()
+decorate(xlabel='Probability of winning',
+         ylabel='PDF',
+         title='Posterior distribution, nine losses, one win')
+      </input>
+    </program>
+  </section>
+
+  <section xml:id="sec-ch10-multiple-bandits">
+    <title>Multiple Bandits</title>
+
+    <p>
+      Now suppose we have four machines with these probabilities:
+    </p>
+    <program language="python">
+      <input>
+actual_probs = [0.10, 0.20, 0.30, 0.40]
+      </input>
+    </program>
+    <p>
+      Remember that as a player, we don't know these probabilities.
+    </p>
+    <p>
+      The following function takes the index of a machine, simulates playing the machine once, and returns the outcome, <c>W</c> or <c>L</c>.
+    </p>
+    <program language="python">
+      <input>
+from collections import Counter
+
+# count how many times we've played each machine
+counter = Counter()
+
+def play(i):
+    """Play machine i.
+    
+    i: index of the machine to play
+    
+    returns: string 'W' or 'L'
+    """
+    counter[i] += 1
+    p = actual_probs[i]
+    if np.random.random() &lt; p:
+        return 'W'
+    else:
+        return 'L'
+      </input>
+    </program>
+    <p>
+      <c>counter</c> is a <c>Counter</c>, which is a kind of dictionary we'll use to keep track of how many times each machine is played.
+    </p>
+    <p>
+      Here's a test that plays each machine 10 times.
+    </p>
+    <program language="python">
+      <input>
+for i in range(4):
+    for _ in range(10):
+        outcome = play(i)
+        update(beliefs[i], outcome)
+      </input>
+    </program>
+    <p>
+      Each time through the inner loop, we play one machine and update our beliefs.
+    </p>
+    <p>
+      Here's what our posterior beliefs look like.
+    </p>
+    <program language="python">
+      <input>
+plot(beliefs)
+      </input>
+    </program>
+    <p>
+      Here are the actual probabilities, posterior means, and 90% credible intervals.
+    </p>
+    <program language="python">
+      <input>
+import pandas as pd
+
+def summarize_beliefs(beliefs):
+    """Compute means and credible intervals.
+    
+    beliefs: sequence of Pmf
+    
+    returns: DataFrame
+    """
+    columns = ['Actual P(win)', 
+               'Posterior mean', 
+               'Credible interval']
+    
+    df = pd.DataFrame(columns=columns)
+    for i, b in enumerate(beliefs):
+        mean = np.round(b.mean(), 3)
+        ci = b.credible_interval(0.9)
+        ci = np.round(ci, 3)
+        df.loc[i] = actual_probs[i], mean, ci
+    return df
+      </input>
+    </program>
+    <program language="python">
+      <input>
+summarize_beliefs(beliefs)
+      </input>
+    </program>
+    <p>
+      We expect the credible intervals to contain the actual probabilities most of the time.
+    </p>
+  </section>
+
+  <section xml:id="sec-ch10-explore-and-exploit">
+    <title>Explore and Exploit</title>
+
+    <p>
+      The Bayesian Bandits strategy avoids both drawbacks by gathering and using data at the same time.  In other words, it balances exploration and exploitation.
+    </p>
+    <p>
+      The kernel of the idea is called <url href="https://en.wikipedia.org/wiki/Thompson_sampling">Thompson sampling</url>: when we choose a machine, we choose at random so that the probability of choosing each machine is proportional to the probability that it is the best.
+    </p>
+    <p>
+      Given the posterior distributions, we can compute the "probability of superiority" for each machine.
+    </p>
+    <p>
+      Here's one way to do it.  We can draw a sample of 1000 values from each posterior distribution, like this:
+    </p>
+    <program language="python">
+      <input>
+samples = np.array([b.choice(1000) 
+                    for b in beliefs])
+samples.shape
+      </input>
+    </program>
+    <p>
+      The result has 4 rows and 1000 columns.  We can use <c>argmax</c> to find the index of the largest value in each column:
+    </p>
+    <program language="python">
+      <input>
+indices = np.argmax(samples, axis=0)
+indices.shape
+      </input>
+    </program>
+    <p>
+      The <c>Pmf</c> of these indices is the fraction of times each machine yielded the highest values.
+    </p>
+    <program language="python">
+      <input>
+pmf = Pmf.from_seq(indices)
+pmf
+      </input>
+    </program>
+    <p>
+      These fractions approximate the probability of superiority for each machine.  So we could choose the next machine by choosing a value from this <c>Pmf</c>.
+    </p>
+    <program language="python">
+      <input>
+pmf.choice()
+      </input>
+    </program>
+    <p>
+      But that's a lot of work to choose a single value, and it's not really necessary, because there's a shortcut.
+    </p>
+    <p>
+      If we draw a single random value from each posterior distribution and select the machine that yields the highest value, it turns out that we'll select each machine in proportion to its probability of superiority.
+    </p>
+    <p>
+      That's what the following function does.
+    </p>
+    <program language="python">
+      <input>
+def choose(beliefs):
+    """Use Thompson sampling to choose a machine.
+    
+    Draws a single sample from each distribution.
+    
+    returns: index of the machine that yielded the highest value
+    """
+    ps = [b.choice() for b in beliefs]
+    return np.argmax(ps)
+      </input>
+    </program>
+    <p>
+      This function chooses one value from the posterior distribution of each machine and then uses <c>argmax</c> to find the index of the machine that yielded the highest value.
+    </p>
+    <p>
+      Here's an example.
+    </p>
+    <program language="python">
+      <input>
+choose(beliefs)
+      </input>
+    </program>
+  </section>
+
+  <section xml:id="sec-ch10-the-strategy">
+    <title>The Strategy</title>
+
+    <program language="python">
+      <input>
+def choose_play_update(beliefs):
+    """Choose a machine, play it, and update beliefs."""
+    
+    # choose a machine
+    machine = choose(beliefs)
+    
+    # play it
+    outcome = play(machine)
+    
+    # update beliefs
+    update(beliefs[machine], outcome)
+      </input>
+    </program>
+    <p>
+      To test it out, let's start again with a fresh set of beliefs and an empty <c>Counter</c>.
+    </p>
+    <program language="python">
+      <input>
+beliefs = [prior.copy() for i in range(4)]
+counter = Counter()
+      </input>
+    </program>
+    <p>
+      If we run the bandit algorithm 100 times, we can see how <c>beliefs</c> gets updated:
+    </p>
+    <program language="python">
+      <input>
+num_plays = 100
+
+for i in range(num_plays):
+    choose_play_update(beliefs)
+    
+plot(beliefs)
+      </input>
+    </program>
+    <p>
+      The following table summarizes the results.
+    </p>
+    <program language="python">
+      <input>
+summarize_beliefs(beliefs)
+      </input>
+    </program>
+    <p>
+      The credible intervals usually contain the actual probabilities of winning. The estimates are still rough, especially for the lower-probability machines.  But that's a feature, not a bug: the goal is to play the high-probability machines most often.  Making the estimates more precise is a means to that end, but not an end itself.
+    </p>
+    <p>
+      More importantly, let's see how many times each machine got played.
+    </p>
+    <program language="python">
+      <input>
+def summarize_counter(counter):
+    """Report the number of times each machine was played.
+    
+    counter: Collections.Counter
+    
+    returns: DataFrame
+    """
+    index = range(4)
+    columns = ['Actual P(win)', 'Times played']
+    df = pd.DataFrame(index=index, columns=columns)
+    for i, count in counter.items():
+        df.loc[i] = actual_probs[i], count
+    return df
+      </input>
+    </program>
+    <program language="python">
+      <input>
+summarize_counter(counter)
+      </input>
+    </program>
+    <p>
+      If things go according to plan, the machines with higher probabilities should get played more often.
+    </p>
+  </section>
+
+  <section xml:id="sec-ch10-summary">
+    <title>Summary</title>
+
+  </section>
+
+  <section xml:id="sec-ch10-exercises">
+    <title>Exercises</title>
+
+    <p>
+      <em>Exercise:</em> Standardized tests like the <url href="https://en.wikipedia.org/wiki/SAT">SAT</url> are often used as part of the admission process at colleges and universities. The goal of the SAT is to measure the academic preparation of the test-takers; if it is accurate, their scores should reflect their actual ability in the domain of the test.
+    </p>
+    <p>
+      Until recently, tests like the SAT were taken with paper and pencil, but now students have the option of taking the test online.  In the online format, it is possible for the test to be "adaptive", which means that it can <url href="https://www.nytimes.com/2018/04/05/education/learning/tests-act-sat.html">choose each question based on responses to previous questions</url>.
+    </p>
+    <p>
+      If a student gets the first few questions right, the test can challenge them with harder questions.  If they are struggling, it can give them easier questions. Adaptive testing has the potential to be more "efficient", meaning that with the same number of questions an adaptive test could measure the ability of a tester more precisely.
+    </p>
+    <p>
+      To see whether this is true, we will develop a model of an adaptive test and quantify the precision of its measurements.
+    </p>
+    <p>
+      Details of this exercise are in the notebook.
+    </p>
+
+    <exercise xml:id="ex-ch10-1">
+      <title>Adaptive Testing</title>
+      <statement>
+        <p>Details of this exercise are in the sections below.</p>
+      </statement>
+    </exercise>
+
+    <exercise xml:id="ex-ch10-2">
+      <title>Triangle Prior</title>
+      <statement>
+        <p>Now compute the total probability of the data under this definition of "biased" and compute the Bayes factor, compared with the fair hypothesis. Is the data evidence that the coin is biased?</p>
+      </statement>
+    </exercise>
+  </section>
+
+  <section xml:id="sec-ch10-the-model">
+    <title>The Model</title>
+
+    <p>
+      The model we'll use is based on <url href="https://en.wikipedia.org/wiki/Item_response_theory">item response theory</url>, which assumes that we can quantify the difficulty of each question and the ability of each test-taker, and that the probability of a correct response is a function of difficulty and ability.
+    </p>
+    <p>
+      Specifically, a common assumption is that this function is a three-parameter logistic function:
+    </p>
+    <me>\mathrm{p} = c + \frac{1-c}{1 + e^{-a (\theta-b)}}</me>
+    <p>
+      where <m>\theta</m> is the ability of the test-taker and <m>b</m> is the difficulty of the question.
+    </p>
+    <p>
+      <m>c</m> is the lowest probability of getting a question right, supposing the test-taker with the lowest ability tries to answer the hardest question.  On a multiple-choice test with four responses, <m>c</m> might be 0.25, which is the probability of getting the right answer by guessing at random.
+    </p>
+    <p>
+      <m>a</m> controls the shape of the curve.
+    </p>
+    <p>
+      The following function computes the probability of a correct answer, given <c>ability</c> and <c>difficulty</c>:
+    </p>
+    <program language="python">
+      <input>
+def prob_correct(ability, difficulty):
+    """Probability of a correct response."""
+    a = 100
+    c = 0.25
+    x = (ability - difficulty) / a
+    p = c + (1-c) / (1 + np.exp(-x))
+    return p
+      </input>
+    </program>
+    <p>
+      I chose <c>a</c> to make the range of scores comparable to the SAT, which reports scores from 200 to 800.
+    </p>
+    <p>
+      Here's what the logistic curve looks like for a question with difficulty 500 and a range of abilities.
+    </p>
+    <program language="python">
+      <input>
+abilities = np.linspace(100, 900)
+diff = 500
+ps = prob_correct(abilities, diff)
+      </input>
+    </program>
+    <program language="python">
+      <input>
+plt.plot(abilities, ps)
+decorate(xlabel='Ability',
+         ylabel='Probability correct',
+         title='Probability of correct answer, difficulty=500',
+         ylim=[0, 1.05])
+      </input>
+    </program>
+    <p>
+      Someone with <c>ability=900</c> is nearly certain to get the right answer. Someone with <c>ability=100</c> has about a 25% change of getting the right answer by guessing.
+    </p>
+  </section>
+
+  <section xml:id="sec-ch10-simulating-the-test">
+    <title>Simulating the Test</title>
+
+    <program language="python">
+      <input>
+def play(ability, difficulty):
+    """Simulate a test-taker answering a question."""
+    p = prob_correct(ability, difficulty)
+    return np.random.random() &lt; p
+      </input>
+    </program>
+    <p>
+      <c>play</c> uses <c>prob_correct</c> to compute the probability of a correct answer and <c>np.random.random</c> to generate a random value between 0 and 1.  The return value is <c>True</c> for a correct response and <c>False</c> otherwise.
+    </p>
+    <p>
+      As a test, let's simulate a test-taker with <c>ability=600</c> answering a question with <c>difficulty=500</c>.  The probability of a correct response is about 80%.
+    </p>
+    <program language="python">
+      <input>
+prob_correct(600, 500)
+      </input>
+    </program>
+    <p>
+      Suppose this person takes a test with 51 questions, all with the same difficulty, <c>500</c>. We expect them to get about 80% of the questions correct.
+    </p>
+    <p>
+      Here's the result of one simulation.
+    </p>
+    <program language="python">
+      <input>
+np.random.seed(18)
+      </input>
+    </program>
+    <program language="python">
+      <input>
+num_questions = 51
+outcomes = [play(600, 500) for _ in range(num_questions)]
+np.mean(outcomes)
+      </input>
+    </program>
+    <p>
+      We expect them to get about 80% of the questions right.
+    </p>
+    <p>
+      Now let's suppose we don't know the test-taker's ability.  We can use the data we just generated to estimate it. And that's what we'll do next.
+    </p>
+  </section>
+
+  <section xml:id="sec-ch10-the-prior">
+    <title>The Prior</title>
+
+    <program language="python">
+      <input>
+from scipy.stats import norm
+
+mean = 500
+std = 300
+
+qs = np.linspace(0, 1000)
+ps = norm(mean, std).pdf(qs)
+
+prior = Pmf(ps, qs)
+prior.normalize()
+      </input>
+    </program>
+    <p>
+      And here's what it looks like.
+    </p>
+    <program language="python">
+      <input>
+prior.plot(label='std=300', color='C5')
+
+decorate(xlabel='Ability',
+         ylabel='PDF',
+         title='Prior distribution of ability',
+         ylim=[0, 0.032])
+      </input>
+    </program>
+  </section>
+
+  <section xml:id="sec-ch10-update-2">
+    <title>The Update</title>
+
+    <program language="python">
+      <input>
+def update_ability(pmf, data):
+    """Update the distribution of ability."""
+    difficulty, outcome = data
+    
+    abilities = pmf.qs
+    ps = prob_correct(abilities, difficulty)
+    
+    if outcome:
+        pmf *= ps
+    else:
+        pmf *= 1 - ps
+        
+    pmf.normalize()
+      </input>
+    </program>
+    <p>
+      <c>data</c> is a tuple that contains the difficulty of a question and the outcome: <c>True</c> if the response was correct and <c>False</c> otherwise.
+    </p>
+    <p>
+      As a test, let's do an update based on the outcomes we simulated previously, based on a person with <c>ability=600</c> answering 51 questions with <c>difficulty=500</c>.
+    </p>
+    <program language="python">
+      <input>
+actual_600 = prior.copy()
+
+for outcome in outcomes:
+    data = (500, outcome)
+    update_ability(actual_600, data)
+      </input>
+    </program>
+    <p>
+      Here's what the posterior distribution looks like.
+    </p>
+    <program language="python">
+      <input>
+actual_600.plot(color='C4')
+
+decorate(xlabel='Ability',
+         ylabel='PDF',
+         title='Posterior distribution of ability')
+      </input>
+    </program>
+    <p>
+      The posterior mean is pretty close to the test-taker's actual ability, which is 600.
+    </p>
+    <program language="python">
+      <input>
+actual_600.mean()
+      </input>
+    </program>
+    <p>
+      If we run this simulation again, we'll get different results.
+    </p>
+  </section>
+
+  <section xml:id="sec-ch10-adaptation">
+    <title>Adaptation</title>
+
+    <program language="python">
+      <input>
+def choose(i, belief):
+    """Choose the difficulty of the next question."""
+    return 500
+      </input>
+    </program>
+    <p>
+      As parameters, <c>choose</c> takes <c>i</c>, which is the index of the question, and <c>belief</c>, which is a <c>Pmf</c> representing the posterior distribution of <c>ability</c>, based on responses to previous questions.
+    </p>
+    <p>
+      This version of <c>choose</c> doesn't use these parameters; they are there so we can test other strategies (see the exercises at the end of the chapter).
+    </p>
+    <p>
+      The following function simulates a person taking a test, given that we know their actual ability.
+    </p>
+    <program language="python">
+      <input>
+def simulate_test(actual_ability):
+    """Simulate a person taking a test."""
+    belief = prior.copy()
+    trace = pd.DataFrame(columns=['difficulty', 'outcome'])
+
+    for i in range(num_questions):
+        difficulty = choose(i, belief)
+        outcome = play(actual_ability, difficulty)
+        data = (difficulty, outcome)
+        update_ability(belief, data)
+        trace.loc[i] = difficulty, outcome
+        
+    return belief, trace
+      </input>
+    </program>
+    <p>
+      The return values are a <c>Pmf</c> representing the posterior distribution of ability and a <c>DataFrame</c> containing the difficulty of the questions and the outcomes.
+    </p>
+    <p>
+      Here's an example, again for a test-taker with <c>ability=600</c>.
+    </p>
+    <program language="python">
+      <input>
+belief, trace = simulate_test(600)
+      </input>
+    </program>
+    <p>
+      We can use the trace to see how many responses were correct.
+    </p>
+    <program language="python">
+      <input>
+trace['outcome'].sum()
+      </input>
+    </program>
+    <p>
+      And here's what the posterior looks like.
+    </p>
+    <program language="python">
+      <input>
+belief.plot(color='C4', label='ability=600')
+
+decorate(xlabel='Ability',
+         ylabel='PDF',
+         title='Posterior distribution of ability')
+      </input>
+    </program>
+    <p>
+      Again, the posterior distribution represents a pretty good estimate of the test-taker's actual ability.
+    </p>
+  </section>
+
+  <section xml:id="sec-ch10-quantifying-precision">
+    <title>Quantifying Precision</title>
+
+    <program language="python">
+      <input>
+belief.mean(), belief.std()
+      </input>
+    </program>
+    <p>
+      For an exam where all questions have the same difficulty, the precision of the estimate depends strongly on the ability of the test-taker.  To show that, I'll loop through a range of abilities and simulate a test using the version of <c>choice</c> that always returns <c>difficulty=500</c>.
+    </p>
+    <program language="python">
+      <input>
+actual_abilities = np.linspace(200, 800)
+results = pd.DataFrame(columns=['ability', 'posterior_std'])
+series = pd.Series(index=actual_abilities, dtype=float, name='std')
+
+for actual_ability in actual_abilities:
+    belief, trace = simulate_test(actual_ability)
+    series[actual_ability] = belief.std()
+      </input>
+    </program>
+    <p>
+      The following plot shows the standard deviation of the posterior distribution for one simulation at each level of ability.
+    </p>
+    <p>
+      The results are noisy, so I also plot a curve fitted to the data by <url href="https://en.wikipedia.org/wiki/Local_regression">local regression</url>.
+    </p>
+    <program language="python">
+      <input>
+from utils import plot_series_lowess
+
+plot_series_lowess(series, 'C1')
+
+decorate(xlabel='Actual ability',
+         ylabel='Standard deviation of posterior')
+      </input>
+    </program>
+    <p>
+      The test is most precise for people with ability between <c>500</c> and <c>600</c>, less precise for people at the high end of the range, and even worse for people at the low end.
+    </p>
+    <p>
+      When all the questions have difficulty <c>500</c>, a person with <c>ability=800</c> has a high probability of getting them right.  So when they do, we don't learn very much about them.
+    </p>
+    <p>
+      If the test includes questions with a range of difficulty, it provides more information about people at the high and low ends of the range.
+    </p>
+    <p>
+      As an exercise at the end of the chapter, you'll have a chance to try out other strategies, including adaptive strategies that choose each question based on previous outcomes.
+    </p>
+  </section>
+
+  <section xml:id="sec-ch10-discriminatory-power">
+    <title>Discriminatory Power</title>
+
+    <program language="python">
+      <input>
+def sample_posterior(actual_ability, iters):
+    """Simulate multiple tests and compute posterior means.
+    
+    actual_ability: number
+    iters: number of simulated tests
+    
+    returns: array of scores
+    """
+    scores = []
+
+    for i in range(iters):
+        belief, trace = simulate_test(actual_ability)
+        score = belief.mean()
+        scores.append(score)
+        
+    return np.array(scores)
+      </input>
+    </program>
+    <p>
+      Here are samples of scores for people with several levels of ability.
+    </p>
+    <program language="python">
+      <input>
+sample_500 = sample_posterior(500, iters=100)
+      </input>
+    </program>
+    <program language="python">
+      <input>
+sample_600 = sample_posterior(600, iters=100)
+      </input>
+    </program>
+    <program language="python">
+      <input>
+sample_700 = sample_posterior(700, iters=100)
+      </input>
+    </program>
+    <program language="python">
+      <input>
+sample_800 = sample_posterior(800, iters=100)
+      </input>
+    </program>
+    <p>
+      Here's what the distributions of scores look like.
+    </p>
+    <program language="python">
+      <input>
+cdf_500.plot(label='ability=500', color='C1',
+            linestyle='dashed')
+cdf_600.plot(label='ability=600', color='C3')
+cdf_700.plot(label='ability=700', color='C2',
+            linestyle='dashed')
+cdf_800.plot(label='ability=800', color='C0')
+
+decorate(xlabel='Test score',
+         ylabel='CDF',
+         title='Sampling distribution of test scores')
+      </input>
+    </program>
+    <p>
+      On average, people with higher ability get higher scores, but anyone can have a bad day, or a good day, so there is some overlap between the distributions.
+    </p>
+    <p>
+      For people with ability between <c>500</c> and <c>600</c>, where the precision of the test is highest, the discriminatory power of the test is also high.
+    </p>
+    <p>
+      If people with abilities <c>500</c> and <c>600</c> take the test, it is almost certain that the person with higher ability will get a higher score.
+    </p>
+    <program language="python">
+      <input>
+np.mean(sample_600 &gt; sample_500)
+      </input>
+    </program>
+    <p>
+      Between people with abilities <c>600</c> and <c>700</c>, it is less certain.
+    </p>
+    <program language="python">
+      <input>
+np.mean(sample_700 &gt; sample_600)
+      </input>
+    </program>
+    <p>
+      And between people with abilities <c>700</c> and <c>800</c>, it is not certain at all.
+    </p>
+    <program language="python">
+      <input>
+np.mean(sample_800 &gt; sample_700)
+      </input>
+    </program>
+    <p>
+      But remember that these results are based on a test where all questions are equally difficult. If you do the exercises at the end of the chapter, you'll see that the performance of the test is better if it includes questions with a range of difficulties, and even better if the test it is adaptive.
+    </p>
+    <exercise xml:id="ex-ch10-adaptive">
+      <title>Adaptive Testing Strategies</title>
+      <statement>
+        <p>Go back and modify <c>choose</c>, which is the function that chooses the difficulty of the next question.</p>
+        <ol>
+          <li><p>Write a version of <c>choose</c> that returns a range of difficulties by using <c>i</c> as an index into a sequence of difficulties.</p></li>
+          <li><p>Write a version of <c>choose</c> that is adaptive, so it choose the difficulty of the next question based <c>belief</c>, which is the posterior distribution of the test-taker's ability, based on the outcome of previous responses.</p></li>
+        </ol>
+        <p>For both new versions, run the simulations again to quantify the precision of the test and its discriminatory power.</p>
+        <p>For the first version of <c>choose</c>, what is the ideal distribution of difficulties?</p>
+        <p>For the second version, what is the adaptive strategy that maximizes the precision of the test over the range of abilities?</p>
+      </statement>
+    </exercise>
+  </section>
 
 </chapter>
