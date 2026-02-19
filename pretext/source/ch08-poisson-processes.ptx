@@ -32,7 +32,7 @@
     </p>
 
     <p>
-      Of course, none of these assumptions is absolutely true in the real world, but I think they are reasonable simplifications, and as we will see, they allow use to derive some useful results.
+      Of course, none of these assumptions is absolutely true in the real world, but I think they are reasonable simplifications, and as we will see, they allow us to derive some useful results.
       As George Box said, <q>All models are wrong; some are useful</q> (see <url href="https://en.wikipedia.org/wiki/All_models_are_wrong">https://en.wikipedia.org/wiki/All_models_are_wrong</url>).
     </p>
 
@@ -285,7 +285,7 @@ update_poisson(croatia, 2)
 
     <p>
       Recall that the mean of the prior distribution is 1.4.
-      After Croatia scores 2 goals, their posterior mean is 1.7, which is near the midpoint of the prior and the date.
+      After Croatia scores 2 goals, their posterior mean is 1.7, which is near the midpoint of the prior and the data.
       Likewise after France scores 4 goals, their posterior mean is 2.7.
     </p>
 
@@ -420,7 +420,7 @@ tie = Pmf.prob_eq(pred_france, pred_croatia)
 
     <p>
       Assuming that France wins half of the ties, their chance of winning the rematch is about 65%.
-      This is a bit lower than their probability of superiority, which is 75%. And that makes sense even if they are better team, they might lose the game.
+      This is a bit lower than their probability of superiority, which is 75%. And that makes sense even if they are the better team, they might lose the game.
     </p>
   </section>
 
@@ -446,7 +446,7 @@ tie = Pmf.prob_eq(pred_france, pred_croatia)
     <p>
       To compute the likelihood of data like this, we can use the theory of Poisson processes again.
       In our model of a soccer game, we assume that each team has a goal-scoring rate, <m>\lambda</m>, in goals per game.
-      And we assume that <m>\lambda</m> is constant, so the chance of scoring a goal in the same at any moment of the game.
+      And we assume that <m>\lambda</m> is constant, so the chance of scoring a goal is the same at any moment of the game.
     </p>
 
     <p>
@@ -551,7 +551,7 @@ pmf_time.normalize()
         </p>
 
         <p>
-          To choose a prior distribution, I got some statistics from <url href="http://www.nhl.com">http://www.nhl.com</url>, specifically the average goals per game for each team in the 2010-11 season.  The distribution well modeled by a gamma distribution with mean 2.8.
+          To choose a prior distribution, I got some statistics from <url href="http://www.nhl.com">http://www.nhl.com</url>, specifically the average goals per game for each team in the 2010-11 season.  The distribution is well modeled by a gamma distribution with mean 2.8.
         </p>
       </statement>
     </exercise>
