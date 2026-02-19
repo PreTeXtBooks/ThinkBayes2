@@ -13,11 +13,7 @@ With more than 3-4 parameters, grid methods become impractical.</p>
     <p>So, in the remaining three chapters, I will present three alternatives:</p>
     <ol>
       <li><p>In this chapter we'll use <em>conjugate priors</em> to speed up some of the computations we've already done.</p></li>
-    </ol>
-    <ol>
       <li><p>In the next chapter, I'll present Markov chain Monte Carlo (MCMC) methods, which can solve problems with tens of parameters, or even hundreds, in a reasonable amount of time.</p></li>
-    </ol>
-    <ol>
       <li><p>And in the last chapter we'll use Approximate Bayesian Computation (ABC) for problems that are hard to model with simple distributions.</p></li>
     </ol>
     <p>We'll start with the World Cup problem.</p>
@@ -503,9 +499,10 @@ decorate_euro('Prior distributions')
       <statement>
         <p><em>Exercise:</em>  <url href="https://en.wikipedia.org/wiki/3Blue1Brown">3Blue1Brown</url> is a YouTube channel about math; if you are not already aware of it, I recommend it highly.
 In <url href="https://www.youtube.com/watch?v=8idr1WZ1A7Q">this video</url> the narrator presents this problem:</p>
-        <p>&gt; You are buying a product online and you see three sellers offering the same product at the same price.  One of them has a 100% positive rating, but with only 10 reviews.  Another has a 96% positive rating with 50 total reviews.  And yet another has a 93% positive rating, but with 200 total reviews.
-&gt;
-&gt;Which one should you buy from?</p>
+        <blockquote>
+          <p>You are buying a product online and you see three sellers offering the same product at the same price.  One of them has a 100% positive rating, but with only 10 reviews.  Another has a 96% positive rating with 50 total reviews.  And yet another has a 93% positive rating, but with 200 total reviews.</p>
+          <p>Which one should you buy from?</p>
+        </blockquote>
         <p>Let's think about how to model this scenario.  Suppose each seller has some unknown probability, <c>x</c>, of providing satisfactory service and getting a positive rating, and we want to choose the seller with the highest value of <c>x</c>.</p>
         <p>This is not the only model for this scenario, and it is not necessarily the best.  An alternative would be something like item response theory, where sellers have varying ability to provide satisfactory service and customers have varying difficulty of being satisfied.</p>
         <p>But the first model has the virtue of simplicity, so let's see where it gets us.</p>
@@ -521,11 +518,11 @@ In <url href="https://www.youtube.com/watch?v=8idr1WZ1A7Q">this video</url> the 
     <exercise xml:id="ex-ch18-4">
       <statement>
         <p><em>Exercise:</em> Use a Dirichlet prior with parameter vector <c>alpha = [1, 1, 1]</c> to solve the Lions and Tigers and Bears problem:</p>
-        <p>&gt;Suppose we visit a wild animal preserve where we know that the only animals are lions and tigers and bears, but we don't know how many of each there are.
-&gt;
-&gt;During the tour, we see three lions, two tigers, and one bear. Assuming that every animal had an equal chance to appear in our sample, estimate the prevalence of each species.
-&gt;
-&gt;What is the probability that the next animal we see is a bear?</p>
+        <blockquote>
+          <p>Suppose we visit a wild animal preserve where we know that the only animals are lions and tigers and bears, but we don't know how many of each there are.</p>
+          <p>During the tour, we see three lions, two tigers, and one bear. Assuming that every animal had an equal chance to appear in our sample, estimate the prevalence of each species.</p>
+          <p>What is the probability that the next animal we see is a bear?</p>
+        </blockquote>
         <p><em>Think Bayes</em>, Second Edition</p>
         <p>Copyright 2020 Allen B. Downey</p>
         <p>License: <url href="https://creativecommons.org/licenses/by-nc-sa/4.0/">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)</url></p>
