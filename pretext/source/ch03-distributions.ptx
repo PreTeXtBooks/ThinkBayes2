@@ -630,7 +630,7 @@ posterior
       <title>The Euro Problem</title>
       <statement>
         <p>
-          In *Information Theory, Inference, and Learning Algorithms*, David MacKay poses this problem:
+          In <em>Information Theory, Inference, and Learning Algorithms</em>, David MacKay poses this problem:
         </p>
         <blockquote>
           <p>
@@ -698,7 +698,7 @@ posterior
       <title>The Price is Right Problem</title>
       <statement>
         <p>
-          On the game show *The Price is Right*, contestants try to guess the price of a prize.
+          On the game show <em>The Price is Right</em>, contestants try to guess the price of a prize.
           The one who comes closest without going over wins the prize.
         </p>
         <p>
