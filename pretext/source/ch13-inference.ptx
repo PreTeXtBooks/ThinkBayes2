@@ -5,10 +5,1393 @@
 
   <introduction>
     <p>
-      This chapter explores statistical inference using Bayesian methods.
+      You can order print and ebook versions of <em>Think Bayes 2e</em> from <url href="https://bookshop.org/a/98697/9781492089469">Bookshop.org</url> and <url href="https://amzn.to/334eqGo">Amazon</url>.
+    </p>
+    <p>
+      Whenever people compare Bayesian inference with conventional approaches, one of the questions that comes up most often is something like, "What about p-values?" And one of the most common examples is the comparison of two groups to see if there is a difference in their means.
+    </p>
+    <p>
+      In classical statistical inference, the usual tool for this scenario is a <url href="https://en.wikipedia.org/wiki/Student%27s_t-test">Student's <em>t</em>-test</url>, and the result is a <url href="https://en.wikipedia.org/wiki/P-value">p-value</url>. This process is an example of <url href="https://en.wikipedia.org/wiki/Statistical_hypothesis_testing">null hypothesis significance testing</url>.
+    </p>
+    <p>
+      A Bayesian alternative is to compute the posterior distribution of the difference between the groups. Then we can use that distribution to answer whatever questions we are interested in, including the most likely size of the difference, a credible interval that's likely to contain the true difference, the probability of superiority, or the probability that the difference exceeds some threshold.
+    </p>
+    <p>
+      To demonstrate this process, I'll solve a problem borrowed from a statistical textbook: evaluating the effect of an educational "treatment" compared to a control.
     </p>
   </introduction>
 
-  <!-- Sections will be added here -->
+  <section xml:id="sec-improving-reading-ability">
+    <title>Improving Reading Ability</title>
+
+    <p>
+      We'll use data from a <url href="https://docs.lib.purdue.edu/dissertations/AAI8807671/">Ph.D. dissertation in educational psychology</url> written in 1987, which was used as an example in a <url href="https://books.google.com/books/about/Introduction_to_the_practice_of_statisti.html?id=pGBNhajABlUC">statistics textbook</url> from 1989 and published on <url href="https://web.archive.org/web/20000603124754/http://lib.stat.cmu.edu/DASL/Datafiles/DRPScores.html">DASL</url>, a web page that collects data stories.  
+    </p>
+    <p>
+      Here's the description from DASL:
+    </p>
+    <blockquote>
+      <p>An educator conducted an experiment to test whether new directed reading activities in the classroom will help elementary school pupils improve some aspects of their reading ability. She arranged for a third grade class of 21 students to follow these activities for an 8-week period. A control classroom of 23 third graders followed the same curriculum without the activities. At the end of the 8 weeks, all students took a Degree of Reading Power (DRP) test, which measures the aspects of reading ability that the treatment is designed to improve.</p>
+    </blockquote>
+    <p>
+      The <url href="https://web.archive.org/web/20000603124754/http://lib.stat.cmu.edu/DASL/Datafiles/DRPScores.html">dataset is available here</url>.
+    </p>
+    <p>
+      I'll use Pandas to load the data into a <c>DataFrame</c>.
+    </p>
+    <program language="python">
+      <input>
+    import pandas as pd
+    
+    df = pd.read_csv('drp_scores.csv', skiprows=21, delimiter='\t')
+    df.head(3)
+      </input>
+    </program>
+    <p>
+      The <c>Treatment</c> column indicates whether each student was in the treated or control group. The <c>Response</c> is their score on the test.
+    </p>
+    <p>
+      I'll use <c>groupby</c> to separate the data for the <c>Treated</c> and <c>Control</c> groups:
+    </p>
+    <program language="python">
+      <input>
+    grouped = df.groupby('Treatment')
+    responses = {}
+    
+    for name, group in grouped:
+        responses[name] = group['Response']
+      </input>
+    </program>
+    <p>
+      Here are CDFs of the scores for the two groups and summary statistics.
+    </p>
+    <program language="python">
+      <input>
+    from empiricaldist import Cdf
+    from utils import decorate
+    
+    for name, response in responses.items():
+        cdf = Cdf.from_seq(response)
+        cdf.plot(label=name)
+        
+    decorate(xlabel='Score', 
+             ylabel='CDF',
+             title='Distributions of test scores')
+      </input>
+    </program>
+    <p>
+      There is overlap between the distributions, but it looks like the scores are higher in the treated group. The distribution of scores is not exactly normal for either group, but it is close enough that the normal model is a reasonable choice.
+    </p>
+    <p>
+      So I'll assume that in the entire population of students (not just the ones in the experiment), the distribution of scores is well modeled by a normal distribution with unknown mean and standard deviation. I'll use <c>mu</c> and <c>sigma</c> to denote these unknown parameters, and we'll do a Bayesian update to estimate what they are.
+    </p>
+  </section>
+
+  <section xml:id="sec-estimating-parameters">
+    <title>Estimating Parameters</title>
+
+    <p>
+      As always, we need a prior distribution for the parameters. Since there are two parameters, it will be a joint distribution. I'll construct it by choosing marginal distributions for each parameter and computing their outer product.
+    </p>
+    <p>
+      As a simple starting place, I'll assume that the prior distributions for <c>mu</c> and <c>sigma</c> are uniform. The following function makes a <c>Pmf</c> object that represents a uniform distribution.
+    </p>
+    <program language="python">
+      <input>
+    from empiricaldist import Pmf
+    
+    def make_uniform(qs, name=None, **options):
+        &quot;&quot;&quot;Make a Pmf that represents a uniform distribution.&quot;&quot;&quot;
+        pmf = Pmf(1.0, qs, **options)
+        pmf.normalize()
+        if name:
+            pmf.index.name = name
+        return pmf
+      </input>
+    </program>
+    <p>
+      <c>make_uniform</c> takes as parameters 
+    </p>
+    <ul>
+      <li>An array of quantities, <c>qs</c>, and</li>
+      <li>A string, <c>name</c>, which is assigned to the index so it appears when we display the <c>Pmf</c>.</li>
+    </ul>
+    <p>
+      Here's the prior distribution for <c>mu</c>:
+    </p>
+    <program language="python">
+      <input>
+    import numpy as np
+    
+    qs = np.linspace(20, 80, num=101)
+    prior_mu = make_uniform(qs, name='mean')
+      </input>
+    </program>
+    <p>
+      I chose the lower and upper bounds by trial and error. I'll explain how when we look at the posterior distribution.
+    </p>
+    <p>
+      Here's the prior distribution for <c>sigma</c>:
+    </p>
+    <program language="python">
+      <input>
+    qs = np.linspace(5, 30, num=101)
+    prior_sigma = make_uniform(qs, name='std')
+      </input>
+    </program>
+    <p>
+      Now we can use <c>make_joint</c> to make the joint prior distribution.
+    </p>
+    <program language="python">
+      <input>
+    from utils import make_joint
+    
+    prior = make_joint(prior_mu, prior_sigma)
+      </input>
+    </program>
+    <p>
+      And we'll start by working with the data from the control group.
+    </p>
+    <program language="python">
+      <input>
+    data = responses['Control']
+    data.shape
+      </input>
+    </program>
+    <p>
+      In the next section we'll compute the likelihood of this data for each pair of parameters in the prior distribution.
+    </p>
+  </section>
+
+  <section xml:id="sec-likelihood">
+    <title>Likelihood</title>
+
+    <p>
+      We would like to know the probability of each score in the dataset for each hypothetical pair of values, <c>mu</c> and <c>sigma</c>. I'll do that by making a 3-dimensional grid with values of <c>mu</c> on the first axis, values of <c>sigma</c> on the second axis, and the scores from the dataset on the third axis.
+    </p>
+    <program language="python">
+      <input>
+    mu_mesh, sigma_mesh, data_mesh = np.meshgrid(
+        prior.columns, prior.index, data)
+    
+    mu_mesh.shape
+      </input>
+    </program>
+    <p>
+      Now we can use <c>norm.pdf</c> to compute the probability density of each score for each hypothetical pair of parameters.
+    </p>
+    <program language="python">
+      <input>
+    from scipy.stats import norm
+    
+    densities = norm(mu_mesh, sigma_mesh).pdf(data_mesh)
+    densities.shape
+      </input>
+    </program>
+    <p>
+      The result is a 3-D array.  To compute likelihoods, I'll multiply these densities along <c>axis=2</c>, which is the axis of the data:
+    </p>
+    <program language="python">
+      <input>
+    likelihood = densities.prod(axis=2)
+    likelihood.shape
+      </input>
+    </program>
+    <p>
+      The result is a 2-D array that contains the likelihood of the entire dataset for each hypothetical pair of parameters.
+    </p>
+    <p>
+      We can use this array to update the prior, like this:
+    </p>
+    <program language="python">
+      <input>
+    from utils import normalize
+    
+    posterior = prior * likelihood
+    normalize(posterior)
+    posterior.shape
+      </input>
+    </program>
+    <p>
+      The result is a <c>DataFrame</c> that represents the joint posterior distribution.
+    </p>
+    <p>
+      The following function encapsulates these steps.
+    </p>
+    <program language="python">
+      <input>
+    def update_norm(prior, data):
+        &quot;&quot;&quot;Update the prior based on data.&quot;&quot;&quot;
+        mu_mesh, sigma_mesh, data_mesh = np.meshgrid(
+            prior.columns, prior.index, data)
+        
+        densities = norm(mu_mesh, sigma_mesh).pdf(data_mesh)
+        likelihood = densities.prod(axis=2)
+        
+        posterior = prior * likelihood
+        normalize(posterior)
+    
+        return posterior
+      </input>
+    </program>
+    <p>
+      Here are the updates for the control and treatment groups:
+    </p>
+    <program language="python">
+      <input>
+    data = responses['Control']
+    posterior_control = update_norm(prior, data)
+      </input>
+    </program>
+    <program language="python">
+      <input>
+    data = responses['Treated']
+    posterior_treated = update_norm(prior, data)
+      </input>
+    </program>
+    <p>
+      And here's what they look like:
+    </p>
+    <program language="python">
+      <input>
+    import matplotlib.pyplot as plt
+    from utils import plot_contour
+    
+    plot_contour(posterior_control, cmap='Blues')
+    plt.text(49.5, 18, 'Control', color='C0')
+    
+    cs = plot_contour(posterior_treated, cmap='Oranges')
+    plt.text(57, 12, 'Treated', color='C1')
+    
+    decorate(xlabel='Mean (mu)', 
+             ylabel='Standard deviation (sigma)',
+             title='Joint posterior distributions of mu and sigma')
+      </input>
+    </program>
+    <p>
+      Along the $x$-axis, it looks like the mean score for the treated group is higher. Along the $y$-axis, it looks like the standard deviation for the treated group is lower.
+    </p>
+    <p>
+      If we think the treatment causes these differences, the data suggest that the treatment increases the mean of the scores and decreases their spread. We can see these differences more clearly by looking at the marginal distributions for <c>mu</c> and <c>sigma</c>.
+    </p>
+  </section>
+
+  <section xml:id="sec-posterior-marginal-distributions">
+    <title>Posterior Marginal Distributions</title>
+
+    <p>
+      I'll use <c>marginal</c>, which we saw in <<_MarginalDistributions>&gt;, to extract the posterior marginal distributions for the population means.
+    </p>
+    <program language="python">
+      <input>
+    from utils import marginal
+    
+    pmf_mean_control = marginal(posterior_control, 0)
+    pmf_mean_treated = marginal(posterior_treated, 0)
+      </input>
+    </program>
+    <p>
+      Here's what they look like:
+    </p>
+    <program language="python">
+      <input>
+    pmf_mean_control.plot(label='Control')
+    pmf_mean_treated.plot(label='Treated')
+    
+    decorate(xlabel='Population mean (mu)', 
+             ylabel='PDF', 
+             title='Posterior distributions of mu')
+      </input>
+    </program>
+    <p>
+      In both cases the posterior probabilities at the ends of the range are near zero, which means that the bounds we chose for the prior distribution are wide enough.
+    </p>
+    <p>
+      Comparing the marginal distributions for the two groups, it looks like the population mean in the treated group is higher. We can use <c>prob_gt</c> to compute the probability of superiority:
+    </p>
+    <program language="python">
+      <input>
+    Pmf.prob_gt(pmf_mean_treated, pmf_mean_control)
+      </input>
+    </program>
+    <p>
+      There is a 98% chance that the mean in the treated group is higher.
+    </p>
+  </section>
+
+  <section xml:id="sec-distribution-of-differences">
+    <title>Distribution of Differences</title>
+
+    <p>
+      To quantify the magnitude of the difference between groups, we can use <c>sub_dist</c> to compute the distribution of the difference.
+    </p>
+    <program language="python">
+      <input>
+    pmf_diff = Pmf.sub_dist(pmf_mean_treated, pmf_mean_control)
+      </input>
+    </program>
+    <p>
+      There are two things to be careful about when you use methods like <c>sub_dist</c>.  The first is that the result usually contains more elements than the original <c>Pmf</c>.   In this example, the original distributions have the same quantities, so the size increase is moderate.
+    </p>
+    <program language="python">
+      <input>
+    len(pmf_mean_treated), len(pmf_mean_control), len(pmf_diff)
+      </input>
+    </program>
+    <p>
+      In the worst case, the size of the result can be the product of the sizes of the originals.
+    </p>
+    <p>
+      The other thing to be careful about is plotting the <c>Pmf</c>. In this example, if we plot the distribution of differences, the result is pretty noisy.
+    </p>
+    <program language="python">
+      <input>
+    pmf_diff.plot()
+    
+    decorate(xlabel='Difference in population means', 
+             ylabel='PDF', 
+             title='Posterior distribution of difference in mu')
+      </input>
+    </program>
+    <p>
+      There are two ways to work around that limitation.  One is to plot the CDF, which smooths out the noise:
+    </p>
+    <program language="python">
+      <input>
+    cdf_diff = pmf_diff.make_cdf()
+      </input>
+    </program>
+    <program language="python">
+      <input>
+    cdf_diff.plot()
+    
+    decorate(xlabel='Difference in population means', 
+             ylabel='CDF', 
+             title='Posterior distribution of difference in mu')
+      </input>
+    </program>
+    <p>
+      The other option is to use kernel density estimation (KDE) to make a smooth approximation of the PDF on an equally-spaced grid, which is what this function does:
+    </p>
+    <program language="python">
+      <input>
+    from scipy.stats import gaussian_kde
+    
+    def kde_from_pmf(pmf, n=101):
+        &quot;&quot;&quot;Make a kernel density estimate for a PMF.&quot;&quot;&quot;
+        kde = gaussian_kde(pmf.qs, weights=pmf.ps)
+        qs = np.linspace(pmf.qs.min(), pmf.qs.max(), n)
+        ps = kde.evaluate(qs)
+        pmf = Pmf(ps, qs)
+        pmf.normalize()
+        return pmf
+      </input>
+    </program>
+    <p>
+      <c>kde_from_pmf</c> takes as parameters a <c>Pmf</c> and the number of places to evaluate the KDE.
+    </p>
+    <p>
+      It uses <c>gaussian_kde</c>, which we saw in <<_KernelDensityEstimation>&gt;, passing the probabilities from the <c>Pmf</c> as weights. This makes the estimated densities higher where the probabilities in the <c>Pmf</c> are higher.
+    </p>
+    <p>
+      Here's what the kernel density estimate looks like for the <c>Pmf</c> of differences between the groups.
+    </p>
+    <program language="python">
+      <input>
+    kde_diff = kde_from_pmf(pmf_diff)
+      </input>
+    </program>
+    <program language="python">
+      <input>
+    kde_diff.plot()
+    
+    decorate(xlabel='Difference in means', 
+             ylabel='PDF', 
+             title='Posterior distribution of difference in mu')
+      </input>
+    </program>
+    <p>
+      The mean of this distribution is almost 10 points on a test where the mean is around 45, so the effect of the treatment seems to be substantial.
+    </p>
+    <program language="python">
+      <input>
+    pmf_diff.mean()
+      </input>
+    </program>
+    <p>
+      We can use <c>credible_interval</c> to compute a 90% credible interval.
+    </p>
+    <program language="python">
+      <input>
+    pmf_diff.credible_interval(0.9)
+      </input>
+    </program>
+    <p>
+      Based on this interval, we are pretty sure the treatment improves test scores by 2 to 17 points.
+    </p>
+  </section>
+
+  <section xml:id="sec-using-summary-statistics">
+    <title>Using Summary Statistics</title>
+
+    <p>
+      In this example the dataset is not very big, so it doesn't take too long to compute the probability of every score under every hypothesis. But the result is a 3-D array; for larger datasets, it might be too big to compute practically.
+    </p>
+    <p>
+      Also, with larger datasets the likelihoods get very small, sometimes so small that we can't compute them with floating-point arithmetic. That's because we are computing the probability of a particular dataset; the number of possible datasets is astronomically big, so the probability of any of them is very small.
+    </p>
+    <p>
+      An alternative is to compute a summary of the dataset and compute the likelihood of the summary. For example, if we compute the mean and standard deviation of the data, we can compute the likelihood of those summary statistics under each hypothesis.
+    </p>
+    <p>
+      As an example, suppose we know that the actual mean of the population, $\mu$,  is 42 and the actual standard deviation, $\sigma$, is 17.
+    </p>
+    <program language="python">
+      <input>
+    mu = 42
+    sigma = 17
+      </input>
+    </program>
+    <p>
+      Now suppose we draw a sample from this distribution with sample size <c>n=20</c>, and compute the mean of the sample, which I'll call <c>m</c>, and the standard deviation of the sample, which I'll call <c>s</c>.
+    </p>
+    <p>
+      And suppose it turns out that:
+    </p>
+    <program language="python">
+      <input>
+    n = 20
+    m = 41
+    s = 18
+      </input>
+    </program>
+    <p>
+      The summary statistics, <c>m</c> and <c>s</c>, are not too far from the parameters $\mu$ and $\sigma$, so it seems like they are not too unlikely.
+    </p>
+    <p>
+      To compute their likelihood, we will take advantage of three results from mathematical statistics:
+    </p>
+    <ul>
+      <li>Given $\mu$ and $\sigma$, the distribution of <c>m</c> is normal with parameters $\mu$ and $\sigma/\sqrt{n}$;</li>
+      <li>The distribution of $s$ is more complicated, but if we compute the transform $t = n s^2 / \sigma^2$, the distribution of $t$ is chi-squared with parameter $n-1$; and</li>
+      <li>According to <url href="https://en.wikipedia.org/wiki/Basu%27s_theorem">Basu's theorem</url>, <c>m</c> and <c>s</c> are independent.</li>
+    </ul>
+    <p>
+      So let's compute the likelihood of <c>m</c> and <c>s</c> given $\mu$ and $\sigma$.
+    </p>
+    <p>
+      First I'll create a <c>norm</c> object that represents the distribution of <c>m</c>.
+    </p>
+    <program language="python">
+      <input>
+    dist_m = norm(mu, sigma/np.sqrt(n))
+      </input>
+    </program>
+    <p>
+      This is the "sampling distribution of the mean". We can use it to compute the likelihood of the observed value of <c>m</c>, which is 41.
+    </p>
+    <program language="python">
+      <input>
+    like1 = dist_m.pdf(m)
+    like1
+      </input>
+    </program>
+    <p>
+      Now let's compute the likelihood of the observed value of <c>s</c>, which is 18. First, we compute the transformed value <c>t</c>:
+    </p>
+    <program language="python">
+      <input>
+    t = n * s**2 / sigma**2
+    t
+      </input>
+    </program>
+    <p>
+      Then we create a <c>chi2</c> object to represent the distribution of <c>t</c>:
+    </p>
+    <program language="python">
+      <input>
+    from scipy.stats import chi2
+    
+    dist_s = chi2(n-1)
+      </input>
+    </program>
+    <p>
+      Now we can compute the likelihood of <c>t</c>:
+    </p>
+    <program language="python">
+      <input>
+    like2 = dist_s.pdf(t)
+    like2
+      </input>
+    </program>
+    <p>
+      Finally, because <c>m</c> and <c>s</c> are independent, their joint likelihood is the product of their likelihoods:
+    </p>
+    <program language="python">
+      <input>
+    like = like1 * like2
+    like
+      </input>
+    </program>
+    <p>
+      Now we can compute the likelihood of the data for any values of $\mu$ and $\sigma$, which we'll use in the next section to do the update.
+    </p>
+  </section>
+
+  <section xml:id="sec-update-with-summary-statistics">
+    <title>Update with Summary Statistics</title>
+
+    <p>
+      Now we're ready to do an update. I'll compute summary statistics for the two groups.
+    </p>
+    <program language="python">
+      <input>
+    summary = {}
+    
+    for name, response in responses.items():
+        summary[name] = len(response), response.mean(), response.std()
+        
+    summary
+      </input>
+    </program>
+    <p>
+      The result is a dictionary that maps from group name to a tuple that contains the sample size, <c>n</c>, the sample mean, <c>m</c>, and the sample standard deviation <c>s</c>, for each group.
+    </p>
+    <p>
+      I'll demonstrate the update with the summary statistics from the control group.
+    </p>
+    <program language="python">
+      <input>
+    n, m, s = summary['Control']
+      </input>
+    </program>
+    <p>
+      I'll make a mesh with hypothetical values of <c>mu</c> on the <c>x</c> axis and values of <c>sigma</c> on the <c>y</c> axis.
+    </p>
+    <program language="python">
+      <input>
+    mus, sigmas = np.meshgrid(prior.columns, prior.index)
+    mus.shape
+      </input>
+    </program>
+    <p>
+      Now we can compute the likelihood of seeing the sample mean, <c>m</c>, for each pair of parameters.
+    </p>
+    <program language="python">
+      <input>
+    like1 = norm(mus, sigmas/np.sqrt(n)).pdf(m)
+    like1.shape
+      </input>
+    </program>
+    <p>
+      And we can compute the likelihood of the sample standard deviation, <c>s</c>, for each pair of parameters.
+    </p>
+    <program language="python">
+      <input>
+    ts = n * s**2 / sigmas**2
+    like2 = chi2(n-1).pdf(ts)
+    like2.shape
+      </input>
+    </program>
+    <p>
+      Finally, we can do the update with both likelihoods:
+    </p>
+    <program language="python">
+      <input>
+    posterior_control2 = prior * like1 * like2
+    normalize(posterior_control2)
+      </input>
+    </program>
+    <p>
+      To compute the posterior distribution for the treatment group, I'll put the previous steps in a function:
+    </p>
+    <program language="python">
+      <input>
+    def update_norm_summary(prior, data):
+        &quot;&quot;&quot;Update a normal distribution using summary statistics.&quot;&quot;&quot;
+        n, m, s = data
+        mu_mesh, sigma_mesh = np.meshgrid(prior.columns, prior.index)
+        
+        like1 = norm(mu_mesh, sigma_mesh/np.sqrt(n)).pdf(m)
+        like2 = chi2(n-1).pdf(n * s**2 / sigma_mesh**2)
+        
+        posterior = prior * like1 * like2
+        normalize(posterior)
+        
+        return posterior
+      </input>
+    </program>
+    <p>
+      Here's the update for the treatment group:
+    </p>
+    <program language="python">
+      <input>
+    data = summary['Treated']
+    posterior_treated2 = update_norm_summary(prior, data)
+      </input>
+    </program>
+    <p>
+      And here are the results.
+    </p>
+    <program language="python">
+      <input>
+    plot_contour(posterior_control2, cmap='Blues')
+    plt.text(49.5, 18, 'Control', color='C0')
+    
+    cs = plot_contour(posterior_treated2, cmap='Oranges')
+    plt.text(57, 12, 'Treated', color='C1')
+    
+    decorate(xlabel='Mean (mu)', 
+             ylabel='Standard deviation (sigma)',
+             title='Joint posterior distributions of mu and sigma')
+      </input>
+    </program>
+    <p>
+      Visually, these posterior joint distributions are similar to the ones we computed using the entire dataset, not just the summary statistics. But they are not exactly the same, as we can see by comparing the marginal distributions.
+    </p>
+  </section>
+
+  <section xml:id="sec-comparing-marginals">
+    <title>Comparing Marginals</title>
+
+    <p>
+      Again, let's extract the marginal posterior distributions.
+    </p>
+    <program language="python">
+      <input>
+    from utils import marginal
+    
+    pmf_mean_control2 = marginal(posterior_control2, 0)
+    pmf_mean_treated2 = marginal(posterior_treated2, 0)
+      </input>
+    </program>
+    <p>
+      And compare them to results we got using the entire dataset (the dashed lines).
+    </p>
+    <program language="python">
+      <input>
+    pmf_mean_control.plot(color='C5', ls='--')
+    pmf_mean_control2.plot(label='Control')
+    pmf_mean_treated.plot(color='C5', ls='--')
+    pmf_mean_treated2.plot(label='Treated')
+    
+    decorate(xlabel='Population mean', 
+             ylabel='PDF', 
+             title='Posterior distributions of mu')
+      </input>
+    </program>
+    <p>
+      The posterior distributions based on summary statistics are similar to the posteriors we computed using the entire dataset, but in both cases they are shorter and a little wider.
+    </p>
+    <p>
+      That's because the update with summary statistics is based on the implicit assumption that the distribution of the data is normal. But it's not; as a result, when we replace the dataset with the summary statistics, we lose some information about the true distribution of the data. With less information, we are less certain about the parameters.
+    </p>
+  </section>
+
+  <section xml:id="sec-proof-by-simulation">
+    <title>Proof By Simulation</title>
+
+    <p>
+      The update with summary statistics is based on theoretical distributions, and it seems to work, but I think it is useful to test theories like this, for a few reasons:
+    </p>
+    <ul>
+      <li>It confirms that our understanding of the theory is correct,</li>
+      <li>It confirms that the conditions where we apply the theory are conditions where the theory holds,</li>
+      <li>It confirms that the implementation details are correct.  For many distributions, there is more than one way to specify the parameters.  If you use the wrong specification, this kind of testing will help you catch the error.</li>
+    </ul>
+    <p>
+      In this section I'll use simulations to show that the distribution of the sample mean and standard deviation is as I claimed. But if you want to take my word for it, you can skip this section and the next.
+    </p>
+    <p>
+      Let's suppose that we know the actual mean and standard deviation of the population:
+    </p>
+    <program language="python">
+      <input>
+    mu = 42
+    sigma = 17
+      </input>
+    </program>
+    <p>
+      I'll create a <c>norm</c> object to represent this distribution.
+    </p>
+    <program language="python">
+      <input>
+    dist = norm(mu, sigma)
+      </input>
+    </program>
+    <p>
+      <c>norm</c> provides <c>rvs</c>, which generates random values from the distribution. We can use it to simulate 1000 samples, each with sample size <c>n=20</c>.
+    </p>
+    <program language="python">
+      <input>
+    n = 20
+    samples = dist.rvs((1000, n))
+    samples.shape
+      </input>
+    </program>
+    <p>
+      The result is an array with 1000 rows, each containing a sample or 20 simulated test scores.
+    </p>
+    <p>
+      If we compute the mean of each row, the result is an array that contains 1000 sample means; that is, each value is the mean of a sample with <c>n=20</c>.
+    </p>
+    <program language="python">
+      <input>
+    sample_means = samples.mean(axis=1)
+    sample_means.shape
+      </input>
+    </program>
+    <p>
+      Now, let's compare the distribution of these means to <c>dist_m</c>. I'll use <c>pmf_from_dist</c> to make a discrete approximation of <c>dist_m</c>:
+    </p>
+    <program language="python">
+      <input>
+    def pmf_from_dist(dist, low, high):
+        &quot;&quot;&quot;Make a discrete approximation of a continuous distribution.
+        
+        dist: SciPy dist object
+        low: low end of range
+        high: high end of range
+        
+        returns: normalized Pmf
+        &quot;&quot;&quot;
+        qs = np.linspace(low, high, 101)
+        ps = dist.pdf(qs)
+        pmf = Pmf(ps, qs)
+        pmf.normalize()
+        return pmf
+      </input>
+    </program>
+    <p>
+      <c>pmf_from_dist</c> takes an object representing a continuous distribution, evaluates its probability density function at equally space points between <c>low</c> and <c>high</c>, and returns a normalized <c>Pmf</c> that approximates the distribution.
+    </p>
+    <p>
+      I'll use it to evaluate <c>dist_m</c> over a range of six standard deviations.
+    </p>
+    <program language="python">
+      <input>
+    low = dist_m.mean() - dist_m.std() * 3
+    high = dist_m.mean() + dist_m.std() * 3
+    
+    pmf_m = pmf_from_dist(dist_m, low, high)
+      </input>
+    </program>
+    <p>
+      Now let's compare this theoretical distribution to the means of the samples. I'll use <c>kde_from_sample</c> to estimate their distribution and evaluate it in the same locations as <c>pmf_m</c>.
+    </p>
+    <program language="python">
+      <input>
+    from utils import kde_from_sample
+    
+    qs = pmf_m.qs
+    pmf_sample_means = kde_from_sample(sample_means, qs)
+      </input>
+    </program>
+    <p>
+      The following figure shows the two distributions.
+    </p>
+    <program language="python">
+      <input>
+    pmf_m.plot(label='Theoretical distribution',
+               ls=':', color='C5')
+    pmf_sample_means.plot(label='KDE of sample means')
+    
+    decorate(xlabel='Mean score',
+             ylabel='PDF',
+             title='Distribution of the mean')
+      </input>
+    </program>
+    <p>
+      The theoretical distribution and the distribution of sample means are in accord.
+    </p>
+  </section>
+
+  <section xml:id="sec-checking-standard-deviation">
+    <title>Checking Standard Deviation</title>
+
+    <p>
+      Let's also check that the standard deviations follow the distribution we expect. First I'll compute the standard deviation for each of the 1000 samples.
+    </p>
+    <program language="python">
+      <input>
+    sample_stds = samples.std(axis=1)
+    sample_stds.shape
+      </input>
+    </program>
+    <p>
+      Now we'll compute the transformed values, $t = n s^2 / \sigma^2$.
+    </p>
+    <program language="python">
+      <input>
+    transformed = n * sample_stds**2 / sigma**2
+      </input>
+    </program>
+    <p>
+      We expect the transformed values to follow a chi-square distribution with parameter $n-1$. SciPy provides <c>chi2</c>, which we can use to represent this distribution.
+    </p>
+    <program language="python">
+      <input>
+    from scipy.stats import chi2
+    
+    dist_s = chi2(n-1)
+      </input>
+    </program>
+    <p>
+      We can use <c>pmf_from_dist</c> again to make a discrete approximation.
+    </p>
+    <program language="python">
+      <input>
+    low = 0
+    high = dist_s.mean() + dist_s.std() * 4
+    
+    pmf_s = pmf_from_dist(dist_s, low, high)
+      </input>
+    </program>
+    <p>
+      And we'll use <c>kde_from_sample</c> to estimate the distribution of the sample standard deviations.
+    </p>
+    <program language="python">
+      <input>
+    qs = pmf_s.qs
+    pmf_sample_stds = kde_from_sample(transformed, qs)
+      </input>
+    </program>
+    <p>
+      Now we can compare the theoretical distribution to the distribution of the standard deviations.
+    </p>
+    <program language="python">
+      <input>
+    pmf_s.plot(label='Theoretical distribution',
+               ls=':', color='C5')
+    pmf_sample_stds.plot(label='KDE of sample std',
+                         color='C1')
+    
+    decorate(xlabel='Standard deviation of scores',
+             ylabel='PDF',
+             title='Distribution of standard deviation')
+      </input>
+    </program>
+    <p>
+      The distribution of transformed standard deviations agrees with the theoretical distribution.
+    </p>
+    <p>
+      Finally, to confirm that the sample means and standard deviations are independent, I'll compute their coefficient of correlation:
+    </p>
+    <program language="python">
+      <input>
+    np.corrcoef(sample_means, sample_stds)[0][1]
+      </input>
+    </program>
+    <p>
+      Their correlation is near zero, which is consistent with their being independent.
+    </p>
+    <p>
+      So the simulations confirm the theoretical results we used to do the update with summary statistics.
+    </p>
+    <p>
+      We can also use <c>kdeplot</c> from Seaborn to see what their joint distribution looks like.
+    </p>
+    <program language="python">
+      <input>
+    import seaborn as sns
+    
+    sns.kdeplot(x=sample_means, y=sample_stds)
+    
+    decorate(xlabel='Mean (mu)',
+             ylabel='Standard deviation (sigma)',
+             title='Joint distribution of mu and sigma')
+      </input>
+    </program>
+    <p>
+      It looks like the axes of the ellipses are aligned with the axes, which indicates that the variables are independent.
+    </p>
+  </section>
+
+  <section xml:id="sec-ch13-summary">
+    <title>Summary</title>
+
+    <p>
+      In this chapter we used a joint distribution to represent prior probabilities for the parameters of a normal distribution, <c>mu</c> and <c>sigma</c>. And we updated that distribution two ways: first using the entire dataset and the normal PDF; then using summary statistics, the normal PDF, and the chi-square PDF. Using summary statistics is computationally more efficient, but it loses some information in the process.
+    </p>
+    <p>
+      Normal distributions appear in many domains, so the methods in this chapter are broadly applicable.  The exercises at the end of the chapter will give you a chance to apply them.
+    </p>
+  </section>
+
+  <section xml:id="sec-ch13-exercises">
+    <title>Exercises</title>
+
+    <p>
+      <em>Exercise:</em> Looking again at the posterior joint distribution of <c>mu</c> and <c>sigma</c>, it seems like the standard deviation of the treated group might be lower; if so, that would suggest that the treatment is more effective for students with lower scores.
+    </p>
+    <p>
+      But before we speculate too much, we should estimate the size of the difference and see whether it might actually be 0.
+    </p>
+    <p>
+      Extract the marginal posterior distributions of <c>sigma</c> for the two groups. What is the probability that the standard deviation is higher in the control group?
+    </p>
+    <p>
+      Compute the distribution of the difference in <c>sigma</c> between the two groups.  What is the mean of this difference?  What is the 90% credible interval?
+    </p>
+    <program language="python">
+      <input>
+    # Solution
+    
+    pmf_std_control = marginal(posterior_control, 1)
+    pmf_std_treated = marginal(posterior_treated, 1)
+      </input>
+    </program>
+    <program language="python">
+      <input>
+    # Solution
+    
+    pmf_std_control.plot(label='Control')
+    pmf_std_treated.plot(label='Treated')
+    
+    decorate(xlabel='Population standard deviation', 
+             ylabel='PDF', 
+             title='Posterior distributions of sigma')
+      </input>
+    </program>
+    <program language="python">
+      <input>
+    # Solution
+    
+    Pmf.prob_gt(pmf_std_control, pmf_std_treated)
+      </input>
+    </program>
+    <program language="python">
+      <input>
+    # Solution
+    
+    pmf_diff2 = Pmf.sub_dist(pmf_std_control, pmf_std_treated)
+      </input>
+    </program>
+    <program language="python">
+      <input>
+    # Solution
+    
+    pmf_diff2.mean()
+      </input>
+    </program>
+    <program language="python">
+      <input>
+    # Solution
+    
+    pmf_diff2.credible_interval(0.9)
+      </input>
+    </program>
+    <program language="python">
+      <input>
+    # Solution
+    
+    kde_from_pmf(pmf_diff2).plot()
+    
+    decorate(xlabel='Difference in population standard deviation', 
+             ylabel='PDF', 
+             title='Posterior distributions of difference in sigma')
+      </input>
+    </program>
+    <p>
+      <em>Exercise:</em> An <url href="http://en.wikipedia.org/wiki/Effect_size">effect size</url> is a statistic intended to quantify the magnitude of a phenomenon. If the phenomenon is a difference in means between two groups, a common way to quantify it is Cohen's effect size, denoted $d$.
+    </p>
+    <p>
+      If the parameters for Group 1 are $(\mu_1, \sigma_1)$, and the parameters for Group 2 are $(\mu_2, \sigma_2)$, Cohen's effect size is
+    </p>
+    <p>
+      $$ d = \frac{\mu_1 - \mu_2}{(\sigma_1 + \sigma_2)/2} $$
+    </p>
+    <p>
+      Use the joint posterior distributions for the two groups to compute the posterior distribution for Cohen's effect size.
+    </p>
+    <p>
+      If we try enumerate all pairs from the two distributions, it takes too long so we'll use random sampling.
+    </p>
+    <p>
+      The following function takes a joint posterior distribution and returns a sample of pairs. It uses some features we have not seen yet, but you can ignore the details for now.
+    </p>
+    <program language="python">
+      <input>
+    def sample_joint(joint, size):
+        &quot;&quot;&quot;Draw a sample from a joint distribution.
+        
+        joint: DataFrame representing a joint distribution
+        size: sample size
+        &quot;&quot;&quot;
+        pmf = Pmf(joint.transpose().stack())
+        return pmf.choice(size)
+      </input>
+    </program>
+    <p>
+      Here's how we can use it to sample pairs from the posterior distributions for the two groups.
+    </p>
+    <program language="python">
+      <input>
+    sample_treated = sample_joint(posterior_treated, 1000)
+    sample_treated.shape
+      </input>
+    </program>
+    <program language="python">
+      <input>
+    sample_control = sample_joint(posterior_control, 1000)
+    sample_control.shape
+      </input>
+    </program>
+    <p>
+      The result is an array of tuples, where each tuple contains a possible pair of values for $\mu$ and $\sigma$. Now you can loop through the samples, compute the Cohen effect size for each, and estimate the distribution of effect sizes.
+    </p>
+    <program language="python">
+      <input>
+    # Solution
+    
+    def cohen_effect(pair1, pair2):
+        &quot;&quot;&quot;Compute Cohen's effect size for difference in means.
+        
+        pair1: tuple of (mu1, sigma1)
+        pair2: tuple of (mu2, sigma2)
+        
+        return: float
+        &quot;&quot;&quot;
+        mu1, sigma1 = pair1 
+        mu2, sigma2 = pair2
+        sigma = (sigma1 + sigma2) / 2
+        return (mu1 - mu2) / sigma
+      </input>
+    </program>
+    <program language="python">
+      <input>
+    # Solution
+    
+    cohen_effect(sample_treated[0], sample_control[0])
+      </input>
+    </program>
+    <program language="python">
+      <input>
+    # Solution
+    
+    ds = []
+    for pair1, pair2 in zip(sample_treated, sample_control):
+        d = cohen_effect(pair1, pair2)
+        ds.append(d)
+      </input>
+    </program>
+    <program language="python">
+      <input>
+    # Solution
+    
+    cdf = Cdf.from_seq(ds)
+    cdf.plot()
+    
+    decorate(xlabel='Cohen effect size',
+             ylabel='CDF',
+             title='Posterior distributions of effect size')
+      </input>
+    </program>
+    <program language="python">
+      <input>
+    # Solution
+    
+    cdf.mean()
+      </input>
+    </program>
+    <program language="python">
+      <input>
+    # Solution
+    
+    cdf.credible_interval(0.9)
+      </input>
+    </program>
+    <p>
+      <em>Exercise:</em> This exercise is inspired by <url href="https://www.reddit.com/r/statistics/comments/hcvl2j/q_reverse_empirical_distribution_rule_question/">a question that appeared on Reddit</url>.
+    </p>
+    <p>
+      An instructor announces the results of an exam like this, "The average score on this exam was 81.  Out of 25 students, 5 got more than 90, and I am happy to report that no one failed (got less than 60)."
+    </p>
+    <p>
+      Based on this information, what do you think the standard deviation of scores was?
+    </p>
+    <p>
+      You can assume that the distribution of scores is approximately normal.  And let's assume that the sample mean, 81, is actually the population mean, so we only have to estimate <c>sigma</c>.
+    </p>
+    <p>
+      Hint: To compute the probability of a score greater than 90, you can use <c>norm.sf</c>, which computes the survival function, also known as the complementary CDF, or <c>1 - cdf(x)</c>.
+    </p>
+    <program language="python">
+      <input>
+    # Solution
+    
+    # Based on trial and error, here's a range of
+    # values for the prior
+    
+    hypos = np.linspace(1, 51, 101)
+      </input>
+    </program>
+    <program language="python">
+      <input>
+    # Solution
+    
+    # Here are the probabilities of a score greater than 90
+    # for each hypothetical value of sigma.
+    
+    from scipy.stats import norm
+    
+    pgt90 = norm(81, hypos).sf(90)
+    pgt90.shape
+      </input>
+    </program>
+    <program language="python">
+      <input>
+    # Solution
+    
+    # And here's the chance that 5 out of 25 people
+    # get a score greater than 90
+    
+    from scipy.stats import binom
+    
+    likelihood1 = binom(25, pgt90).pmf(5)
+    likelihood1.shape
+      </input>
+    </program>
+    <program language="python">
+      <input>
+    # Solution
+    
+    # Here's the first update
+    
+    prior = Pmf(1, hypos)
+    posterior = prior * likelihood1
+    posterior.normalize()
+      </input>
+    </program>
+    <program language="python">
+      <input>
+    # Solution
+    
+    # Here's the first posterior.
+    
+    posterior.plot()
+    decorate(xlabel='Standard deviation (sigma)',
+             ylabel='PMF',
+             title='Posterior distribution of sigma')
+      </input>
+    </program>
+    <program language="python">
+      <input>
+    # Solution
+    
+    # Here's the probability of a score greater than 60
+    
+    pgt60s = norm(81, hypos).sf(60)
+      </input>
+    </program>
+    <program language="python">
+      <input>
+    # Solution
+    
+    # And here's the probability that all 25 students exceed 60
+    
+    likelihood2 = pgt60s ** 25
+      </input>
+    </program>
+    <program language="python">
+      <input>
+    # Solution
+    
+    plt.plot(hypos, likelihood2)
+    decorate(xlabel='Standard deviation (sigma)',
+             ylabel='Likelihood',
+             title='Likelihood function')
+      </input>
+    </program>
+    <program language="python">
+      <input>
+    # Solution
+    
+    # Here's the posterior after both updates
+    
+    prior = Pmf(1, hypos)
+    prior.normalize()
+    posterior2 = prior * likelihood1 * likelihood2
+    posterior2.normalize()
+      </input>
+    </program>
+    <program language="python">
+      <input>
+    # Solution
+    
+    posterior.plot(label='Posterior 1')
+    posterior2.plot(label='Posterior 2')
+    
+    decorate(xlabel='Standard deviation (sigma)',
+             ylabel='PMF',
+             title='Posterior distribution of sigma')
+      </input>
+    </program>
+    <program language="python">
+      <input>
+    # Solution
+    
+    posterior.mean(), posterior2.mean()
+      </input>
+    </program>
+    <program language="python">
+      <input>
+    # Solution
+    
+    posterior2.credible_interval(0.9)
+      </input>
+    </program>
+    <p>
+      <em>Exercise:</em> The <url href="http://en.wikipedia.org/wiki/Variability_hypothesis">Variability Hypothesis</url> is the observation that many physical traits are more variable among males than among females, in many species. 
+    </p>
+    <p>
+      It has been a subject of controversy since the early 1800s, which suggests an exercise we can use to practice the methods in this chapter.  Let's look at the distribution of heights for men and women in the U.S. and see who is more variable.
+    </p>
+    <p>
+      I used 2018 data from the CDC's <url href="https://www.cdc.gov/brfss/annual_data/annual_2018.html">Behavioral Risk Factor Surveillance System</url> (BRFSS), which includes self-reported heights from 154 407 men and 254 722 women.
+    </p>
+    <p>
+      Here's what I found:
+    </p>
+    <ul>
+      <li>The average height for men is 178 cm; the average height for women is 163 cm. So men are taller on average; no surprise there.</li>
+      <li>For men the standard deviation is 27 cm; for women it is 75 cm. So in absolute terms, men's heights are more variable.</li>
+    </ul>
+    <p>
+      But to compare variability between groups, it is more meaningful to use the <url href="https://en.wikipedia.org/wiki/Coefficient_of_variation">coefficient of variation</url> (CV), which is the standard deviation divided by the mean. It is a dimensionless measure of variability relative to scale. 
+    </p>
+    <p>
+      For men CV is 0.0465; for women it is 0.0475. The coefficient of variation is higher for women, so this dataset provides evidence against the Variability Hypothesis. But we can use Bayesian methods to make that conclusion more precise.
+    </p>
+    <p>
+      Use these summary statistics to compute the posterior distribution of <c>mu</c> and <c>sigma</c> for the distributions of male and female height. Use <c>Pmf.div_dist</c> to compute posterior distributions of CV. Based on this dataset and the assumption that the distribution of height is normal, what is the probability that the coefficient of variation is higher for men? What is the most likely ratio of the CVs and what is the 90% credible interval for that ratio?
+    </p>
+    <p>
+      Hint: Use different prior distributions for the two groups, and chose them so they cover all parameters with non-negligible probability.
+    </p>
+    <p>
+      Also, you might find this function helpful:
+    </p>
+    <program language="python">
+      <input>
+    def get_posterior_cv(joint):
+        &quot;&quot;&quot;Get the posterior distribution of CV.
+        
+        joint: joint distribution of mu and sigma
+        
+        returns: Pmf representing the smoothed posterior distribution
+        &quot;&quot;&quot;
+        pmf_mu = marginal(joint, 0)
+        pmf_sigma = marginal(joint, 1)
+        pmf_cv = Pmf.div_dist(pmf_sigma, pmf_mu)
+        return kde_from_pmf(pmf_cv)
+      </input>
+    </program>
+    <program language="python">
+      <input>
+    # Solution
+    
+    n = 154407
+    mean = 178
+    std = 8.27
+      </input>
+    </program>
+    <program language="python">
+      <input>
+    # Solution
+    
+    qs = np.linspace(mean-0.1, mean+0.1, num=101)
+    prior_mu = make_uniform(qs, name='mean')
+    
+    qs = np.linspace(std-0.1, std+0.1, num=101)
+    prior_sigma = make_uniform(qs, name='std')
+    
+    prior = make_joint(prior_mu, prior_sigma)
+      </input>
+    </program>
+    <program language="python">
+      <input>
+    # Solution
+    
+    data = n, mean, std
+    posterior_male = update_norm_summary(prior, data)
+    plot_contour(posterior_male, cmap='Blues')
+    
+    decorate(xlabel='Mean (mu)', 
+             ylabel='Standard deviation (sigma)',
+             title='Joint distribution of mu and sigma')
+      </input>
+    </program>
+    <program language="python">
+      <input>
+    # Solution
+    
+    n = 254722
+    mean = 163
+    std = 7.75
+      </input>
+    </program>
+    <program language="python">
+      <input>
+    # Solution
+    
+    qs = np.linspace(mean-0.1, mean+0.1, num=101)
+    prior_mu = make_uniform(qs, name='mean')
+    
+    qs = np.linspace(std-0.1, std+0.1, num=101)
+    prior_sigma = make_uniform(qs, name='std')
+    
+    prior = make_joint(prior_mu, prior_sigma)
+      </input>
+    </program>
+    <program language="python">
+      <input>
+    # Solution
+    
+    data = n, mean, std
+    posterior_female = update_norm_summary(prior, data)
+    plot_contour(posterior_female, cmap='Oranges');
+      </input>
+    </program>
+    <program language="python">
+      <input>
+    # Solution
+    
+    pmf_cv_male = get_posterior_cv(posterior_male)
+    kde_from_pmf(pmf_cv_male).plot()
+    
+    pmf_cv_female = get_posterior_cv(posterior_female)
+    kde_from_pmf(pmf_cv_female).plot()
+    
+    decorate(xlabel='Coefficient of variation',
+             ylabel='PDF',
+             title='Posterior distributions of CV')
+      </input>
+    </program>
+    <program language="python">
+      <input>
+    # Solution
+    
+    ratio_cv = Pmf.div_dist(pmf_cv_female, pmf_cv_male)
+    ratio_cv.max_prob()
+      </input>
+    </program>
+    <program language="python">
+      <input>
+    # Solution
+    
+    ratio_cv.credible_interval(0.9)
+      </input>
+    </program>
+    <p>
+      <em>Think Bayes</em>, Second Edition
+    </p>
+    <p>
+      Copyright 2020 Allen B. Downey
+    </p>
+    <p>
+      License: <url href="https://creativecommons.org/licenses/by-nc-sa/4.0/">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)</url>
+    </p>
+  </section>
 
 </chapter>
