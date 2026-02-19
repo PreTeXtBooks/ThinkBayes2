@@ -599,7 +599,7 @@ posterior
 
     <p>
       After 5 rolls, the posterior probability of the 4-sided die is about <m>0.56</m>.
-      Now the 4-sided die has more than a <m>50\%</m> probability, but we are still not certain which die it is.
+      Now the 4-sided die has more than a <m>50\text{%}</m> probability, but we are still not certain which die it is.
     </p>
   </section>
 
@@ -674,7 +674,7 @@ posterior
       <title>The Euro Problem Extended</title>
       <statement>
         <p>
-          For the Euro problem in Exercise 1, what is the posterior distribution after 250 spins that come up heads 140 times?
+          For the Euro problem in <xref ref="ex-distributions-euro" />, what is the posterior distribution after 250 spins that come up heads 140 times?
           Use the posterior mean to estimate the probability that the coin comes up heads.
         </p>
       </statement>
