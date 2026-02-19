@@ -1,1 +1,4 @@
-pretextbook == 0.8.3
+# PreTeXt CLI - automatically generated requirement
+pretext == 2.36.0
+# Pelican is required for PreTeXt deployment strategy
+pelican >= 4.5.0
