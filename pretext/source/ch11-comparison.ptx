@@ -680,8 +680,8 @@ def marginal(joint, axis):
       <c>marginal</c> takes as parameters a joint distribution and an axis number:
     </p>
     <ul>
-      <li>If <c>axis=0</c>, it returns the marginal of the first variable (the one on the x-axis);</li>
-      <li>If <c>axis=1</c>, it returns the marginal of the second variable (the one on the y-axis).</li>
+      <li><p>If <c>axis=0</c>, it returns the marginal of the first variable (the one on the x-axis);</p></li>
+      <li><p>If <c>axis=1</c>, it returns the marginal of the second variable (the one on the y-axis).</p></li>
     </ul>
     <p>
       So we can compute both marginals like this:

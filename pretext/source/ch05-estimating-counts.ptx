@@ -30,8 +30,8 @@
       Based on this observation, we know the railroad has 60 or more locomotives.  But how many more?  To apply Bayesian reasoning, we can break this problem into two steps:
     </p>
     <ul>
-      <li>What did we know about <m>N</m> before we saw the data?</li>
-      <li>For any given value of <m>N</m>, what is the likelihood of seeing the data (a locomotive with number 60)?</li>
+      <li><p>What did we know about <m>N</m> before we saw the data?</p></li>
+      <li><p>For any given value of <m>N</m>, what is the likelihood of seeing the data (a locomotive with number 60)?</p></li>
     </ul>
     <p>
       The answer to the first question is the prior.  The answer to the second is the likelihood.
@@ -200,8 +200,8 @@ Upper bound
       When the posterior is sensitive to the prior, there are two ways to proceed:
     </p>
     <ul>
-      <li>Get more data.</li>
-      <li>Get more background information and choose a better prior.</li>
+      <li><p>Get more data.</p></li>
+      <li><p>Get more background information and choose a better prior.</p></li>
     </ul>
     <p>
       With more data, posterior distributions based on different priors tend to converge.
@@ -465,8 +465,8 @@ power.quantile([0.05, 0.95])
       The result is the interval from 91 to 243 trains, which implies:
     </p>
     <ul>
-      <li>The probability is 5% that the number of trains is less than or equal to 91.</li>
-      <li>The probability is 5% that the number of trains is greater than 243.</li>
+      <li><p>The probability is 5% that the number of trains is less than or equal to 91.</p></li>
+      <li><p>The probability is 5% that the number of trains is greater than 243.</p></li>
     </ul>
     <p>
       Therefore the probability is 90% that the number of trains falls between 91 and 243 (excluding 91 and including 243).
@@ -564,9 +564,9 @@ power.credible_interval(0.9)
           It would take too long to count, so you try an experiment:
         </p>
         <ul>
-          <li>You ask how many people were born on May 11 and two people raise their hands.</li>
-          <li>You ask how many were born on May 23 and 1 person raises their hand.</li>
-          <li>Finally, you ask how many were born on August 1, and no one raises their hand.</li>
+          <li><p>You ask how many people were born on May 11 and two people raise their hands.</p></li>
+          <li><p>You ask how many were born on May 23 and 1 person raises their hand.</p></li>
+          <li><p>Finally, you ask how many were born on August 1, and no one raises their hand.</p></li>
         </ul>
         <p>
           How many people are in the audience?  What is the probability that there are more than 1200 people?
@@ -643,8 +643,8 @@ posterior.prob_gt(1200)
           To answer this question, we have to think about the prior distribution and the likelihood of the data:
         </p>
         <ul>
-          <li>I have sometimes seen four rabbits at the same time, so I know there are at least that many.  I would be surprised if there were more than 10.  So, at least as a starting place, I think a uniform prior from 4 to 10 is reasonable.</li>
-          <li>To keep things simple, let's assume that all rabbits who visit my garden are equally likely to be caught by the camera trap in a given day.  Let's also assume it is guaranteed that the camera trap gets a picture every day.</li>
+          <li><p>I have sometimes seen four rabbits at the same time, so I know there are at least that many.  I would be surprised if there were more than 10.  So, at least as a starting place, I think a uniform prior from 4 to 10 is reasonable.</p></li>
+          <li><p>To keep things simple, let's assume that all rabbits who visit my garden are equally likely to be caught by the camera trap in a given day.  Let's also assume it is guaranteed that the camera trap gets a picture every day.</p></li>
         </ul>
       </statement>
     <solution>

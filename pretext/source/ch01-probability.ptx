@@ -166,13 +166,13 @@ To demonstrate, I'll use data from the <url href="http://gss.norc.org/">General 
       The columns are
     </p>
     <ul>
-      <li><c>caseid</c>: Respondent identifier.</li>
-      <li><c>year</c>: Year when the respondent was surveyed.</li>
-      <li><c>age</c>: Respondent's age when surveyed.</li>
-      <li><c>sex</c>: Male or female.</li>
-      <li><c>polviews</c>: Political views on a range from liberal to conservative.</li>
-      <li><c>partyid</c>: Political party affiliation, Democrat, Independent, or Republican.</li>
-      <li><c>indus10</c>: <url href="https://www.census.gov/cgi-bin/sssd/naics/naicsrch?chart=2007">Code</url> for the industry the respondent works in.</li>
+      <li><p><c>caseid</c>: Respondent identifier.</p></li>
+      <li><p><c>year</c>: Year when the respondent was surveyed.</p></li>
+      <li><p><c>age</c>: Respondent's age when surveyed.</p></li>
+      <li><p><c>sex</c>: Male or female.</p></li>
+      <li><p><c>polviews</c>: Political views on a range from liberal to conservative.</p></li>
+      <li><p><c>partyid</c>: Political party affiliation, Democrat, Independent, or Republican.</p></li>
+      <li><p><c>indus10</c>: <url href="https://www.census.gov/cgi-bin/sssd/naics/naicsrch?chart=2007">Code</url> for the industry the respondent works in.</p></li>
     </ul>
     <p>
       Let's look at these variables in more detail, starting with <c>indus10</c>.
@@ -433,9 +433,9 @@ For example, we have already computed the probability that a respondent is a ban
       Conditional probability is a probability that depends on a condition, but that might not be the most helpful definition.  Here are some examples:
     </p>
     <ul>
-      <li>What is the probability that a respondent is a Democrat, given that they are liberal?</li>
-      <li>What is the probability that a respondent is female, given that they are a banker?</li>
-      <li>What is the probability that a respondent is liberal, given that they are female?</li>
+      <li><p>What is the probability that a respondent is a Democrat, given that they are liberal?</p></li>
+      <li><p>What is the probability that a respondent is female, given that they are a banker?</p></li>
+      <li><p>What is the probability that a respondent is liberal, given that they are female?</p></li>
     </ul>
     <p>
       Let's start with the first one, which we can interpret like this: &quot;Of all the respondents who are liberal, what fraction are Democrats?&quot;
@@ -444,8 +444,8 @@ For example, we have already computed the probability that a respondent is a ban
       We can compute this probability in two steps:
     </p>
     <ol>
-      <li>Select all respondents who are liberal.</li>
-      <li>Compute the fraction of the selected respondents who are Democrats.</li>
+      <li><p>Select all respondents who are liberal.</p></li>
+      <li><p>Compute the fraction of the selected respondents who are Democrats.</p></li>
     </ol>
     <p>
       To select liberal respondents, we can use the bracket operator, <c>[]</c>, like this:
@@ -599,9 +599,9 @@ I'll define <c>conditional</c> to take two Boolean series, <c>proposition</c> an
         In the next few sections, we'll derive three relationships between conjunction and conditional probability:
       </p>
       <ul>
-        <li>Theorem 1: Using a conjunction to compute a conditional probability.</li>
-        <li>Theorem 2: Using a conditional probability to compute a conjunction.</li>
-        <li>Theorem 3: Using <c>conditional(A, B)</c> to compute <c>conditional(B, A)</c>.</li>
+        <li><p>Theorem 1: Using a conjunction to compute a conditional probability.</p></li>
+        <li><p>Theorem 2: Using a conditional probability to compute a conjunction.</p></li>
+        <li><p>Theorem 3: Using <c>conditional(A, B)</c> to compute <c>conditional(B, A)</c>.</p></li>
       </ul>
       <p>
         Theorem 3 is also known as Bayes's Theorem.
@@ -610,9 +610,9 @@ I'll define <c>conditional</c> to take two Boolean series, <c>proposition</c> an
         I'll write these theorems using mathematical notation for probability:
       </p>
       <ul>
-        <li><m>P(A)</m> is the probability of proposition <m>A</m>.</li>
-        <li><m>P(A~\mathrm{and}~B)</m> is the probability of the conjunction of <m>A</m> and <m>B</m>, that is, the probability that both are true.</li>
-        <li><m>P(A | B)</m> is the conditional probability of <m>A</m> given that <m>B</m> is true.  The vertical line between <m>A</m> and <m>B</m> is pronounced &quot;given&quot;.</li>
+        <li><p><m>P(A)</m> is the probability of proposition <m>A</m>.</p></li>
+        <li><p><m>P(A~\mathrm{and}~B)</m> is the probability of the conjunction of <m>A</m> and <m>B</m>, that is, the probability that both are true.</p></li>
+        <li><p><m>P(A | B)</m> is the conditional probability of <m>A</m> given that <m>B</m> is true.  The vertical line between <m>A</m> and <m>B</m> is pronounced &quot;given&quot;.</p></li>
       </ul>
       <p>
         With that, we are ready for Theorem 1.
@@ -626,8 +626,8 @@ I'll define <c>conditional</c> to take two Boolean series, <c>proposition</c> an
         What fraction of bankers are female?  We have already seen one way to compute the answer:
       </p>
       <ol>
-        <li>Use the bracket operator to select the bankers, then</li>
-        <li>Use <c>mean</c> to compute the fraction of bankers who are female.</li>
+        <li><p>Use the bracket operator to select the bankers, then</p></li>
+        <li><p>Use <c>mean</c> to compute the fraction of bankers who are female.</p></li>
       </ol>
       <p>
         We can write these steps like this:
@@ -798,8 +798,8 @@ Here's one form of the law, expressed in mathematical notation:
       But this law applies only if <m>B_1</m> and <m>B_2</m> are:
     </p>
     <ul>
-      <li>Mutually exclusive, which means that only one of them can be true, and</li>
-      <li>Collectively exhaustive, which means that one of them must be true.</li>
+      <li><p>Mutually exclusive, which means that only one of them can be true, and</p></li>
+      <li><p>Collectively exhaustive, which means that one of them must be true.</p></li>
     </ul>
     <p>
       As an example, let's use this law to compute the probability that a respondent is a banker.
@@ -970,8 +970,8 @@ In the next chapter, we'll see how.
           Use <c>conditional</c> to compute the following probabilities:
         </p>
         <ul>
-          <li>What is the probability that a respondent is liberal, given that they are a Democrat?</li>
-          <li>What is the probability that a respondent is a Democrat, given that they are liberal?</li>
+          <li><p>What is the probability that a respondent is liberal, given that they are a Democrat?</p></li>
+          <li><p>What is the probability that a respondent is a Democrat, given that they are liberal?</p></li>
         </ul>
         <p>
           Think carefully about the order of the arguments you pass to <c>conditional</c>.
@@ -1079,10 +1079,10 @@ prob(old &amp; conservative)
       Use <c>prob</c> and <c>conditional</c> to compute the following probabilities.
     </p>
     <ul>
-      <li>What is the probability that a randomly chosen respondent is a young liberal?</li>
-      <li>What is the probability that a young person is liberal?</li>
-      <li>What fraction of respondents are old conservatives?</li>
-      <li>What fraction of conservatives are old?</li>
+      <li><p>What is the probability that a randomly chosen respondent is a young liberal?</p></li>
+      <li><p>What is the probability that a young person is liberal?</p></li>
+      <li><p>What fraction of respondents are old conservatives?</p></li>
+      <li><p>What fraction of conservatives are old?</p></li>
     </ul>
     <p>
       For each statement, think about whether it is expressing a conjunction, a conditional probability, or both.

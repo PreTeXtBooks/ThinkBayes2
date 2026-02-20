@@ -946,8 +946,8 @@ If you ask them directly, it is likely that some of the cheaters will lie.
 You can get a more accurate estimate if you ask them indirectly, like this: Ask each person to flip a coin and, without revealing the outcome,
         </p>
         <ul>
-          <li>If they get heads, they report YES.</li>
-          <li>If they get tails, they honestly answer the question "Do you cheat on your taxes?"</li>
+          <li><p>If they get heads, they report YES.</p></li>
+          <li><p>If they get tails, they honestly answer the question "Do you cheat on your taxes?"</p></li>
         </ul>
         <p>
           If someone says YES, we don't know whether they actually cheat on their taxes; they might have flipped heads.

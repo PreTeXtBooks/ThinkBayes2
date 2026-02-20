@@ -121,8 +121,8 @@
       <c>make_uniform</c> takes as parameters 
     </p>
     <ul>
-      <li>An array of quantities, <c>qs</c>, and</li>
-      <li>A string, <c>name</c>, which is assigned to the index so it appears when we display the <c>Pmf</c>.</li>
+      <li><p>An array of quantities, <c>qs</c>, and</p></li>
+      <li><p>A string, <c>name</c>, which is assigned to the index so it appears when we display the <c>Pmf</c>.</p></li>
     </ul>
     <p>
       Here's the prior distribution for <c>mu</c>:
@@ -521,9 +521,9 @@
       To compute their likelihood, we will take advantage of three results from mathematical statistics:
     </p>
     <ul>
-      <li>Given $\mu$ and $\sigma$, the distribution of <c>m</c> is normal with parameters $\mu$ and $\sigma/\sqrt{n}$;</li>
-      <li>The distribution of $s$ is more complicated, but if we compute the transform $t = n s^2 / \sigma^2$, the distribution of $t$ is chi-squared with parameter $n-1$; and</li>
-      <li>According to <url href="https://en.wikipedia.org/wiki/Basu%27s_theorem">Basu's theorem</url>, <c>m</c> and <c>s</c> are independent.</li>
+      <li><p>Given $\mu$ and $\sigma$, the distribution of <c>m</c> is normal with parameters $\mu$ and $\sigma/\sqrt{n}$;</p></li>
+      <li><p>The distribution of $s$ is more complicated, but if we compute the transform $t = n s^2 / \sigma^2$, the distribution of $t$ is chi-squared with parameter $n-1$; and</p></li>
+      <li><p>According to <url href="https://en.wikipedia.org/wiki/Basu%27s_theorem">Basu's theorem</url>, <c>m</c> and <c>s</c> are independent.</p></li>
     </ul>
     <p>
       So let's compute the likelihood of <c>m</c> and <c>s</c> given $\mu$ and $\sigma$.
@@ -783,9 +783,9 @@
       The update with summary statistics is based on theoretical distributions, and it seems to work, but I think it is useful to test theories like this, for a few reasons:
     </p>
     <ul>
-      <li>It confirms that our understanding of the theory is correct,</li>
-      <li>It confirms that the conditions where we apply the theory are conditions where the theory holds,</li>
-      <li>It confirms that the implementation details are correct.  For many distributions, there is more than one way to specify the parameters.  If you use the wrong specification, this kind of testing will help you catch the error.</li>
+      <li><p>It confirms that our understanding of the theory is correct,</p></li>
+      <li><p>It confirms that the conditions where we apply the theory are conditions where the theory holds,</p></li>
+      <li><p>It confirms that the implementation details are correct.  For many distributions, there is more than one way to specify the parameters.  If you use the wrong specification, this kind of testing will help you catch the error.</p></li>
     </ul>
     <p>
       In this section I'll use simulations to show that the distribution of the sample mean and standard deviation is as I claimed. But if you want to take my word for it, you can skip this section and the next.
@@ -1423,8 +1423,8 @@
       Here's what I found:
     </p>
     <ul>
-      <li>The average height for men is 178 cm; the average height for women is 163 cm. So men are taller on average; no surprise there.</li>
-      <li>For men the standard deviation is 8.27 cm; for women it is 7.75 cm. So in absolute terms, men's heights are more variable.</li>
+      <li><p>The average height for men is 178 cm; the average height for women is 163 cm. So men are taller on average; no surprise there.</p></li>
+      <li><p>For men the standard deviation is 8.27 cm; for women it is 7.75 cm. So in absolute terms, men's heights are more variable.</p></li>
     </ul>
     <p>
       But to compare variability between groups, it is more meaningful to use the <url href="https://en.wikipedia.org/wiki/Coefficient_of_variation">coefficient of variation</url> (CV), which is the standard deviation divided by the mean. It is a dimensionless measure of variability relative to scale. 

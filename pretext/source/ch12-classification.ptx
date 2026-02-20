@@ -90,10 +90,10 @@ df.head()
       The measurements we'll use are:
     </p>
     <ul>
-      <li>Body Mass in grams (g).</li>
-      <li>Flipper Length in millimeters (mm).</li>
-      <li>Culmen Length in millimeters.</li>
-      <li>Culmen Depth in millimeters.</li>
+      <li><p>Body Mass in grams (g).</p></li>
+      <li><p>Flipper Length in millimeters (mm).</p></li>
+      <li><p>Culmen Length in millimeters.</p></li>
+      <li><p>Culmen Depth in millimeters.</p></li>
     </ul>
     <p>
       If you are not familiar with the word "culmen", it refers to the <url href="https://en.wikipedia.org/wiki/Bird_measurement#Culmen">top margin of the beak</url>.

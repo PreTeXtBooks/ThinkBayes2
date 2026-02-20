@@ -299,10 +299,10 @@ If we choose two random people from the population, what is the chance of findin
 Well, there are two ways it might happen:
 </p>
 <ul>
-  <li>The first person might have ‘O’ and the second ‘AB’,</li>
+  <li><p>The first person might have ‘O’ and the second ‘AB’,</p></li>
 </ul>
 <ul>
-  <li>Or the first person might have ‘AB’ and the second ‘O’.</li>
+  <li><p>Or the first person might have ‘AB’ and the second ‘O’.</p></li>
 </ul>
 <p>
   The probability of either combination is <m>(0.6) (0.01)</m>, which is 0.6%, so the total probability is twice that, or 1.2%.
@@ -526,13 +526,13 @@ You can call it as a method, like this:
   The following figure shows what these three distributions look like:
 </p>
 <ul>
-  <li>The distribution of a single die is uniform from 1 to 6.</li>
+  <li><p>The distribution of a single die is uniform from 1 to 6.</p></li>
 </ul>
 <ul>
-  <li>The sum of two dice has a triangle distribution between 2 and 12.</li>
+  <li><p>The sum of two dice has a triangle distribution between 2 and 12.</p></li>
 </ul>
 <ul>
-  <li>The sum of three dice has a bell-shaped distribution between 3</li>
+  <li><p>The sum of three dice has a bell-shaped distribution between 3 and 18.</p></li>
 </ul>
 <program language="python">
   <input>
@@ -578,10 +578,10 @@ So here's the question: based on this data, how many of the subjects are sensiti
   We can use Bayes's Theorem to answer this question, but first we have to make some modeling decisions. I'll assume:
 </p>
 <ul>
-  <li>People who are sensitive to gluten have a 95% chance of correctly</li>
+  <li><p>People who are sensitive to gluten have a 95% chance of correctly identifying gluten flour under the challenge conditions, and</p></li>
 </ul>
 <ul>
-  <li>People who are not sensitive have a 40% chance of identifying the</li>
+  <li><p>People who are not sensitive have a 40% chance of identifying the gluten flour by chance (and a 60% chance of either choosing the other flour or failing to distinguish).</p></li>
 </ul>
 <p>
   These particular values are arbitrary, but the results are not sensitive to these choices.
@@ -857,10 +857,10 @@ But first you might want to work on these exercises.
 The question contains two pieces of information we can use to update this prior.
       </p>
       <ul>
-        <li>First, Elvis's twin was also male, which is more likely if they were identical twins, with a likelihood ratio of 2.</li>
+        <li><p>First, Elvis's twin was also male, which is more likely if they were identical twins, with a likelihood ratio of 2.</p></li>
       </ul>
       <ul>
-        <li>Also, Elvis's twin died at birth, which is more likely if they were identical twins, with a likelihood ratio of 1.25.</li>
+        <li><p>Also, Elvis's twin died at birth, which is more likely if they were identical twins, with a likelihood ratio of 1.25.</p></li>
       </ul>
       <p>
         If you are curious about where those numbers come from, I wrote <url href="https://www.allendowney.com/blog/2020/01/28/the-elvis-problem-revisited">a blog post about it</url>.

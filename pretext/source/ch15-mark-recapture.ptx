@@ -47,10 +47,10 @@
       I'll define
     </p>
     <ul>
-      <li><m>N</m>: actual population size, 100.</li>
-      <li><m>K</m>: number of bears identified in the first session, 23.</li>
-      <li><m>n</m>: number of bears observed in the second session, 19 in the example.</li>
-      <li><m>k</m>: number of bears in the second session that were previously identified, 4.</li>
+      <li><p><m>N</m>: actual population size, 100.</p></li>
+      <li><p><m>K</m>: number of bears identified in the first session, 23.</p></li>
+      <li><p><m>n</m>: number of bears observed in the second session, 19 in the example.</p></li>
+      <li><p><m>k</m>: number of bears in the second session that were previously identified, 4.</p></li>
     </ul>
     <p>
       For given values of <m>N</m>, <m>K</m>, and <m>n</m>, the probability of finding <m>k</m> previously-identified bears is given by the <url href="https://en.wikipedia.org/wiki/Hypergeometric_distribution">hypergeometric distribution</url>:
@@ -65,8 +65,8 @@
       To understand why, consider:
     </p>
     <ul>
-      <li>The denominator, <m>\binom{N}{n}</m>, is the number of subsets of <m>n</m> we could choose from a population of <m>N</m> bears.</li>
-      <li>The numerator is the number of subsets that contain <m>k</m> bears from the previously identified <m>K</m> and <m>n-k</m> from the previously unseen <m>N-K</m>.</li>
+      <li><p>The denominator, <m>\binom{N}{n}</m>, is the number of subsets of <m>n</m> we could choose from a population of <m>N</m> bears.</p></li>
+      <li><p>The numerator is the number of subsets that contain <m>k</m> bears from the previously identified <m>K</m> and <m>n-k</m> from the previously unseen <m>N-K</m>.</p></li>
     </ul>
     <p>
       SciPy provides <c>hypergeom</c>, which we can use to compute this probability for a range of values of <m>k</m>.
@@ -243,9 +243,9 @@ k = 4
       For this model, I'll express the data in a notation that will make it easier to generalize to more than two rounds:
     </p>
     <ul>
-      <li><c>k10</c> is the number of bears observed in the first round but not the second,</li>
-      <li><c>k01</c> is the number of bears observed in the second round but not the first, and</li>
-      <li><c>k11</c> is the number of bears observed in both rounds.</li>
+      <li><p><c>k10</c> is the number of bears observed in the first round but not the second,</p></li>
+      <li><p><c>k01</c> is the number of bears observed in the second round but not the first, and</p></li>
+      <li><p><c>k11</c> is the number of bears observed in both rounds.</p></li>
     </ul>
     <p>
       Here are their values.
@@ -1254,8 +1254,8 @@ posterior_p1.mean(), posterior_p1.credible_interval(0.9)
       This chapter introduces two new probability distributions:
     </p>
     <ul>
-      <li>The hypergeometric distribution is a variation of the binomial distribution in which samples are drawn from the population without replacement.</li>
-      <li>The multinomial distribution is a generalization of the binomial distribution where there are more than two possible outcomes.</li>
+      <li><p>The hypergeometric distribution is a variation of the binomial distribution in which samples are drawn from the population without replacement.</p></li>
+      <li><p>The multinomial distribution is a generalization of the binomial distribution where there are more than two possible outcomes.</p></li>
     </ul>
     <p>
       Also in this chapter, we saw the first example of a model with three parameters.  We'll see more in subsequent chapters.
@@ -1277,9 +1277,9 @@ posterior_p1.mean(), posterior_p1.credible_interval(0.9)
           Three lists of cases were available:
         </p>
         <ol>
-          <li>135 cases identified using a serum test.</li>
-          <li>122 cases reported by local hospitals.</li>
-          <li>126 cases reported on questionnaires collected by epidemiologists.</li>
+          <li><p>135 cases identified using a serum test.</p></li>
+          <li><p>122 cases reported by local hospitals.</p></li>
+          <li><p>126 cases reported on questionnaires collected by epidemiologists.</p></li>
         </ol>
         <p>
           In this exercise, we'll use only the first two lists; in the next exercise we'll bring in the third list.

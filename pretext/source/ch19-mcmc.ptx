@@ -172,12 +172,12 @@
     </p>
     <p>
       <ul>
-        <li>First we draw a goal-scoring rate from the prior distribution,</li>
+        <li><p>First we draw a goal-scoring rate from the prior distribution,</p></li>
       </ul>
     </p>
     <p>
       <ul>
-        <li>Then we draw a number of goals from a Poisson distribution.</li>
+        <li><p>Then we draw a number of goals from a Poisson distribution.</p></li>
       </ul>
     </p>
     <p>
@@ -203,12 +203,12 @@
     </p>
     <p>
       <ul>
-        <li>The first line creates the prior, which is a gamma distribution with the given parameters.</li>
+        <li><p>The first line creates the prior, which is a gamma distribution with the given parameters.</p></li>
       </ul>
     </p>
     <p>
       <ul>
-        <li>The second line creates the prior predictive, which is a Poisson distribution with the parameter <c>lam</c>.</li>
+        <li><p>The second line creates the prior predictive, which is a Poisson distribution with the parameter <c>lam</c>.</p></li>
       </ul>
     </p>
     <p>
@@ -387,17 +387,17 @@ NUTS: [lam]
     </p>
     <p>
       <ul>
-        <li>Depending on the model, PyMC3 uses one of several MCMC methods; in this example, it uses the <url href="https://en.wikipedia.org/wiki/Hamiltonian_Monte_Carlo#No_U-Turn_Sampler">No U-Turn Sampler</url> (NUTS), which is one of the most efficient and reliable methods we have.</li>
+        <li><p>Depending on the model, PyMC3 uses one of several MCMC methods; in this example, it uses the <url href="https://en.wikipedia.org/wiki/Hamiltonian_Monte_Carlo#No_U-Turn_Sampler">No U-Turn Sampler</url> (NUTS), which is one of the most efficient and reliable methods we have.</p></li>
       </ul>
     </p>
     <p>
       <ul>
-        <li>When the sampler starts, the first values it generates are usually not a representative sample from the posterior distribution, so these values are discarded.  This process is called "tuning".</li>
+        <li><p>When the sampler starts, the first values it generates are usually not a representative sample from the posterior distribution, so these values are discarded.  This process is called "tuning".</p></li>
       </ul>
     </p>
     <p>
       <ul>
-        <li>Instead of using a single Markov chain, PyMC3 uses multiple chains.  Then we can compare results from multiple chains to make sure they are consistent.</li>
+        <li><p>Instead of using a single Markov chain, PyMC3 uses multiple chains.  Then we can compare results from multiple chains to make sure they are consistent.</p></li>
       </ul>
     </p>
     <p>
@@ -524,32 +524,32 @@ NUTS: [lam]
     </p>
     <p>
       <ul>
-        <li>Income as represented by per capita GDP</li>
+        <li><p>Income as represented by per capita GDP</p></li>
       </ul>
     </p>
     <p>
       <ul>
-        <li>Social support</li>
+        <li><p>Social support</p></li>
       </ul>
     </p>
     <p>
       <ul>
-        <li>Healthy life expectancy at birth</li>
+        <li><p>Healthy life expectancy at birth</p></li>
       </ul>
     </p>
     <p>
       <ul>
-        <li>Freedom to make life choices</li>
+        <li><p>Freedom to make life choices</p></li>
       </ul>
     </p>
     <p>
       <ul>
-        <li>Generosity</li>
+        <li><p>Generosity</p></li>
       </ul>
     </p>
     <p>
       <ul>
-        <li>Perceptions of corruption</li>
+        <li><p>Perceptions of corruption</p></li>
       </ul>
     </p>
     <p>
@@ -755,12 +755,12 @@ Intercept -1.198646
     </p>
     <p>
       <ul>
-        <li>The values of the predictive variable, <c>x_data</c>, are used to compute <c>y_est</c>.</li>
+        <li><p>The values of the predictive variable, <c>x_data</c>, are used to compute <c>y_est</c>.</p></li>
       </ul>
     </p>
     <p>
       <ul>
-        <li>The values of the dependent variable, <c>y_data</c>, are provided as the observed values of <c>y</c>.</li>
+        <li><p>The values of the dependent variable, <c>y_data</c>, are provided as the observed values of <c>y</c>.</p></li>
       </ul>
     </p>
     <p>
@@ -1087,12 +1087,12 @@ Perceptions of corruption             -0.100  [-0.197, 0.002]
     </p>
     <p>
       <ul>
-        <li>MCMC algorithms are fiddly.  The same model might behave well with some priors and less well with others.  And the sampling process often produces warnings about tuning steps, divergences, "r-hat statistics", acceptance rates, and effective samples.  It takes some expertise to diagnose and correct these issues.</li>
+        <li><p>MCMC algorithms are fiddly.  The same model might behave well with some priors and less well with others.  And the sampling process often produces warnings about tuning steps, divergences, "r-hat statistics", acceptance rates, and effective samples.  It takes some expertise to diagnose and correct these issues.</p></li>
       </ul>
     </p>
     <p>
       <ul>
-        <li>I find it easier to develop models incrementally using grid algorithms, checking intermediate results along the way.  With PyMC3, it is not as easy to be confident that you have specified a model correctly.</li>
+        <li><p>I find it easier to develop models incrementally using grid algorithms, checking intermediate results along the way.  With PyMC3, it is not as easy to be confident that you have specified a model correctly.</p></li>
       </ul>
     </p>
     <p>
@@ -1398,22 +1398,22 @@ with model8:
         </p>
         <p>
           <ul>
-            <li>k11 is the number of bugs found by both testers,</li>
+            <li><p>k11 is the number of bugs found by both testers,</p></li>
           </ul>
         </p>
         <p>
           <ul>
-            <li>k10 is the number of bugs found by the first tester but not the second,</li>
+            <li><p>k10 is the number of bugs found by the first tester but not the second,</p></li>
           </ul>
         </p>
         <p>
           <ul>
-            <li>k01 is the number of bugs found by the second tester but not the first, and</li>
+            <li><p>k01 is the number of bugs found by the second tester but not the first, and</p></li>
           </ul>
         </p>
         <p>
           <ul>
-            <li>k00 is the unknown number of undiscovered bugs.</li>
+            <li><p>k00 is the unknown number of undiscovered bugs.</p></li>
           </ul>
         </p>
         <p>
