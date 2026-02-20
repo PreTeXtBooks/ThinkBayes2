@@ -120,6 +120,10 @@ d1 = 1
 v1 = calc_volume(d1)
 v1
       </input>
+    
+      <output>
+      0.5235987755982988
+      </output>
     </program>
     <p>
       The median volume doubling time reported by Zhang et al. is 811 days, which corresponds to an RDT of 0.45 doublings per year.
@@ -130,6 +134,10 @@ median_doubling_time = 811
 rdt = 365 / median_doubling_time
 rdt
       </input>
+    
+      <output>
+      0.45006165228113443
+      </output>
     </program>
     <p>
       We can compute the number of doublings that would have happened in the interval between <c>t1</c> and <c>t2</c>:
@@ -140,6 +148,10 @@ interval = 9.0
 doublings = interval * rdt
 doublings
       </input>
+    
+      <output>
+      4.05055487053021
+      </output>
     </program>
     <p>
       Given <c>v1</c> and the number of doublings, we can compute the volume at <c>t2</c>.
@@ -149,6 +161,10 @@ doublings
 v2 = v1 * 2**doublings
 v2
       </input>
+    
+      <output>
+      8.676351488087187
+      </output>
     </program>
     <p>
       The following function computes the diameter of a sphere with the given volume.
@@ -169,6 +185,10 @@ def calc_diameter(volume):
 d2 = calc_diameter(v2)
 d2
       </input>
+    
+      <output>
+      2.5494480788327483
+      </output>
     </program>
     <p>
       If the diameter of the tumor was 1 cm at <c>t1</c>, and it grew at the median rate, the diameter would be about 2.5 cm at <c>t2</c>.
@@ -222,6 +242,10 @@ rdts = np.arange(-1, 6) + 0.01
 pmf_rdt = Pmf(counts, rdts)
 pmf_rdt.normalize()
       </input>
+    
+      <output>
+      np.int64(53)
+      </output>
     </program>
     <program language="python">
       <input>
@@ -238,6 +262,10 @@ rdts = [5.089,  3.572,  3.242,  2.642,  1.982,  1.847,  1.908,  1.798,
 rdt_sample = np.array(rdts)
 len(rdt_sample)
       </input>
+    
+      <output>
+      53
+      </output>
     </program>
     <p>
       We can use the sample of RDTs to estimate the PDF of the distribution.
@@ -254,6 +282,10 @@ pmf_rdt = kde_from_sample(rdt_sample, qs)
       <input>
 1 / pmf_rdt.median() * 365
       </input>
+    
+      <output>
+      np.float64(651.7857142857142)
+      </output>
     </program>
     <p>
       Here's what it looks like.
@@ -269,6 +301,7 @@ decorate(xlabel='Reciprocal doubling time (RDT)',
          title='Distribution of growth rates')
       </input>
     </program>
+    <image source="images/ch20_abc_f46ee12f.png" width="80%"/>
     <p>
       In the next section we will use this distribution to simulate tumor growth.
     </p>
@@ -308,6 +341,10 @@ v0 = calc_volume(min_diameter)
 vmax = calc_volume(max_diameter)
 v0, vmax
       </input>
+    
+      <output>
+      (0.014137166941154066, 4188.790204786391)
+      </output>
     </program>
     <p>
       The following function runs the simulation.
@@ -371,6 +408,13 @@ sim = simulate_growth(pmf_rdt)
       <input>
 sim.head(3)
       </input>
+    
+      <output>
+      age    volume  diameter
+0  0.000000  0.014137  0.300000
+1  0.671233  0.014949  0.305635
+2  1.342466  0.019763  0.335441
+      </output>
     </program>
     <p>
       And the last few intervals.
@@ -379,6 +423,13 @@ sim.head(3)
       <input>
 sim.tail(3)
       </input>
+    
+      <output>
+      age       volume   diameter
+43  28.863014  1882.067427  15.318357
+44  29.534247  2887.563277  17.667603
+45  30.205479  4953.618273  21.149883
+      </output>
     </program>
     <p>
       To show the results graphically, I'll run 101 simulations:
@@ -418,6 +469,7 @@ yticks = [0.2, 0.5, 1, 2, 5, 10, 20]
 plt.yticks(yticks, yticks);
       </input>
     </program>
+    <image source="images/ch20_abc_5d76e3bb.png" width="80%"/>
     <p>
       In this figure, each thin, solid line shows the simulated growth of a tumor over time, with diameter on a log scale.
 The dotted lines are at 4, 8, and 16 cm.
@@ -455,6 +507,10 @@ ages = interpolate_ages(sims, 15)
 cdf = Cdf.from_seq(ages)
 print(cdf.median(), cdf.credible_interval(0.9))
       </input>
+    
+      <output>
+      22.31854530374061 [13.47056554 34.49632276]
+      </output>
     </program>
     <p>
       For a tumor 15 cm in diameter, the median age is about 22 years, the 90% credible interval is between 13 and 34 years, and the probability that it formed less than 9 years ago is less than 1%.
@@ -463,6 +519,10 @@ print(cdf.median(), cdf.credible_interval(0.9))
       <input>
 1 - cdf(9.0)
       </input>
+    
+      <output>
+      np.float64(0.9900990099009901)
+      </output>
     </program>
     <p>
       But this result is based on two modeling decisions that are potentially problematic:
@@ -499,6 +559,7 @@ decorate(xlabel='Tumor age (years)',
          ylabel='CDF')
       </input>
     </program>
+    <image source="images/ch20_abc_f2fe845e.png" width="80%"/>
   </section>
 
   <section xml:id="sec-ch20-approximate-bayesian-calculation">
@@ -676,6 +737,13 @@ options = dict(return_inferencedata=False)
 with model:
     trace = pm.sample(1000, **options)
       </input>
+    
+      <output>
+      Multiprocess sampling (4 chains in 4 jobs)
+CompoundStep
+&gt;NUTS: [yeast conc, shaker1 vol, shaker2 vol, shaker3 vol, yeast slurry vol, shaker1 to shaker2, shaker2 to shaker3, chamber_vol]
+&gt;Metropolis: [yeast in chamber]
+      </output>
     </program>
     <p>
       And we can use the sample to estimate the posterior distribution of <c>yeast_conc</c> and compute summary statistics.
@@ -686,6 +754,10 @@ posterior_sample = trace['yeast conc'] / billion
 cdf_pymc = Cdf.from_seq(posterior_sample)
 print(cdf_pymc.mean(), cdf_pymc.credible_interval(0.9))
       </input>
+    
+      <output>
+      2.3036249612378192 [1.90495594 2.69322207]
+      </output>
     </program>
     <p>
       The posterior mean is about 2.2 billion cells per mL, with a 90% credible interval from 1.8 and 2.7.
@@ -711,6 +783,10 @@ But it also provides an opportunity to demonstrate ABC.
 with model:
     prior_sample = pm.sample_prior_predictive(10000, **options)
       </input>
+    
+      <output>
+      Sampling: [chamber_vol, count, shaker1 to shaker2, shaker1 vol, shaker2 to shaker3, shaker2 vol, shaker3 vol, yeast conc, yeast in chamber, yeast slurry vol]
+      </output>
     </program>
     <p>
       The result is a dictionary that contains samples from the prior distribution of the parameters and the prior predictive distribution of <c>count</c>.
@@ -720,6 +796,10 @@ with model:
 count = prior_sample['count']
 print(count.mean())
       </input>
+    
+      <output>
+      39.9429
+      </output>
     </program>
     <p>
       Now, to generate a sample from the posterior distribution, we'll select only the elements in the prior sample where the output of the simulation, <c>count</c>, matches the observed data, 49.
@@ -729,6 +809,10 @@ print(count.mean())
 mask = (count == 49)
 mask.sum()
       </input>
+    
+      <output>
+      np.int64(249)
+      </output>
     </program>
     <p>
       We can use <c>mask</c> to select the values of <c>yeast_conc</c> for the simulations that yield the observed data.
@@ -746,6 +830,10 @@ posterior_sample2 = prior_sample['yeast conc'][mask] / billion
 cdf_abc = Cdf.from_seq(posterior_sample2)
 print(cdf_abc.mean(), cdf_abc.credible_interval(0.9))
       </input>
+    
+      <output>
+      2.2598964588558084 [1.84789587 2.69189023]
+      </output>
     </program>
     <p>
       The posterior mean and credible interval are similar to what we got with MCMC.
@@ -762,6 +850,7 @@ decorate(xlabel='Yeast concentration (cells/mL)',
          xlim=(1.4, 3.4))
       </input>
     </program>
+    <image source="images/ch20_abc_aafbca05.png" width="80%"/>
     <p>
       The distributions are similar, but the results from ABC are noisier because the sample size is smaller.
     </p>
@@ -820,6 +909,10 @@ But how close?  And how much credit?
 n = prior_sample['yeast in chamber']
 n.shape
       </input>
+    
+      <output>
+      (10000,)
+      </output>
     </program>
     <p>
       And compute <c>p</c> like this:
@@ -829,6 +922,10 @@ n.shape
 p = squares_counted/total_squares
 p
       </input>
+    
+      <output>
+      0.2
+      </output>
     </program>
     <p>
       Now here's the idea: we'll use the binomial distribution to compute the likelihood of the data, <c>yeast_counted</c>, for each value of <c>n</c> and the fixed value of <c>p</c>.
@@ -844,6 +941,10 @@ likelihood = binom(n, p).pmf(yeast_counted).flatten()
       <input>
 likelihood.shape
       </input>
+    
+      <output>
+      (10000,)
+      </output>
     </program>
     <p>
       When the expected count, <c>n * p</c>, is close to the actual count, <c>likelihood</c> is relatively high; when it is farther away, <c>likelihood</c> is lower.
@@ -859,6 +960,7 @@ decorate(xlabel='Expected count (number of cells)',
          ylabel='Likelihood')
       </input>
     </program>
+    <image source="images/ch20_abc_9cdb672d.png" width="80%"/>
     <p>
       We can't use these likelihoods to do a Bayesian update because they are incomplete; that is, each likelihood is the probability of the data given <c>n</c>, which is the result of a single simulation.
     </p>
@@ -887,6 +989,10 @@ posterior_pmf.normalize()
 
 print(posterior_pmf.mean(), posterior_pmf.credible_interval(0.9))
       </input>
+    
+      <output>
+      2.266695424563474 [1.85825934 2.70042921]
+      </output>
     </program>
     <p>
       The posterior mean and credible interval are similar to the values we got from MCMC.
@@ -904,6 +1010,7 @@ decorate(xlabel='Yeast concentration (cells/mL)',
          xlim=(1.4, 3.4))
       </input>
     </program>
+    <image source="images/ch20_abc_18293072.png" width="80%"/>
     <p>
       The distributions are similar, but the results from MCMC are a little noisier.
 In this example, ABC is more efficient than MCMC, requiring less computation to generate a better estimate of the posterior distribution.
@@ -986,12 +1093,20 @@ r = mu * (1-p) / p
 prior_n_socks = nbinom(r, 1-p)
 prior_n_socks.mean(), prior_n_socks.std()
       </input>
+    
+      <output>
+      (np.float64(30.0), np.float64(14.999996250001402))
+      </output>
     </program>
     <program language="python">
       <input>
 prior_prop_pair = beta(15, 2)
 prior_prop_pair.mean()
       </input>
+    
+      <output>
+      np.float64(0.8823529411764706)
+      </output>
     </program>
     <program language="python">
       <input>
@@ -1006,6 +1121,7 @@ decorate(xlabel='Number of socks',
          ylabel='PMF')
       </input>
     </program>
+    <image source="images/ch20_abc_e5db590a.png" width="80%"/>
     <program language="python">
       <input>
 from utils import pmf_from_dist
@@ -1018,6 +1134,7 @@ decorate(xlabel='Proportion of socks in pairs',
          ylabel='PDF')
       </input>
     </program>
+    <image source="images/ch20_abc_5249b0ef.png" width="80%"/>
     <p>
       We can sample from the prior distributions like this:
     </p>
@@ -1028,6 +1145,10 @@ prop_pairs = prior_prop_pair.rvs()
 
 n_socks, prop_pairs
       </input>
+    
+      <output>
+      (53, np.float64(0.9644877185150033))
+      </output>
     </program>
     <p>
       And use the values to compute <c>n_pairs</c> and <c>n_odds</c>:
@@ -1039,6 +1160,10 @@ n_odds = n_socks - n_pairs*2
 
 n_pairs, n_odds
       </input>
+    
+      <output>
+      (np.float64(25.0), np.float64(3.0))
+      </output>
     </program>
     <p>
       Now you take it from there.
@@ -1056,13 +1181,21 @@ r = mu * (1-p) / p
 prior_n_socks = nbinom(r, 1-p)
 prior_n_socks.mean(), prior_n_socks.std()
         </input>
-      </program>
+      
+      <output>
+      (np.float64(30.0), np.float64(14.999996250001402))
+      </output>
+    </program>
       <program language="python">
         <input>
 prior_prop_pair = beta(15, 2)
 prior_prop_pair.mean()
         </input>
-      </program>
+      
+      <output>
+      np.float64(0.8823529411764706)
+      </output>
+    </program>
       <program language="python">
         <input>
 qs = np.arange(90)
@@ -1076,6 +1209,7 @@ decorate(xlabel='Number of socks',
          ylabel='PMF')
         </input>
       </program>
+    <image source="images/ch20_abc_e5db590a.png" width="80%"/>
       <program language="python">
         <input>
 from utils import pmf_from_dist
@@ -1088,6 +1222,7 @@ decorate(xlabel='Proportion of socks in pairs',
          ylabel='PDF')
         </input>
       </program>
+    <image source="images/ch20_abc_5249b0ef.png" width="80%"/>
       <program language="python">
         <input>
 n_socks = prior_n_socks.rvs()
@@ -1095,7 +1230,11 @@ prop_pairs = prior_prop_pair.rvs()
 
 n_socks, prop_pairs
         </input>
-      </program>
+      
+      <output>
+      (53, np.float64(0.9644877185150033))
+      </output>
+    </program>
       <program language="python">
         <input>
 n_pairs = np.round(n_socks//2 * prop_pairs)
@@ -1103,7 +1242,11 @@ n_odds = n_socks - n_pairs*2
 
 n_pairs, n_odds
         </input>
-      </program>
+      
+      <output>
+      (np.float64(25.0), np.float64(3.0))
+      </output>
+    </program>
       <program language="python">
         <input>
 

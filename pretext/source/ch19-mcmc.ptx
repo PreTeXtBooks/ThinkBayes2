@@ -92,6 +92,10 @@
       posterior = prior_pmf * likelihood
       posterior.normalize()
       </input>
+    
+      <output>
+      0.05015532557804499
+      </output>
     </program>
     <p>
       Soon we will solve the same problem with PyMC3, but first it will be useful to introduce something new: the prior predictive distribution.
@@ -145,6 +149,7 @@
                title='Prior Predictive Distribution')
       </input>
     </program>
+    <image source="images/ch19_mcmc_730ce744.png" width="80%"/>
     <p>
       One reason to compute the prior predictive distribution is to check whether our model of the system seems reasonable. In this case, the distribution of goals seems consistent with what we know about World Cup football.
     </p>
@@ -216,6 +221,10 @@
       <input>
       pm.model_to_graphviz(model)
       </input>
+    
+      <output>
+      &lt;graphviz.dot.Digraph at 0x7f7d100f8d00&gt;
+      </output>
     </program>
     <p>
       In this visualization, the ovals show that <c>lam</c> is drawn from a gamma distribution and <c>goals</c> is drawn from a Poisson distribution. The arrow shows that the values of <c>lam</c> are used as parameters for the distribution of <c>goals</c>.
@@ -245,6 +254,10 @@
       sample_prior_pymc = trace['lam']
       sample_prior_pymc.shape
       </input>
+    
+      <output>
+      (1000,)
+      </output>
     </program>
     <p>
       The following figure compares the CDF of this sample to the CDF of the sample we generated using the <c>gamma</c> object from SciPy.
@@ -274,6 +287,7 @@
                title='Prior distribution')
       </input>
     </program>
+    <image source="images/ch19_mcmc_def85c6a.png" width="80%"/>
     <p>
       The results are similar, which confirms that the specification of the model is correct and the sampler works as advertised.
     </p>
@@ -285,6 +299,10 @@
       sample_prior_pred_pymc = trace['goals']
       sample_prior_pred_pymc.shape
       </input>
+    
+      <output>
+      (1000,)
+      </output>
     </program>
     <p>
       And we can compare it to the sample we generated using the <c>poisson</c> object from SciPy.
@@ -311,6 +329,7 @@
                title='Prior Predictive Distribution')
       </input>
     </program>
+    <image source="images/ch19_mcmc_bbc3f328.png" width="80%"/>
     <p>
       Again, the results are similar, so we have some confidence we are using PyMC3 right.
     </p>
@@ -355,6 +374,13 @@
       with model2:
           trace2 = pm.sample(500, **options)
       </input>
+    
+      <output>
+      Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (2 chains in 2 jobs)
+NUTS: [lam]
+      </output>
     </program>
     <p>
       Although the specification of these models is similar, the sampling process is very different. I won't go into the details of how PyMC3 works, but here are a few things you should be aware of:
@@ -386,6 +412,10 @@
       <input>
       sample_post_pymc.shape
       </input>
+    
+      <output>
+      (1000,)
+      </output>
     </program>
     <p>
       And we can compare the CDF of this sample to the posterior we computed by grid approximation:
@@ -403,6 +433,7 @@
                title='Posterior distribution')
       </input>
     </program>
+    <image source="images/ch19_mcmc_16df64a9.png" width="80%"/>
     <p>
       The results from PyMC3 are consistent with the results from the grid approximation.
     </p>
@@ -419,6 +450,10 @@
       with model2:
           post_pred = pm.sample_posterior_predictive(trace2)
       </input>
+    
+      <output>
+      &lt;IPython.core.display.HTML object&gt;
+      </output>
     </program>
     <p>
       The result is a dictionary that contains a sample of <c>goals</c>.
@@ -432,6 +467,10 @@
       <input>
       sample_post_pred_pymc.shape
       </input>
+    
+      <output>
+      (1000,)
+      </output>
     </program>
     <p>
       I'll also generate a sample from the posterior distribution we computed by grid approximation.
@@ -459,6 +498,7 @@
                title='Posterior Predictive Distribution')
       </input>
     </program>
+    <image source="images/ch19_mcmc_9278da95.png" width="80%"/>
     <p>
       Again, the results are consistent. So we've established that we can compute the same results using a grid approximation or PyMC3.
     </p>
@@ -549,11 +589,57 @@
       <input>
       df.head(3)
       </input>
+    
+      <output>
+      Country name Regional indicator  Ladder score  \
+0      Finland     Western Europe        7.8087   
+1      Denmark     Western Europe        7.6456   
+2  Switzerland     Western Europe        7.5599   
+
+   Standard error of ladder score  upperwhisker  lowerwhisker  \
+0                        0.031156      7.869766      7.747634   
+1                        0.033492      7.711245      7.579955   
+2                        0.035014      7.628528      7.491272   
+
+   Logged GDP per capita  Social support  Healthy life expectancy  \
+0              10.639267        0.954330                71.900826   
+1              10.774001        0.955991                72.402504   
+2              10.979933        0.942847                74.102448   
+
+   Freedom to make life choices  Generosity  Perceptions of corruption  \
+0                      0.949172   -0.059482                   0.195445   
+1                      0.951444    0.066202                   0.168489   
+2                      0.921337    0.105911                   0.303728   
+
+   Ladder score in Dystopia  Explained by: Log GDP per capita  \
+0                  1.972317                          1.285190   
+1                  1.972317                          1.326949   
+2                  1.972317                          1.390774   
+
+   Explained by: Social support  Explained by: Healthy life expectancy  \
+0                      1.499526                               0.961271   
+1                      1.503449                               0.979333   
+2                      1.472403                               1.040533   
+
+   Explained by: Freedom to make life choices  Explained by: Generosity  \
+0                                    0.662317                  0.159670   
+1                                    0.665040                  0.242793   
+2                                    0.628954                  0.269056   
+
+   Explained by: Perceptions of corruption  Dystopia + residual  
+0                                 0.477857             2.762835  
+1                                 0.495260             2.432741  
+2                                 0.407946             2.350267
+      </output>
     </program>
     <program language="python">
       <input>
       df.shape
       </input>
+    
+      <output>
+      (153, 20)
+      </output>
     </program>
     <p>
       The <c>DataFrame</c> has one row for each of 153 countries and one column for each of 20 variables.
@@ -595,6 +681,7 @@
                ylabel='Happiness ladder score')
       </input>
     </program>
+    <image source="images/ch19_mcmc_0c781824.png" width="80%"/>
     <p>
       It's clear that there is a relationship between these variables: people in countries with higher GDP generally report higher levels of happiness.
     </p>
@@ -617,6 +704,11 @@
                    index=['Slope', 'Intercept'],
                    columns=[''])
       </input>
+    
+      <output>
+      Slope      0.717738
+Intercept -1.198646
+      </output>
     </program>
     <p>
       The estimated slope is about 0.72, which suggests that an increase of one unit in log-GDP, which is a factor of <m>e \approx 2.7</m> in GDP, is associated with an increase of 0.72 units on the happiness ladder.
@@ -679,6 +771,13 @@
       with model3:
           trace3 = pm.sample(500, **options)
       </input>
+    
+      <output>
+      Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (2 chains in 2 jobs)
+NUTS: [sigma, b, a]
+      </output>
     </program>
     <p>
       When you run the sampler, you might get warning messages about "divergences" and the "acceptance probability". You can ignore them for now.
@@ -690,6 +789,10 @@
       <input>
       trace3
       </input>
+    
+      <output>
+      &lt;MultiTrace: 2 chains, 500 iterations, 6 variables&gt;
+      </output>
     </program>
     <p>
       ArviZ provides <c>plot_posterior</c>, which we can use to plot the posterior distributions of the parameters. Here are the posterior distributions of slope, <c>a</c>, and intercept, <c>b</c>.
@@ -702,6 +805,7 @@
           az.plot_posterior(trace3, var_names=['a', 'b']);
       </input>
     </program>
+    <image source="images/ch19_mcmc_b6fffc9b.png" width="80%"/>
     <p>
       The graphs show the distributions of the samples, estimated by KDE, and 94% credible intervals.  In the figure, "HDI" stands for <url href="https://www.sciencedirect.com/topics/mathematics/highest-density-interval">"highest-density interval"</url>.
     </p>
@@ -713,12 +817,22 @@
       print('Sample mean:', trace3['a'].mean())
       print('Regression slope:', result.slope)
       </input>
+    
+      <output>
+      Sample mean: 0.715698157714354
+Regression slope: 0.717738495630452
+      </output>
     </program>
     <program language="python">
       <input>
       print('Sample mean:', trace3['b'].mean())
       print('Regression intercept:', result.intercept)
       </input>
+    
+      <output>
+      Sample mean: -1.174412246262264
+Regression intercept: -1.1986460618088843
+      </output>
     </program>
     <p>
       Finally, we can check the marginal posterior distribution of <c>sigma</c>
@@ -728,6 +842,7 @@
       az.plot_posterior(trace3['sigma']);
       </input>
     </program>
+    <image source="images/ch19_mcmc_f293969b.png" width="80%"/>
     <p>
       The values in the posterior distribution of <c>sigma</c> seem plausible.
     </p>
@@ -744,11 +859,19 @@
       <input>
       20 ** 8 / 1e9
       </input>
+    
+      <output>
+      25.6
+      </output>
     </program>
     <program language="python">
       <input>
       153 * 20 ** 8 / 1e12
       </input>
+    
+      <output>
+      3.9168
+      </output>
     </program>
   </section>
 
@@ -775,6 +898,23 @@
       <input>
       subset.head(3)
       </input>
+    
+      <output>
+      Ladder score  Logged GDP per capita  Social support  \
+0        7.8087              10.639267        0.954330   
+1        7.6456              10.774001        0.955991   
+2        7.5599              10.979933        0.942847   
+
+   Healthy life expectancy  Freedom to make life choices  Generosity  \
+0                71.900826                      0.949172   -0.059482   
+1                72.402504                      0.951444    0.066202   
+2                74.102448                      0.921337    0.105911   
+
+   Perceptions of corruption  
+0                   0.195445  
+1                   0.168489  
+2                   0.303728
+      </output>
     </program>
     <p>
       The predictive variables have different units: log-GDP is in log-dollars, life expectancy is in years, and the other variables are on arbitrary scales. To make these factors comparable, I'll standardize the data so that each variable has mean 0 and standard deviation 1.
@@ -837,6 +977,13 @@
       with model4:
           trace4 = pm.sample(500, **options)
       </input>
+    
+      <output>
+      Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (2 chains in 2 jobs)
+NUTS: [sigma, b6, b5, b4, b3, b2, b1, b0]
+      </output>
     </program>
     <p>
       Because we standardized the data, we expect the intercept to be 0, and in fact the posterior mean of <c>b0</c> is close to 0.
@@ -845,6 +992,10 @@
       <input>
       trace4['b0'].mean()
       </input>
+    
+      <output>
+      -0.0009400028402880869
+      </output>
     </program>
     <p>
       We can also check the posterior mean of <c>sigma</c>:
@@ -853,6 +1004,10 @@
       <input>
       trace4['sigma'].mean()
       </input>
+    
+      <output>
+      0.5157546237813752
+      </output>
     </program>
     <p>
       From <c>trace4</c> we can extract samples from the posterior distributions of the parameters and compute their means.
@@ -890,6 +1045,16 @@
       table['94% CI'] = cis
       table
       </input>
+    
+      <output>
+      Posterior mean           94% CI
+Logged GDP per capita                  0.244    [0.085, 0.41]
+Social support                         0.225   [0.081, 0.377]
+Healthy life expectancy                0.225   [0.081, 0.377]
+Freedom to make life choices           0.187   [0.087, 0.289]
+Generosity                             0.054   [-0.039, 0.14]
+Perceptions of corruption             -0.100  [-0.197, 0.002]
+      </output>
     </program>
     <p>
       It looks like GDP has the strongest association with happiness (or satisfaction), followed by social support, life expectancy, and freedom.
@@ -1104,7 +1269,16 @@ with pm.Model() as model7:
           df = pd.read_csv('drp_scores.csv', skiprows=21, delimiter='\t')
           df.head()
           </input>
-        </program>
+        
+      <output>
+      Treatment  Response
+0   Treated        24
+1   Treated        43
+2   Treated        58
+3   Treated        71
+4   Treated        43
+      </output>
+    </program>
         <p>
           I'll use <c>groupby</c> to separate the treated group from the control group.
         </p>
@@ -1149,7 +1323,16 @@ import pandas as pd
 df = pd.read_csv('drp_scores.csv', skiprows=21, delimiter='\t')
 df.head()
         </input>
-      </program>
+      
+      <output>
+      Treatment  Response
+0   Treated        24
+1   Treated        43
+2   Treated        58
+3   Treated        71
+4   Treated        43
+      </output>
+    </program>
       <program language="python">
         <input>
 grouped = df.groupby('Treatment')
@@ -1251,7 +1434,11 @@ with model8:
           num_seen = k01 + k10 + k11
           num_seen
           </input>
-        </program>
+        
+      <output>
+      32
+      </output>
+    </program>
         <program language="python">
           <input>
           # Solution goes here
@@ -1282,7 +1469,11 @@ k11 = 3
 num_seen = k01 + k10 + k11
 num_seen
         </input>
-      </program>
+      
+      <output>
+      32
+      </output>
+    </program>
       <program language="python">
         <input>
 

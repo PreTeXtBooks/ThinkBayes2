@@ -312,6 +312,10 @@ likelihood1 = error_dist1.pdf(error1)
 posterior1 = prior1 * likelihood1
 posterior1.normalize()
       </input>
+    
+      <output>
+      3.3889812097254624e-05
+      </output>
     </program>
 
     <p>
@@ -451,6 +455,10 @@ def compute_prob_win(diff, sample_diff):
       <input>
 compute_prob_win(-5000, sample_diff2)
       </input>
+    
+      <output>
+      0.6741214057507987
+      </output>
     </program>
 
     <p>

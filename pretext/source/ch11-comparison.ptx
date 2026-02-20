@@ -52,6 +52,11 @@ X, Y = np.meshgrid(x, y)
       <input>
 X
       </input>
+    
+      <output>
+      array([[1, 3, 5],
+       [1, 3, 5]])
+      </output>
     </program>
 
     <p>
@@ -62,6 +67,11 @@ X
       <input>
 Y
       </input>
+    
+      <output>
+      array([[2, 2, 2],
+       [4, 4, 4]])
+      </output>
     </program>
 
     <p>
@@ -72,6 +82,11 @@ Y
       <input>
 X * Y
       </input>
+    
+      <output>
+      array([[ 2,  6, 10],
+       [ 4, 12, 20]])
+      </output>
     </program>
 
     <p>
@@ -85,6 +100,12 @@ import pandas as pd
 df = pd.DataFrame(X * Y, columns=x, index=y)
 df
       </input>
+    
+      <output>
+      1   3   5
+2  2   6  10
+4  4  12  20
+      </output>
     </program>
 
     <p>
@@ -98,6 +119,11 @@ df
       <input>
 X + Y
       </input>
+    
+      <output>
+      array([[3, 5, 7],
+       [5, 7, 9]])
+      </output>
     </program>
 
     <p>
@@ -108,6 +134,11 @@ X + Y
       <input>
 X > Y
       </input>
+    
+      <output>
+      array([[False,  True,  True],
+       [False, False,  True]])
+      </output>
     </program>
 
     <p>
@@ -179,6 +210,10 @@ from empiricaldist import Pmf
 prior = Pmf(ps, qs)
 prior.normalize()
       </input>
+    
+      <output>
+      1.9963309462450582
+      </output>
     </program>
 
     <p>
@@ -196,6 +231,7 @@ decorate(xlabel='Height in cm',
          title='Approximate distribution of height for men in U.S.')
       </input>
     </program>
+    <image source="images/ch11_comparison_dc79bdbe.png" width="80%"/>
 
     <p>
       This distribution represents what we believe about the heights of <c>A</c> and <c>B</c> before we take into account the data that <c>A</c> is taller.
@@ -255,6 +291,10 @@ def make_joint(pmf1, pmf2):
 joint = make_joint(prior, prior)
 joint.shape
       </input>
+    
+      <output>
+      (96, 96)
+      </output>
     </program>
 
     <p>
@@ -268,6 +308,10 @@ joint.shape
       <input>
 joint.to_numpy().sum()
       </input>
+    
+      <output>
+      1.0
+      </output>
     </program>
 
     <p>
@@ -279,6 +323,10 @@ joint.to_numpy().sum()
 series = joint.sum()
 series.shape
       </input>
+    
+      <output>
+      (96,)
+      </output>
     </program>
 
   </section>
@@ -318,6 +366,7 @@ plot_joint(joint)
 decorate(title='Joint prior distribution of height for A and B')
       </input>
     </program>
+    <image source="images/ch11_comparison_757ca2ec.png" width="80%"/>
 
     <p>
       As you might expect, the probability is highest (darkest) near the mean and drops off farther from the mean.
@@ -343,6 +392,7 @@ plot_contour(joint)
 decorate(title='Joint prior distribution of height for A and B')
       </input>
     </program>
+    <image source="images/ch11_comparison_3cc9298d.png" width="80%"/>
 
     <p>
       Each line represents a level of equal probability.
@@ -389,6 +439,10 @@ X, Y = np.meshgrid(x, y)
 A_taller = (X > Y)
 A_taller.dtype
       </input>
+    
+      <output>
+      dtype('bool')
+      </output>
     </program>
 
     <p>
@@ -421,6 +475,7 @@ plot_joint(likelihood, cmap='Oranges')
 decorate(title='Likelihood of A>B')
       </input>
     </program>
+    <image source="images/ch11_comparison_b5ea11a8.png" width="80%"/>
 
     <p>
       The likelihood of the data is 1 where <c>X > Y</c> and 0 elsewhere.
@@ -459,6 +514,10 @@ def normalize(joint):
       <input>
 normalize(posterior)
       </input>
+    
+      <output>
+      0.49080747821526977
+      </output>
     </program>
 
     <p>
@@ -471,6 +530,7 @@ plot_joint(posterior)
 decorate(title='Joint posterior distribution of height for A and B')
       </input>
     </program>
+    <image source="images/ch11_comparison_388d50ef.png" width="80%"/>
 
     <p>
       All pairs where <c>B</c> is taller than <c>A</c> have been eliminated.  The rest of the posterior looks the same as the prior, except that it has been renormalized.
@@ -496,6 +556,15 @@ decorate(title='Joint posterior distribution of height for A and B')
 column = posterior[180]
 column.head()
       </input>
+    
+      <output>
+      154.0    0.000010
+154.5    0.000013
+155.0    0.000015
+155.5    0.000019
+156.0    0.000022
+Name: 180.0, dtype: float64
+      </output>
     </program>
 
     <p>
@@ -506,6 +575,10 @@ column.head()
       <input>
 column.sum()
       </input>
+    
+      <output>
+      0.03017221271570807
+      </output>
     </program>
 
     <p>
@@ -520,6 +593,15 @@ column.sum()
 column_sums = posterior.sum(axis=0)
 column_sums.head()
       </input>
+    
+      <output>
+      154.0    0.000000e+00
+154.5    1.012260e-07
+155.0    2.736152e-07
+155.5    5.532519e-07
+156.0    9.915650e-07
+dtype: float64
+      </output>
     </program>
 
     <p>
@@ -554,6 +636,7 @@ decorate(xlabel='Height in cm',
          title='Posterior distribution for A')
       </input>
     </program>
+    <image source="images/ch11_comparison_19899832.png" width="80%"/>
 
     <p>
       Similarly, we can get the posterior distribution of height for <c>B</c> by adding up the rows and putting the result in a <c>Pmf</c>.
@@ -579,6 +662,7 @@ decorate(xlabel='Height in cm',
          title='Posterior distribution for B')
       </input>
     </program>
+    <image source="images/ch11_comparison_68486efd.png" width="80%"/>
 
     <p>
       Let's put the code from this section in a function:
@@ -625,6 +709,7 @@ decorate(xlabel='Height in cm',
          title='Prior and posterior distributions for A and B')
       </input>
     </program>
+    <image source="images/ch11_comparison_e178affa.png" width="80%"/>
 
     <p>
       As you might expect, the posterior distribution for <c>A</c> is shifted to the right and the posterior distribution for <c>B</c> is shifted to the left.
@@ -637,12 +722,20 @@ decorate(xlabel='Height in cm',
       <input>
 prior.mean()
       </input>
+    
+      <output>
+      177.99516026921506
+      </output>
     </program>
 
     <program language="python">
       <input>
 print(marginal_A.mean(), marginal_B.mean())
       </input>
+    
+      <output>
+      182.3872812342168 173.6028600023339
+      </output>
     </program>
 
     <p>
@@ -656,12 +749,20 @@ print(marginal_A.mean(), marginal_B.mean())
       <input>
 prior.std()
       </input>
+    
+      <output>
+      7.624924796641578
+      </output>
     </program>
 
     <program language="python">
       <input>
 print(marginal_A.std(), marginal_B.std())
       </input>
+    
+      <output>
+      6.270461177645469 6.280513548175111
+      </output>
     </program>
 
     <p>
@@ -695,6 +796,10 @@ column_170 = posterior[170]
 cond_B = Pmf(column_170)
 cond_B.normalize()
       </input>
+    
+      <output>
+      0.004358061205454471
+      </output>
     </program>
 
     <p>
@@ -716,6 +821,7 @@ decorate(xlabel='Height in cm',
          title='Prior, posterior and conditional distribution for B')
       </input>
     </program>
+    <image source="images/ch11_comparison_6fc8269f.png" width="80%"/>
 
     <p>
       The conditional posterior distribution is cut off at 170 cm, because we have established that <c>B</c> is shorter than <c>A</c>, and <c>A</c> is 170 cm.
@@ -776,6 +882,10 @@ row_180 = posterior.loc[180]
 cond_A = Pmf(row_180)
 cond_A.normalize()
       </input>
+    
+      <output>
+      0.019669089649708035
+      </output>
     </program>
 
     <program language="python">
@@ -790,6 +900,7 @@ decorate(xlabel='Height in cm',
          title='Conditional distribution for A')
       </input>
     </program>
+    <image source="images/ch11_comparison_29f1767a.png" width="80%"/>
 
     <p>
       <em>Exercise:</em> Suppose we have established that <c>A</c> is taller than <c>B</c>, but we don't know how tall <c>B</c> is. Now we choose a random woman, <c>C</c>, and find that she is shorter than <c>A</c> by at least 15 cm.  Compute posterior distributions for the heights of <c>A</c> and <c>C</c>.
@@ -814,6 +925,10 @@ ps = norm(mean, std).pdf(qs)
 prior_C = Pmf(ps, qs)
 prior_C.normalize()
       </input>
+    
+      <output>
+      1.997970387889823
+      </output>
     </program>
 
     <program language="python">
@@ -825,6 +940,10 @@ prior_C.normalize()
 joint_AC = make_joint(marginal_A, prior_C)
 joint_AC.shape
       </input>
+    
+      <output>
+      (96, 96)
+      </output>
     </program>
 
     <program language="python">
@@ -853,6 +972,7 @@ decorate(ylabel='C height in cm',
          title='Likelihood of A-C>=15')
       </input>
     </program>
+    <image source="images/ch11_comparison_49b1f137.png" width="80%"/>
 
     <program language="python">
       <input>
@@ -863,6 +983,10 @@ decorate(ylabel='C height in cm',
 posterior_AC = joint_AC * likelihood_AC
 normalize(posterior_AC)
       </input>
+    
+      <output>
+      0.6839061829242195
+      </output>
     </program>
 
     <program language="python">
@@ -876,6 +1000,7 @@ decorate(ylabel='C height in cm',
          title='Joint posterior distribution of height for A and C')
       </input>
     </program>
+    <image source="images/ch11_comparison_c6df6b21.png" width="80%"/>
 
     <program language="python">
       <input>
@@ -903,6 +1028,7 @@ decorate(xlabel='Height in cm',
          title='Prior and posterior distributions for A and C')
       </input>
     </program>
+    <image source="images/ch11_comparison_7d944ced.png" width="80%"/>
 
     <p>
       <em>Exercise:</em> <url href="https://en.wikipedia.org/wiki/Elo_rating_system">The Elo rating system</url> is a way to quantify the skill level of players for games like chess.
@@ -924,6 +1050,10 @@ decorate(xlabel='Height in cm',
       <input>
 1 / (1 + 10**(-100/400))
       </input>
+    
+      <output>
+      0.6400649998028851
+      </output>
     </program>
 
     <p>
@@ -974,6 +1104,10 @@ ps = norm(1800, 100).pdf(qs)
 prior_B_elo = Pmf(ps, qs)
 prior_B_elo.normalize()
       </input>
+    
+      <output>
+      0.09972780668486173
+      </output>
     </program>
 
     <program language="python">
@@ -990,6 +1124,7 @@ decorate(xlabel='Elo rating',
          title='Prior distributions for A and B')
       </input>
     </program>
+    <image source="images/ch11_comparison_f1e216b3.png" width="80%"/>
 
     <program language="python">
       <input>
@@ -1000,6 +1135,10 @@ decorate(xlabel='Elo rating',
 joint_elo = make_joint(prior_A_elo, prior_B_elo)
 joint_elo.shape
       </input>
+    
+      <output>
+      (60, 60)
+      </output>
     </program>
 
     <program language="python">
@@ -1013,6 +1152,7 @@ decorate(xlabel='A rating',
          ylabel='B rating')
       </input>
     </program>
+    <image source="images/ch11_comparison_1e13e332.png" width="80%"/>
 
     <program language="python">
       <input>
@@ -1041,6 +1181,7 @@ decorate(xlabel='A rating',
          ylabel='B rating')
       </input>
     </program>
+    <image source="images/ch11_comparison_b8ab7645.png" width="80%"/>
 
     <program language="python">
       <input>
@@ -1051,6 +1192,10 @@ decorate(xlabel='A rating',
 posterior_elo = joint_elo * likelihood_elo
 normalize(posterior_elo)
       </input>
+    
+      <output>
+      0.2660426288107942
+      </output>
     </program>
 
     <program language="python">
@@ -1064,6 +1209,7 @@ decorate(xlabel='A rating',
          ylabel='B rating')
       </input>
     </program>
+    <image source="images/ch11_comparison_fea4feda.png" width="80%"/>
 
     <program language="python">
       <input>
@@ -1090,6 +1236,7 @@ decorate(xlabel='Elo rating',
          title='Posterior distributions for A and B')
       </input>
     </program>
+    <image source="images/ch11_comparison_a23e4db2.png" width="80%"/>
 
     <program language="python">
       <input>
@@ -1099,6 +1246,10 @@ decorate(xlabel='Elo rating',
 
 marginal_A_elo.mean(), marginal_B_elo.mean()
       </input>
+    
+      <output>
+      (1636.648345528236, 1763.0203078793095)
+      </output>
     </program>
 
     <program language="python">
@@ -1109,6 +1260,10 @@ marginal_A_elo.mean(), marginal_B_elo.mean()
 
 marginal_A_elo.std(), marginal_B_elo.std()
       </input>
+    
+      <output>
+      (95.34063582447712, 95.61569535990881)
+      </output>
     </program>
 
     <p>

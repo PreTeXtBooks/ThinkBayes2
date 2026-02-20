@@ -97,6 +97,7 @@ decorate(xlabel='Duration in time',
          title='CDF of a Weibull distribution')
       </input>
     </program>
+    <image source="images/ch14_survival_analysis_43e61ec5.png" width="80%"/>
     <p>
       <c>actual_dist</c> provides <c>rvs</c>, which we can use to generate a random sample from this distribution.
     </p>
@@ -110,6 +111,11 @@ np.random.seed(17)
 data = actual_dist.rvs(10)
 data
       </input>
+    
+      <output>
+      array([0.80497283, 2.11577082, 0.43308797, 0.10862644, 5.17334866,
+       3.25745053, 3.05555883, 2.47401062, 0.05340806, 1.08386395])
+      </output>
     </program>
     <p>
       So, given the parameters of the distribution, we can generate a sample. Now let's see if we can go the other way: given the sample, we'll estimate the parameters.
@@ -164,6 +170,10 @@ lam_mesh, k_mesh, data_mesh = np.meshgrid(
 densities = weibull_dist(lam_mesh, k_mesh).pdf(data_mesh)
 densities.shape
       </input>
+    
+      <output>
+      (101, 101, 10)
+      </output>
     </program>
     <p>
       The likelihood of the data is the product of the probability densities along <c>axis=2</c>.
@@ -173,6 +183,10 @@ densities.shape
 likelihood = densities.prod(axis=2)
 likelihood.sum()
       </input>
+    
+      <output>
+      2.0938302958838208e-05
+      </output>
     </program>
     <p>
       Now we can compute the posterior distribution in the usual way.
@@ -184,6 +198,10 @@ from utils import normalize
 posterior = prior * likelihood
 normalize(posterior)
       </input>
+    
+      <output>
+      2.052573567183434e-09
+      </output>
     </program>
     <p>
       The following function encapsulates these steps. It takes a joint prior distribution and the data, and returns a joint posterior distribution.
@@ -223,6 +241,7 @@ plot_contour(posterior)
 decorate(title='Posterior joint distribution of Weibull parameters')
       </input>
     </program>
+    <image source="images/ch14_survival_analysis_319f30c9.png" width="80%"/>
     <p>
       It looks like the range of likely values for $\lambda$ is about 1 to 4, which contains the actual value we used to generate the data, 3. And the range for $k$ is about 0.5 to 1.5, which contains the actual value, 0.8.
     </p>
@@ -256,6 +275,7 @@ decorate(xlabel='lam',
          title='Posterior marginal distribution of lam')
       </input>
     </program>
+    <image source="images/ch14_survival_analysis_ab5edebf.png" width="80%"/>
     <p>
       The vertical gray line show the actual value of $\lambda$.
     </p>
@@ -271,6 +291,7 @@ decorate(xlabel='k',
          title='Posterior marginal distribution of k')
       </input>
     </program>
+    <image source="images/ch14_survival_analysis_fb78d6bb.png" width="80%"/>
     <p>
       The posterior distributions are wide, which means that with only 10 data points we can't estimated the parameters precisely. But for both parameters, the actual value falls in the credible interval.
     </p>
@@ -278,11 +299,19 @@ decorate(xlabel='k',
       <input>
 print(lam, posterior_lam.credible_interval(0.9))
       </input>
+    
+      <output>
+      3 [1.2 4.4]
+      </output>
     </program>
     <program language="python">
       <input>
 print(k, posterior_k.credible_interval(0.9))
       </input>
+    
+      <output>
+      0.8 [0.6 1.4]
+      </output>
     </program>
   </section>
 
@@ -311,6 +340,11 @@ np.random.seed(19)
 start = np.random.uniform(0, 8, size=10)
 start
       </input>
+    
+      <output>
+      array([0.78026881, 6.08999773, 1.97550379, 1.1050535 , 2.65157251,
+       0.66399652, 5.37581665, 6.45275039, 7.86193532, 5.08528588])
+      </output>
     </program>
     <p>
       Now let's suppose that the residence times follow the Weibull distribution we used in the previous example. We can generate a sample from that distribution like this:
@@ -325,6 +359,11 @@ np.random.seed(17)
 duration = actual_dist.rvs(10)
 duration
       </input>
+    
+      <output>
+      array([0.80497283, 2.11577082, 0.43308797, 0.10862644, 5.17334866,
+       3.25745053, 3.05555883, 2.47401062, 0.05340806, 1.08386395])
+      </output>
     </program>
     <p>
       I'll use these values to construct a <c>DataFrame</c> that contains the arrival and departure times for each dog, called <c>start</c> and <c>end</c>.
@@ -345,6 +384,20 @@ obs = pd.DataFrame(d)
 obs = obs.sort_values(by='start', ignore_index=True)
 obs
       </input>
+    
+      <output>
+      start       end
+0  0.663997  3.921447
+1  0.780269  1.585242
+2  1.105053  1.213680
+3  1.975504  2.408592
+4  2.651573  7.824921
+5  5.085286  6.169150
+6  5.375817  8.431375
+7  6.089998  8.205769
+8  6.452750  8.926761
+9  7.861935  7.915343
+      </output>
     </program>
     <p>
       Notice that several of the lifelines extend past the observation window of 8 weeks. So if we observed this system at the beginning of Week 8, we would have incomplete information. Specifically, we would not know the future adoption times for Dogs 6, 7, and 8.
@@ -407,6 +460,7 @@ def plot_lifelines(obs):
 plot_lifelines(obs)
       </input>
     </program>
+    <image source="images/ch14_survival_analysis_653c218b.png" width="80%"/>
     <p>
       And I'll add one more column to the table, which contains the duration of the observed parts of the lifelines.
     </p>
@@ -439,11 +493,29 @@ data2 = obs.loc[censored, 'T']
       <input>
 data1
       </input>
+    
+      <output>
+      0    3.257451
+1    0.804973
+2    0.108626
+3    0.433088
+4    5.173349
+5    1.083864
+9    0.053408
+Name: T, dtype: float64
+      </output>
     </program>
     <program language="python">
       <input>
 data2
       </input>
+    
+      <output>
+      6    2.624183
+7    1.910002
+8    1.547250
+Name: T, dtype: float64
+      </output>
     </program>
     <p>
       For the complete data, we can use <c>update_weibull</c>, which uses the PDF of the Weibull distribution to compute the likelihood of the data.
@@ -496,6 +568,7 @@ plot_contour(posterior2)
 decorate(title='Posterior joint distribution, incomplete data')
       </input>
     </program>
+    <image source="images/ch14_survival_analysis_10b2d200.png" width="80%"/>
     <p>
       Compared to the previous contour plot, it looks like the range of likely values for $\lambda$ is substantially wider. We can see that more clearly by looking at the marginal distributions.
     </p>
@@ -519,6 +592,7 @@ decorate(xlabel='lambda',
          title='Marginal posterior distribution of lambda')
       </input>
     </program>
+    <image source="images/ch14_survival_analysis_4159f140.png" width="80%"/>
     <p>
       The distribution with some incomplete data is substantially wider.
     </p>
@@ -539,6 +613,7 @@ decorate(xlabel='k',
          title='Posterior marginal distribution of k')
       </input>
     </program>
+    <image source="images/ch14_survival_analysis_1018e46b.png" width="80%"/>
     <p>
       In this example, the marginal distribution is shifted to the left when we have incomplete data, but it is not substantially wider.
     </p>
@@ -575,6 +650,16 @@ download('https://gist.github.com/epogrebnyak/7933e16c0ad215742c4c104be4fbdeb1/r
 df = pd.read_csv('lamps.csv', index_col=0)
 df.head()
       </input>
+    
+      <output>
+      h  f   K
+i            
+0    0  0  50
+1  840  2  48
+2  852  1  47
+3  936  1  46
+4  960  1  45
+      </output>
     </program>
     <p>
       Column <c>h</c> contains the times when bulbs failed in hours; Column <c>f</c> contains the number of bulbs that failed at each time. We can represent these values and frequencies using a <c>Pmf</c>, like this:
@@ -586,6 +671,10 @@ from empiricaldist import Pmf
 pmf_bulb = Pmf(df['f'].to_numpy(), df['h'])
 pmf_bulb.normalize()
       </input>
+    
+      <output>
+      50
+      </output>
     </program>
     <p>
       Because of the design of this experiment, we can consider the data to be a representative sample from the distribution of lifetimes, at least for light bulbs that are lit continuously.
@@ -597,6 +686,10 @@ pmf_bulb.normalize()
       <input>
 pmf_bulb.mean()
       </input>
+    
+      <output>
+      1413.84
+      </output>
     </program>
     <p>
       Assuming that these data are well modeled by a Weibull distribution, let's estimate the parameters that fit the data. Again, I'll start with uniform priors for $\lambda$ and $k$:
@@ -632,6 +725,10 @@ prior_bulb = make_joint(prior_lam, prior_k)
 data_bulb = np.repeat(df['h'], df['f'])
 len(data_bulb)
       </input>
+    
+      <output>
+      50
+      </output>
     </program>
     <p>
       Now we can use <c>update_weibull</c> to do the update.
@@ -650,6 +747,7 @@ plot_contour(posterior_bulb)
 decorate(title='Joint posterior distribution, light bulbs')
       </input>
     </program>
+    <image source="images/ch14_survival_analysis_34fa3b95.png" width="80%"/>
     <p>
       To summarize this joint posterior distribution, we'll compute the posterior mean lifetime.
     </p>
@@ -675,6 +773,10 @@ lam_mesh, k_mesh = np.meshgrid(
 means = weibull_dist(lam_mesh, k_mesh).mean()
 means.shape
       </input>
+    
+      <output>
+      (51, 51)
+      </output>
     </program>
     <p>
       The result is an array with the same dimensions as the joint distribution.
@@ -694,6 +796,10 @@ prod = means * posterior_bulb
       <input>
 prod.to_numpy().sum()
       </input>
+    
+      <output>
+      1412.7242774305005
+      </output>
     </program>
     <p>
       Based on the posterior distribution, we think the mean lifetime is about 1413 hours.
@@ -760,6 +866,7 @@ plot_contour(posterior_bulb2)
 decorate(title='Joint posterior distribution, light bulbs')
       </input>
     </program>
+    <image source="images/ch14_survival_analysis_7c747034.png" width="80%"/>
     <p>
       Visually this result is almost identical to what we got using the PDF. And that's good news, because it suggests that using the PDF can be a good approximation even if it's not strictly correct.
     </p>
@@ -770,11 +877,19 @@ decorate(title='Joint posterior distribution, light bulbs')
       <input>
 joint_weibull_mean(posterior_bulb)
       </input>
+    
+      <output>
+      1412.7242774305005
+      </output>
     </program>
     <program language="python">
       <input>
 joint_weibull_mean(posterior_bulb2)
       </input>
+    
+      <output>
+      1406.8171982320873
+      </output>
     </program>
     <p>
       When we take into account the 12-hour interval between observations, the posterior mean is about 6 hours less. And that makes sense: if we assume that a bulb is equally likely to expire at any point in the interval, the average would be the midpoint of the interval.
@@ -802,6 +917,10 @@ t = 1000
 prob_dead = weibull_dist(lam, k).cdf(t)
 prob_dead
       </input>
+    
+      <output>
+      0.14381685899960547
+      </output>
     </program>
     <p>
       If there are 100 bulbs and each has this probability of dying, the number of dead bulbs follows a binomial distribution.
@@ -827,6 +946,7 @@ decorate(xlabel='Number of dead bulbs',
          title='Predictive distribution with known parameters')
       </input>
     </program>
+    <image source="images/ch14_survival_analysis_dcff7e90.png" width="80%"/>
     <p>
       But that's based on the assumption that we know $\lambda$ and $k$, and we don't. Instead, we have a posterior distribution that contains possible values of these parameters and their probabilities.
     </p>
@@ -841,6 +961,16 @@ decorate(xlabel='Number of dead bulbs',
 posterior_series = posterior_bulb.stack()
 posterior_series.head()
       </input>
+    
+      <output>
+      k    lambda
+1.0  1000.0    8.146763e-25
+     1020.0    1.210486e-24
+     1040.0    1.738327e-24
+     1060.0    2.418201e-24
+     1080.0    3.265549e-24
+dtype: float64
+      </output>
     </program>
     <p>
       The result is a <c>Series</c> with a <c>MultiIndex</c> that contains two "levels": the first level contains the values of <c>k</c>; the second contains the values of <c>lam</c>.
@@ -879,6 +1009,7 @@ decorate(xlabel='Number of dead bulbs',
          title='Posterior predictive distribution')
       </input>
     </program>
+    <image source="images/ch14_survival_analysis_a579cf92.png" width="80%"/>
     <p>
       The posterior predictive distribution is wider because it represents our uncertainty about the parameters as well as our uncertainty about the number of dead bulbs.
     </p>
@@ -936,6 +1067,10 @@ lam_mesh, k_mesh = np.meshgrid(
 prob_dead = weibull_dist(lam_mesh, k_mesh).cdf(t)
 prob_dead.shape
       </input>
+    
+      <output>
+      (51, 51)
+      </output>
     </program>
     <program language="python">
       <input>
@@ -948,6 +1083,10 @@ n = 100
 likelihood = binom(n, prob_dead).pmf(k)
 likelihood.shape
       </input>
+    
+      <output>
+      (51, 51)
+      </output>
     </program>
     <program language="python">
       <input>
@@ -959,6 +1098,7 @@ plot_contour(posterior_bulb3)
 decorate(title='Joint posterior distribution with k=20')
       </input>
     </program>
+    <image source="images/ch14_survival_analysis_2a33b7f2.png" width="80%"/>
     <program language="python">
       <input>
 # Solution
@@ -968,6 +1108,10 @@ decorate(title='Joint posterior distribution with k=20')
 
 joint_weibull_mean(posterior_bulb3)
       </input>
+    
+      <output>
+      1378.3949572816407
+      </output>
     </program>
     <p>
       <em>Exercise:</em> In this exercise, we'll use one month of data to estimate the parameters of a distribution that describes daily rainfall in Seattle. Then we'll compute the posterior predictive distribution for daily rainfall and use it to estimate the probability of a rare event, like more than 1.5 inches of rain in a day.
@@ -1017,6 +1161,22 @@ download('https://github.com/AllenDowney/ThinkBayes2/raw/master/data/2203951.csv
 weather = pd.read_csv('2203951.csv')
 weather.head()
       </input>
+    
+      <output>
+      STATION                           NAME        DATE   AWND  PRCP  TMAX  \
+0  USW00024233  SEATTLE TACOMA AIRPORT, WA US  2020-05-01   4.47  0.00    66   
+1  USW00024233  SEATTLE TACOMA AIRPORT, WA US  2020-05-02   9.40  0.24    58   
+2  USW00024233  SEATTLE TACOMA AIRPORT, WA US  2020-05-03  11.63  0.06    57   
+3  USW00024233  SEATTLE TACOMA AIRPORT, WA US  2020-05-04   4.47  0.00    65   
+4  USW00024233  SEATTLE TACOMA AIRPORT, WA US  2020-05-05   7.83  0.00    71   
+
+   TMIN  WT01  WT03  WT08  
+0    43   NaN   NaN   NaN  
+1    47   1.0   NaN   NaN  
+2    44   1.0   NaN   NaN  
+3    39   NaN   NaN   NaN  
+4    49   NaN   NaN   NaN
+      </output>
     </program>
     <p>
       I'll make a Boolean Series to indicate which days it rained.
@@ -1035,6 +1195,18 @@ rained.sum()
 prcp = weather.loc[rained, 'PRCP']
 prcp.describe()
       </input>
+    
+      <output>
+      count    14.000000
+mean      0.222857
+std       0.301060
+min       0.010000
+25%       0.052500
+50%       0.110000
+75%       0.225000
+max       1.140000
+Name: PRCP, dtype: float64
+      </output>
     </program>
     <p>
       Here's what the CDF of the data looks like.
@@ -1048,6 +1220,7 @@ decorate(xlabel='Total rainfall (in)',
          title='Distribution of rainfall on days it rained')
       </input>
     </program>
+    <image source="images/ch14_survival_analysis_4f4bbfff.png" width="80%"/>
     <p>
       The maximum is 1.14 inches of rain is one day. To estimate the probability of more than 1.5 inches, we need to extrapolate from the data we have, so our estimate will depend on whether the gamma distribution is really a good model.
     </p>
@@ -1073,6 +1246,10 @@ decorate(xlabel='Total rainfall (in)',
 k_est, _, theta_est = scipy.stats.gamma.fit(prcp, floc=0)
 k_est, theta_est
       </input>
+    
+      <output>
+      (0.8898876017525283, 0.25043291132301665)
+      </output>
     </program>
     <program language="python">
       <input>
@@ -1121,6 +1298,10 @@ k_mesh, theta_mesh, data_mesh = np.meshgrid(
 densities = gamma_dist(k_mesh, theta_mesh).pdf(data_mesh) 
 densities.shape
       </input>
+    
+      <output>
+      (51, 51, 14)
+      </output>
     </program>
     <program language="python">
       <input>
@@ -1131,6 +1312,10 @@ densities.shape
 likelihood = densities.prod(axis=2)
 likelihood.sum()
       </input>
+    
+      <output>
+      150287.91980136465
+      </output>
     </program>
     <program language="python">
       <input>
@@ -1141,6 +1326,10 @@ likelihood.sum()
 posterior = prior * likelihood
 normalize(posterior)
       </input>
+    
+      <output>
+      57.780822684107896
+      </output>
     </program>
     <program language="python">
       <input>
@@ -1153,6 +1342,7 @@ plot_contour(posterior)
 decorate(title='Posterior distribution, parameters of a gamma distribution')
       </input>
     </program>
+    <image source="images/ch14_survival_analysis_93797323.png" width="80%"/>
     <program language="python">
       <input>
 # Solution
@@ -1178,12 +1368,17 @@ decorate(xlabel='k',
          title='Posterior marginal distribution of k')
       </input>
     </program>
+    <image source="images/ch14_survival_analysis_8550af5e.png" width="80%"/>
     <program language="python">
       <input>
 # Solution
 
 posterior_k.mean(), posterior_k.credible_interval(0.9)
       </input>
+    
+      <output>
+      (0.8437218523899558, array([0.4478, 1.3632]))
+      </output>
     </program>
     <program language="python">
       <input>
@@ -1197,12 +1392,17 @@ decorate(xlabel='theta',
          title='Posterior marginal distribution of theta')
       </input>
     </program>
+    <image source="images/ch14_survival_analysis_86f4bd92.png" width="80%"/>
     <program language="python">
       <input>
 # Solution
 
 posterior_theta.mean(), posterior_theta.credible_interval(0.9)
       </input>
+    
+      <output>
+      (0.367761307460383, array([0.159 , 0.7848]))
+      </output>
     </program>
     <program language="python">
       <input>
@@ -1215,6 +1415,16 @@ posterior_theta.mean(), posterior_theta.credible_interval(0.9)
 posterior_series = posterior.stack()
 posterior_series.head()
       </input>
+    
+      <output>
+      theta  k     
+0.01   0.0100    4.306265e-156
+       0.0498    1.304069e-145
+       0.0896    2.463890e-141
+       0.1294    2.077828e-138
+       0.1692    4.227218e-136
+dtype: float64
+      </output>
     </program>
     <program language="python">
       <input>
@@ -1265,6 +1475,7 @@ decorate(xlabel='Total rainfall (in)',
          title='Posterior predictive distribution of rainfall')
       </input>
     </program>
+    <image source="images/ch14_survival_analysis_e4697dcd.png" width="80%"/>
     <program language="python">
       <input>
 # Solution 
@@ -1275,6 +1486,10 @@ cdf = post_pred.make_cdf()
 p_gt = 1 - cdf(1.5)
 p_gt
       </input>
+    
+      <output>
+      0.00900003598887611
+      </output>
     </program>
     <program language="python">
       <input>
@@ -1285,6 +1500,10 @@ p_gt
 
 1 / p_gt
       </input>
+    
+      <output>
+      111.11066680577532
+      </output>
     </program>
     <p>
       <em>Think Bayes</em>, Second Edition

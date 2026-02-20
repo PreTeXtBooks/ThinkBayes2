@@ -70,6 +70,10 @@ k = 1
 
 binom.pmf(k, n, p)
       </input>
+    
+      <output>
+      0.5000000000000002
+      </output>
     </program>
 <pre>
 0.5000000000000002
@@ -87,6 +91,10 @@ ks = np.arange(n+1)
 ps = binom.pmf(ks, n, p)
 ps
       </input>
+    
+      <output>
+      array([0.25, 0.5 , 0.25])
+      </output>
     </program>
 <pre>
 array([0.25, 0.5 , 0.25])
@@ -107,6 +115,13 @@ from empiricaldist import Pmf
 pmf_k = Pmf(ps, ks)
 pmf_k
       </input>
+    
+      <output>
+      0    0.25
+1    0.50
+2    0.25
+dtype: float64
+      </output>
     </program>
 <pre>
 0    0.25
@@ -165,6 +180,10 @@ decorate(xlabel='Number of heads (k)',
       <input>
 pmf_k.max_prob()
       </input>
+    
+      <output>
+      125
+      </output>
     </program>
 <pre>
 125
@@ -178,6 +197,10 @@ pmf_k.max_prob()
       <input>
 pmf_k[125]
       </input>
+    
+      <output>
+      0.050412213147309655
+      </output>
     </program>
 <pre>
 0.050412213147309655
@@ -191,6 +214,10 @@ pmf_k[125]
       <input>
 pmf_k[140]
       </input>
+    
+      <output>
+      0.008357181724918188
+      </output>
     </program>
 <pre>
 0.008357181724918204
@@ -221,6 +248,10 @@ def prob_ge(pmf, threshold):
       <input>
 prob_ge(pmf_k, 140)
       </input>
+    
+      <output>
+      0.03321057562002166
+      </output>
     </program>
 <pre>
 0.03321057562002167
@@ -234,6 +265,10 @@ prob_ge(pmf_k, 140)
       <input>
 pmf_k.prob_ge(140)
       </input>
+    
+      <output>
+      0.03321057562002166
+      </output>
     </program>
 <pre>
 0.03321057562002167
@@ -284,6 +319,10 @@ decorate(xlabel='Number of heads (k)',
       <input>
 pmf_k.prob_le(110)
       </input>
+    
+      <output>
+      0.033210575620021665
+      </output>
     </program>
 <pre>
 0.03321057562002166
@@ -444,6 +483,10 @@ It indicates that values less than 0.4 and greater than 0.7 are unlikely; values
       <input>
 posterior.max_prob()
       </input>
+    
+      <output>
+      0.56
+      </output>
     </program>
 <pre>
 0.56
@@ -464,6 +507,10 @@ posterior.max_prob()
 uniform = Pmf(1, hypos, name='uniform')
 uniform.normalize()
       </input>
+    
+      <output>
+      101
+      </output>
     </program>
 
     <p>
@@ -490,6 +537,10 @@ a = np.append(ramp_up, ramp_down)
 triangle = Pmf(a, hypos, name='triangle')
 triangle.normalize()
       </input>
+    
+      <output>
+      2500
+      </output>
     </program>
 
     <p>
@@ -633,6 +684,10 @@ decorate_euro(title='Posterior distributions computed two ways')
       <input>
 np.allclose(uniform, uniform2)
       </input>
+    
+      <output>
+      True
+      </output>
     </program>
 <pre>
 True
@@ -791,8 +846,12 @@ for data in dataset:
     prior *= likelihood[data]
 
 prior.normalize()
-          </input>
-        </program>
+      </input>
+    
+      <pre>
+      1.3596964206970507e-23
+      </pre>
+    </program>
 
         <p>
           Finally, here's what the prior looks like.
@@ -830,8 +889,12 @@ for data in 'YYY':
     posterior *= likelihood[data]
 
 posterior.normalize()
-          </input>
-        </program>
+      </input>
+    
+      <output>
+      0.017944179687707326
+      </output>
+    </program>
 
         <program language="python">
           <input>
@@ -841,31 +904,36 @@ prior.plot(label='prior')
 posterior.plot(label='posterior ')
 decorate(xlabel='Probability of getting a hit',
          ylabel='PMF')
-          </input>
-        </program>
+      </input>
+    </program>
+    <image source="images/ch04_estimating_proportions_f9d603fb.png" width="80%"/>
 
         <program language="python">
           <input>
 # Solution
 
 prior.max_prob()
-          </input>
-        </program>
+      </input>
+    
+      <output>
+      0.25
+      </output>
+    </program>
 
         <program language="python">
           <input>
 # Solution
 
 posterior.max_prob()
-          </input>
-        </program>
-      </solution>
-    </exercise>
+      </input>
+    
+      <output>
+      0.271
+      </output>
+    </program>
 
-    <exercise xml:id="ex-randomized-response">
-      <statement>
-        <p>
-          Whenever you survey people about sensitive issues, you have to deal with <url href="https://en.wikipedia.org/wiki/Social_desirability_bias">social desirability bias</url>, which is the tendency of people to adjust their answers to show themselves in the most positive light.
+    <p>
+      <em>Exercise:</em> Whenever you survey people about sensitive issues, you have to deal with <url href="https://en.wikipedia.org/wiki/Social_desirability_bias">social desirability bias</url>, which is the tendency of people to adjust their answers to show themselves in the most positive light.
 One way to improve the accuracy of the results is <url href="https://en.wikipedia.org/wiki/Randomized_response">randomized response</url>.
         </p>
         <p>
@@ -925,8 +993,12 @@ for data in dataset:
     posterior *= likelihood[data]
 
 posterior.normalize()
-          </input>
-        </program>
+      </input>
+    
+      <output>
+      3.6945139133967024e-21
+      </output>
+    </program>
 
         <program language="python">
           <input>
@@ -935,8 +1007,9 @@ posterior.normalize()
 posterior.plot(label='80 YES, 20 NO')
 decorate(xlabel='Proportion of cheaters',
          ylabel='PMF')
-          </input>
-        </program>
+      </input>
+    </program>
+    <image source="images/ch04_estimating_proportions_7606e2f4.png" width="80%"/>
 
         <program language="python">
           <input>
@@ -1008,8 +1081,9 @@ posterior02.plot(label='y = 0.2')
 posterior04.plot(label='y = 0.4')
 decorate(xlabel='Proportion of heads',
          ylabel='PMF')
-          </input>
-        </program>
+      </input>
+    </program>
+    <image source="images/ch04_estimating_proportions_7968597a.png" width="80%"/>
 
         <program language="python">
           <input>
@@ -1091,8 +1165,9 @@ plt.plot(x, likelihood2, label='general formula')
 decorate(xlabel='Probability of hitting the target',
          ylabel='Likelihood',
          title='Likelihood of getting the same result')
-          </input>
-        </program>
+      </input>
+    </program>
+    <image source="images/ch04_estimating_proportions_d62a0c14.png" width="80%"/>
 
         <program language="python">
           <input>
@@ -1100,8 +1175,12 @@ decorate(xlabel='Probability of hitting the target',
 
 posterior = prior * likelihood
 posterior.normalize()
-          </input>
-        </program>
+      </input>
+    
+      <output>
+      49.129627998379995
+      </output>
+    </program>
 
         <program language="python">
           <input>
@@ -1113,8 +1192,9 @@ decorate(xlabel='Probability of hitting the target',
          ylabel='PMF',
          title='Posterior distribution',
          ylim=[0, 0.015])
-          </input>
-        </program>
+      </input>
+    </program>
+    <image source="images/ch04_estimating_proportions_4fbf21ee.png" width="80%"/>
 
         <program language="python">
           <input>

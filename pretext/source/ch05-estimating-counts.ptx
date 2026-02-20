@@ -99,6 +99,7 @@ decorate(xlabel='Number of trains',
          title='Posterior distribution')
       </input>
     </program>
+    <image source="images/ch05_estimating_counts_6935bd6d.png" width="80%"/>
     <p>
       Not surprisingly, all values of <m>N</m> below 60 have been eliminated.
     </p>
@@ -109,6 +110,10 @@ decorate(xlabel='Number of trains',
       <input>
 posterior.max_prob()
       </input>
+    
+      <output>
+      60
+      </output>
     </program>
     <p>
       That might not seem like a very good guess; after all, what are the chances that you just happened to see the train with the highest number?
@@ -129,6 +134,10 @@ posterior.max_prob()
       <input>
 np.sum(posterior.ps * posterior.qs)
       </input>
+    
+      <output>
+      333.41989326370776
+      </output>
     </program>
     <p>
       Or we can use the method provided by <c>Pmf</c>:
@@ -137,6 +146,10 @@ np.sum(posterior.ps * posterior.qs)
       <input>
 posterior.mean()
       </input>
+    
+      <output>
+      333.41989326370776
+      </output>
     </program>
     <p>
       The mean of the posterior is 333, so that might be a good guess if you want to minimize error.
@@ -170,6 +183,14 @@ for high in [500, 1000, 2000]:
     
 df
       </input>
+    
+      <output>
+      Posterior mean
+Upper bound                
+500              207.079228
+1000             333.419893
+2000             552.179017
+      </output>
     </program>
     <p>
       As we vary the upper bound, the posterior mean changes substantially.
@@ -205,6 +226,14 @@ for high in [500, 1000, 2000]:
     
 df
       </input>
+    
+      <output>
+      Posterior mean
+Upper bound                
+500              151.849588
+1000             164.305586
+2000             171.338181
+      </output>
     </program>
     <p>
       The differences are smaller, but apparently three trains are not enough for the posteriors to converge.
@@ -245,6 +274,10 @@ ps = hypos**(-alpha)
 power = Pmf(ps, hypos, name='power law')
 power.normalize()
       </input>
+    
+      <output>
+      8.178368103610282
+      </output>
     </program>
     <p>
       For comparison, here's the uniform prior again.
@@ -255,6 +288,10 @@ hypos = np.arange(1, 1001)
 uniform = Pmf(1, hypos, name='uniform')
 uniform.normalize()
       </input>
+    
+      <output>
+      1000
+      </output>
     </program>
     <p>
       Here's what a power law prior looks like, compared to the uniform prior:
@@ -269,6 +306,7 @@ decorate(xlabel='Number of trains',
          title='Prior distributions')
       </input>
     </program>
+    <image source="images/ch05_estimating_counts_567c172e.png" width="80%"/>
     <p>
       Here's the update for both priors.
     </p>
@@ -293,6 +331,7 @@ decorate(xlabel='Number of trains',
          title='Posterior distributions')
       </input>
     </program>
+    <image source="images/ch05_estimating_counts_994a58fd.png" width="80%"/>
     <p>
       The power law gives less prior probability to high values, which yields lower posterior means, and less sensitivity to the upper bound.
     </p>
@@ -317,6 +356,14 @@ for high in [500, 1000, 2000]:
     
 df
       </input>
+    
+      <output>
+      Posterior mean
+Upper bound                
+500              130.708470
+1000             133.275231
+2000             133.997463
+      </output>
     </program>
     <p>
       Now the differences are much smaller.  In fact, with an arbitrarily large upper bound, the mean converges on 134.
@@ -349,6 +396,10 @@ df
       <input>
 power.prob_le(100)
       </input>
+    
+      <output>
+      0.2937469222495771
+      </output>
     </program>
     <p>
       With a power law prior and a dataset of three trains, the result is about 29%.
@@ -389,6 +440,10 @@ def quantile(pmf, prob):
       <input>
 quantile(power, 0.5)
       </input>
+    
+      <output>
+      113
+      </output>
     </program>
     <p>
       The result, 113 trains, is the median of the posterior distribution.
@@ -401,6 +456,10 @@ quantile(power, 0.5)
       <input>
 power.quantile([0.05, 0.95])
       </input>
+    
+      <output>
+      array([ 91., 243.])
+      </output>
     </program>
     <p>
       The result is the interval from 91 to 243 trains, which implies:
@@ -420,6 +479,10 @@ power.quantile([0.05, 0.95])
       <input>
 power.credible_interval(0.9)
       </input>
+    
+      <output>
+      array([ 91., 243.])
+      </output>
     </program>
   </section>
 
@@ -551,7 +614,11 @@ decorate(xlabel='Number of people in the audience',
 
 posterior.mean()
         </input>
-      </program>
+      
+      <output>
+      333.41989326370776
+      </output>
+    </program>
       <program language="python">
         <input>
 
@@ -668,6 +735,7 @@ decorate(ylabel='PMF',
          title='Distribution of family size')
           </input>
         </program>
+    <image source="images/ch05_estimating_counts_15d20fa0.png" width="80%"/>
         <p>
           For simplicity, let's assume that all families in the 4+ category have exactly 4 children.
         </p>
@@ -687,6 +755,7 @@ decorate(ylabel='PMF',
          title='Distribution of family size')
         </input>
       </program>
+    <image source="images/ch05_estimating_counts_15d20fa0.png" width="80%"/>
       <program language="python">
         <input>
 
