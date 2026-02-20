@@ -238,11 +238,9 @@ decorate(xlabel='Height in cm',
     <p>
       The next step is to construct a distribution that represents the probability of every pair of heights, which is called a joint distribution. The elements of the joint distribution are
     </p>
+    <me>P(A_x~\mathrm{and}~B_y)</me>
     <p>
-      $$P(A_x~\mathrm{and}~B_y)$$
-    </p>
-    <p>
-      which is the probability that <c>A</c> is $x$ cm tall and <c>B</c> is $y$ cm tall, for all values of $x$ and $y$.
+      which is the probability that <c>A</c> is <m>x</m> cm tall and <c>B</c> is <m>y</m> cm tall, for all values of <m>x</m> and <m>y</m>.
     </p>
     <p>
       At this point all we know about <c>A</c> and <c>B</c> is that they are male residents of the U.S., so their heights are independent; that is, knowing the height of <c>A</c> provides no additional information about the height of <c>B</c>.
@@ -250,9 +248,7 @@ decorate(xlabel='Height in cm',
     <p>
       In that case, we can compute the joint probabilities like this:
     </p>
-    <p>
-      $$P(A_x~\mathrm{and}~B_y) = P(A_x)~P(B_y)$$
-    </p>
+    <me>P(A_x~\mathrm{and}~B_y) = P(A_x)~P(B_y)</me>
     <p>
       Each joint probability is the product of one element from the distribution of <c>x</c> and one element from the distribution of <c>y</c>.
     </p>
@@ -813,10 +809,10 @@ decorate(xlabel='Height in cm',
     <title>Dependence and Independence</title>
 
     <p>
-      When we constructed the joint prior distribution, I said that the heights of <c>A</c> and <c>B</c> were independent, which means that knowing one of them provides no information about the other. In other words, the conditional probability $P(A_x | B_y)$ is the same as the unconditional probability $P(A_x)$.
+      When we constructed the joint prior distribution, I said that the heights of <c>A</c> and <c>B</c> were independent, which means that knowing one of them provides no information about the other. In other words, the conditional probability <m>P(A_x | B_y)</m> is the same as the unconditional probability <m>P(A_x)</m>.
     </p>
     <p>
-      But in the posterior distribution, $A$ and $B$ are not independent. If we know that <c>A</c> is taller than <c>B</c>, and we know how tall <c>A</c> is, that gives us information about <c>B</c>.
+      But in the posterior distribution, <m>A</m> and <m>B</m> are not independent. If we know that <c>A</c> is taller than <c>B</c>, and we know how tall <c>A</c> is, that gives us information about <c>B</c>.
     </p>
     <p>
       The conditional distribution we just computed demonstrates this dependence.
@@ -1010,16 +1006,14 @@ decorate(xlabel='Height in cm',
       <em>Exercise:</em> <url href="https://en.wikipedia.org/wiki/Elo_rating_system">The Elo rating system</url> is a way to quantify the skill level of players for games like chess.
     </p>
     <p>
-      It is based on a model of the relationship between the ratings of players and the outcome of a game.  Specifically, if $R_A$ is the rating of player <c>A</c> and $R_B$ is the rating of player <c>B</c>, the probability that <c>A</c> beats <c>B</c> is given by the <url href="https://en.wikipedia.org/wiki/Logistic_function">logistic function</url>:
+      It is based on a model of the relationship between the ratings of players and the outcome of a game.  Specifically, if <m>R_A</m> is the rating of player <c>A</c> and <m>R_B</m> is the rating of player <c>B</c>, the probability that <c>A</c> beats <c>B</c> is given by the <url href="https://en.wikipedia.org/wiki/Logistic_function">logistic function</url>:
     </p>
-    <p>
-      $$P(\mathrm{A~beats~B}) = \frac{1}{1 + 10^{(R_B-R_A)/400}}$$
-    </p>
+    <me>P(\mathrm{A~beats~B}) = \frac{1}{1 + 10^{(R_B-R_A)/400}}</me>
     <p>
       The parameters 10 and 400 are arbitrary choices that determine the range of the ratings.  In chess, the range is from 100 to 2800.
     </p>
     <p>
-      Notice that the probability of winning depends only on the difference in rankings.  As an example, if $R_A$ exceeds $R_B$ by 100 points, the probability that <c>A</c> wins is
+      Notice that the probability of winning depends only on the difference in rankings.  As an example, if <m>R_A</m> exceeds <m>R_B</m> by 100 points, the probability that <c>A</c> wins is
     </p>
 
     <program language="python">
