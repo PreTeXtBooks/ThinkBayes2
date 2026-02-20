@@ -55,7 +55,6 @@ from empiricaldist import Pmf
       The following example makes a <c>Pmf</c> that represents the outcome of a coin toss.
     </p>
 
-    <listing xml:id="list-coin-pmf">
       <program language="python">
         <input>
 coin = Pmf()
@@ -64,7 +63,25 @@ coin['tails'] = 1/2
 coin
         </input>
       </program>
-    </listing>
+<table xml:id="tbl-coin-probs">
+  <title>Probability distribution for a fair coin.</title>
+  <tabular>
+    <row>
+      <cell></cell>
+      <cell>probs</cell>
+    </row>
+
+    <row>
+      <cell>heads</cell>
+      <cell>0.5</cell>
+    </row>
+
+    <row>
+      <cell>tails</cell>
+      <cell>0.5</cell>
+    </row>
+  </tabular>
+</table>
 
     <p>
       <c>Pmf()</c> creates an empty <c>Pmf</c> with no outcomes.
@@ -77,29 +94,85 @@ coin
       The following example uses <c>Pmf.from_seq</c> to make a <c>Pmf</c> that represents a six-sided die.
     </p>
 
-    <listing xml:id="list-die-pmf">
       <program language="python">
         <input>
 die = Pmf.from_seq([1,2,3,4,5,6])
 die
         </input>
       </program>
-    </listing>
+<table xml:id="tbl-die-throw">
+  <title>Probability distribution for a fair 6-sided die.</title>
+  <tabular>
+    <row>
+      <cell></cell>
+      <cell>probs</cell>
+    </row>
 
+    <row>
+      <cell>1</cell>
+      <cell>0.166667</cell>
+    </row>
+
+    <row>
+      <cell>2</cell>
+      <cell>0.166667</cell>
+    </row>
+    <row>
+      <cell>3</cell>
+      <cell>0.166667</cell>
+    </row>
+    <row>
+      <cell>4</cell>
+      <cell>0.166667</cell>
+    </row>
+    <row>
+      <cell>5</cell>
+      <cell>0.166667</cell>
+    </row>
+    <row>
+      <cell>6</cell>
+      <cell>0.166667</cell>
+    </row>
+  </tabular>
+</table>
     <p>
       In this example, all outcomes in the sequence appear once, so they all have the same probability, <m>1/6</m>.
       More generally, outcomes can appear more than once, as in the following example:
     </p>
 
-    <listing xml:id="list-mississippi-pmf">
       <program language="python">
         <input>
 letters = Pmf.from_seq(list('Mississippi'))
 letters
         </input>
       </program>
-    </listing>
 
+<table xml:id="tbl-mississippi">
+  <tabular>
+    <row>
+      <cell></cell>
+      <cell>probs</cell>
+    </row>
+
+    <row>
+      <cell>M</cell>
+      <cell>0.090909</cell>
+    </row>
+
+    <row>
+      <cell>i</cell>
+      <cell>0.363636</cell>
+    </row>
+    <row>
+      <cell>p</cell>
+      <cell>0.181818</cell>
+    </row>
+    <row>
+      <cell>s</cell>
+      <cell>0.363636</cell>
+    </row>
+  </tabular>
+</table>
     <p>
       The letter <c>M</c> appears once out of 11 characters, so its probability is <m>1/11</m>.
       The letter <c>i</c> appears 4 times, so its probability is <m>4/11</m>.
@@ -114,14 +187,14 @@ letters
       For example, you can use the bracket operator to look up a quantity and get the corresponding probability.
     </p>
 
-    <listing xml:id="list-lookup-bracket">
       <program language="python">
         <input>
 letters['s']
         </input>
       </program>
-    </listing>
-
+<pre>
+0.36363636363636365
+</pre>
     <p>
       In the word <q>Mississippi</q>, about 36% of the letters are <q>s</q>.
     </p>
@@ -131,14 +204,14 @@ letters['s']
       You can also call a <c>Pmf</c> as if it were a function, with a letter in parentheses.
     </p>
 
-    <listing xml:id="list-lookup-parens">
       <program language="python">
         <input>
 letters('s')
         </input>
       </program>
-    </listing>
-
+<pre>
+0.36363636363636365
+</pre>
     <p>
       If the quantity is in the distribution the results are the same.
       But if it is not in the distribution, the result is <c>0</c>, not an error.
@@ -151,18 +224,21 @@ letters('t')
         </input>
       </program>
     </listing>
-
+<pre>
+0
+</pre>
     <p>
       With parentheses, you can also provide a sequence of quantities and get a sequence of probabilities.
     </p>
 
-    <listing xml:id="list-lookup-sequence">
       <program language="python">
         <input>
 die([1,4,7])
         </input>
       </program>
-    </listing>
+<pre>
+array([0.16666667, 0.16666667, 0.        ])
+</pre>
 
     <p>
       The quantities in a <c>Pmf</c> can be strings, numbers, or any other type that can be stored in the index of a Pandas <c>Series</c>.
@@ -199,15 +275,30 @@ die([1,4,7])
       Here's a <c>Pmf</c> that represents the two hypotheses and their prior probabilities:
     </p>
 
-    <listing xml:id="list-cookie-prior">
       <program language="python">
         <input>
 prior = Pmf.from_seq(['Bowl 1', 'Bowl 2'])
 prior
         </input>
       </program>
-    </listing>
+<table xml:id="tbl-bowl-probs-1">
+  <tabular>
+    <row>
+      <cell></cell>
+      <cell>probs</cell>
+    </row>
 
+    <row>
+      <cell>Bowl 1</cell>
+      <cell>0.5</cell>
+    </row>
+
+    <row>
+      <cell>Bowl 2</cell>
+      <cell>0.5</cell>
+    </row>
+  </tabular>
+</table>
     <p>
       This distribution, which contains the prior probability for each hypothesis, is called (wait for it) the <term>prior distribution</term>.
     </p>
@@ -218,86 +309,157 @@ prior
       The likelihood for Bowl 2 is <m>1/2</m>.
     </p>
 
-    <listing xml:id="list-cookie-likelihood">
       <program language="python">
         <input>
 likelihood_vanilla = [3/4, 1/2]
-        </input>
-      </program>
-    </listing>
-
-    <p>
-      If you multiply a <c>Pmf</c> by a sequence of numbers, it multiplies the probabilities by the numbers.
-    </p>
-
-    <listing xml:id="list-cookie-unnorm">
-      <program language="python">
-        <input>
-unnorm = prior * likelihood_vanilla
-unnorm
-        </input>
-      </program>
-    </listing>
-
-    <p>
-      The result is the <term>unnormalized posteriors</term>.
-      They are not probabilities, but once we normalize them, they will be.
-      To normalize them, we have to compute the total probability of the data, which we can do by adding up the unnormalized posteriors.
-    </p>
-
-    <listing xml:id="list-cookie-total-prob">
-      <program language="python">
-        <input>
-prob_data = unnorm.sum()
-prob_data
-        </input>
-      </program>
-    </listing>
-
-    <p>
-      This is the total probability of the data.
-      Now we divide through by this value to get the normalized posteriors.
-    </p>
-
-    <listing xml:id="list-cookie-posterior">
-      <program language="python">
-        <input>
-posterior = unnorm / prob_data
+posterior = prior * likelihood_vanilla
 posterior
         </input>
       </program>
-    </listing>
+      </program>
+<table xml:id="tbl-bowl-probs-2">
+  <tabular>
+    <row>
+      <cell></cell>
+      <cell>probs</cell>
+    </row>
 
+    <row>
+      <cell>Bowl 1</cell>
+      <cell>0.375</cell>
+    </row>
+
+    <row>
+      <cell>Bowl 2</cell>
+      <cell>0.250</cell>
+    </row>
+  </tabular>
+</table>
     <p>
-      The posterior probability for Bowl 1 is <m>0.6</m>, which is what we got before.
-      As an alternative, we can use the <c>normalize</c> method, which divides each element by the sum.
+      The result is the unnormalized posteriors; that is, they don’t add up to 1. To make them add up to 1, we can use <c>normalize</c>, which is a method provided by <c>Pmf</c>
     </p>
 
-    <listing xml:id="list-cookie-normalize">
       <program language="python">
         <input>
-unnorm.normalize()
+posterior.normalize()
         </input>
-      </program>
-    </listing>
-
+<pre>
+0.625
+</pre>
     <p>
-      With <c>normalize</c>, we can compute the posterior in two steps, starting with the prior distribution:
+     The return value from <c>normalize</c> is the total probability of the data, which is <m>5/8</m>.
+     <c>posterior</c>, which contains the posterior probability for each hypothesis, is called (wait now) the <term>posterior distribution</term>.
     </p>
 
-    <listing xml:id="list-cookie-twostep">
       <program language="python">
         <input>
-prior = Pmf.from_seq(['Bowl 1', 'Bowl 2'])
-prior *= likelihood_vanilla
-prior.normalize()
+posterior
         </input>
       </program>
-    </listing>
+<table xml:id="tbl-bowl-probs-2">
+  <tabular>
+    <row>
+      <cell></cell>
+      <cell>probs</cell>
+    </row>
+
+    <row>
+      <cell>Bowl 1</cell>
+      <cell>0.6</cell>
+    </row>
+
+    <row>
+      <cell>Bowl 2</cell>
+      <cell>0.4</cell>
+    </row>
+  </tabular>
+</table>
+    <p>
+      From the posterior distribution we can select the posterior probability for Bowl 1:
+    </p>
+
+      <program language="python">
+        <input>
+posterior('Bowl 1')
+        </input>
+      </program>
+<pre>
+0.6
+</pre>
+    <p>
+And the answer is 0.6.
+</p>
+<p>One benefit of using <c>Pmf</c> objects is that it is easy to do successive updates with more data. For example, suppose you put the first cookie back (so the contents of the bowls don’t change) and draw again from the same bowl. If the second cookie is also vanilla, we can do a second update like this:    </p>
+
+      <program language="python">
+        <input>
+posterior *= likelihood_vanilla
+posterior.normalize()
+posterior
+</input>
+      </program>
+<table xml:id="tbl-bowl-probs-3">
+  <tabular>
+    <row>
+      <cell></cell>
+      <cell>probs</cell>
+    </row>
+
+    <row>
+      <cell>Bowl 1</cell>
+      <cell>0.692308</cell>
+    </row>
+
+    <row>
+      <cell>Bowl 2</cell>
+      <cell>0.307692</cell>
+    </row>
+  </tabular>
+</table>
+    <p>
+Now the posterior probability for Bowl 1 is almost 70%. But suppose we do the same thing again and get a chocolate cookie.
+</p><p>
+Here are the likelihoods for the new data:
+</p>
+
+      <program language="python">
+        <input>
+likelihood_chocolate = [0.25, 0.5]
+        </input>
+      </program>
 
     <p>
-      Notice that the <c>*=</c> operator modifies the <c>Pmf</c> in place, so we don't have to assign the result back to <c>prior</c>.
-    </p>
+And here's the update
+</p>
+      <program language="python">
+        <input>
+posterior *= likelihood_chocolate
+posterior.normalize()
+posterior
+</input>
+      </program>
+<table xml:id="tbl-bowl-probs-3">
+  <tabular>
+    <row>
+      <cell></cell>
+      <cell>probs</cell>
+    </row>
+
+    <row>
+      <cell>Bowl 1</cell>
+      <cell>0.529412</cell>
+    </row>
+
+    <row>
+      <cell>Bowl 2</cell>
+      <cell>0.470588</cell>
+    </row>
+  </tabular>
+</table>
+
+<p>
+Now the posterior probability for Bowl 1 is about 53%. After two vanilla cookies and one chocolate, the posterior probabilities are close to 50/50.
+</p>
   </section>
 
   <section xml:id="sec-distributions-101-bowls">
