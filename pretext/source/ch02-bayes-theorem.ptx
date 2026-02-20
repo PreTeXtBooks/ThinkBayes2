@@ -199,7 +199,25 @@ import pandas as pd
 table = pd.DataFrame(index=['Bowl 1', 'Bowl 2'])
       </input>
     </program>
-    
+        <table xml:id="tbl-bowls-1">
+  <tabular>
+    <row>
+      <cell></cell>
+      <cell>prior</cell>
+    </row>
+
+    <row>
+      <cell>Bowl 1</cell>
+      <cell>0.5</cell>
+    </row>
+
+    <row>
+      <cell>Bowl 2</cell>
+      <cell>0.5</cell>
+    </row>
+  </tabular>
+</table>
+
     <p>
       Now I'll add a column to represent the priors:
     </p>
@@ -210,7 +228,27 @@ table['prior'] = 1/2, 1/2
 table
       </input>
     </program>
-    
+<table xml:id="tbl-bowls-2">
+  <tabular>
+    <row>
+      <cell></cell>
+      <cell>prior</cell>
+      <cell>likelihood</cell>
+    </row>
+
+    <row>
+      <cell>Bowl 1</cell>
+      <cell>0.5</cell>
+      <cell>0.75</cell>
+    </row>
+
+    <row>
+      <cell>Bowl 2</cell>
+      <cell>0.5</cell>
+      <cell>0.50</cell>
+    </row>
+  </tabular>
+</table>
     <p>
       And a column for the likelihoods:
     </p>
@@ -247,7 +285,31 @@ table['unnorm'] = table['prior'] * table['likelihood']
 table
       </input>
     </program>
-    
+
+<table xml:id="tbl-bowls-3">
+  <tabular>
+    <row>
+      <cell></cell>
+      <cell>prior</cell>
+      <cell>likelihood</cell>
+      <cell>unnorm</cell>
+    </row>
+
+    <row>
+      <cell>Bowl 1</cell>
+      <cell>0.5</cell>
+      <cell>0.75</cell>
+      <cell>0.375</cell>
+    </row>
+
+    <row>
+      <cell>Bowl 2</cell>
+      <cell>0.5</cell>
+      <cell>0.50</cell>
+      <cell>0.250</cell>
+    </row>
+  </tabular>
+</table>
     <p>
       I call the result <c>unnorm</c> because these values are the <q>unnormalized posteriors</q>. Each of them is the product of a prior and a likelihood:
     </p>
@@ -274,7 +336,9 @@ prob_data = table['unnorm'].sum()
 prob_data
       </input>
     </program>
-    
+    <pre>
+0.625
+</pre>
     <p>
       Notice that we get 5/8, which is what we got by computing <m>P(D)</m> directly.
     </p>
@@ -289,7 +353,34 @@ table['posterior'] = table['unnorm'] / prob_data
 table
       </input>
     </program>
-    
+    <table xml:id="tbl-bowls-posterior">
+  <title>Posterior probabilities for the two-bowl problem.</title>
+  <tabular>
+    <row>
+      <cell></cell>
+      <cell>prior</cell>
+      <cell>likelihood</cell>
+      <cell>unnorm</cell>
+      <cell>posterior</cell>
+    </row>
+
+    <row>
+      <cell>Bowl 1</cell>
+      <cell>0.5</cell>
+      <cell>0.75</cell>
+      <cell>0.375</cell>
+      <cell>0.6</cell>
+    </row>
+
+    <row>
+      <cell>Bowl 2</cell>
+      <cell>0.5</cell>
+      <cell>0.50</cell>
+      <cell>0.250</cell>
+      <cell>0.4</cell>
+    </row>
+  </tabular>
+</table>
     <p>
       The posterior probability for Bowl 1 is 0.6, which is what we got using Bayes's Theorem explicitly. As a bonus, we also get the posterior probability of Bowl 2, which is 0.4.
     </p>
@@ -343,7 +434,34 @@ table2['likelihood'] = Fraction(1, 6), Fraction(1, 8), Fraction(1, 12)
 table2
       </input>
     </program>
-    
+
+<table xml:id="tbl-dice-posterior-1">
+  <tabular>
+    <row>
+      <cell></cell>
+      <cell>prior</cell>
+      <cell>likelihood</cell>
+    </row>
+
+    <row>
+      <cell>6</cell>
+      <cell>1/3</cell>
+      <cell>1/6</cell>
+    </row>
+
+    <row>
+      <cell>8</cell>
+      <cell>1/3</cell>
+      <cell>1/8</cell>
+    </row>
+
+    <row>
+      <cell>12</cell>
+      <cell>1/3</cell>
+      <cell>1/12</cell>
+    </row>
+  </tabular>
+</table>
     <p>
       Once you have priors and likelihoods, the remaining steps are always the same, so I'll put them in a function:
     </p>
@@ -378,7 +496,42 @@ prob_data = update(table2)
 table2
       </input>
     </program>
-    
+
+<table xml:id="tbl-dice-posterior">
+  <tabular>
+    <row>
+      <cell></cell>
+      <cell>prior</cell>
+      <cell>likelihood</cell>
+      <cell>unnorm</cell>
+      <cell>posterior</cell>
+    </row>
+
+    <row>
+      <cell>6</cell>
+      <cell>1/3</cell>
+      <cell>1/6</cell>
+      <cell>1/18</cell>
+      <cell>4/9</cell>
+    </row>
+
+    <row>
+      <cell>8</cell>
+      <cell>1/3</cell>
+      <cell>1/8</cell>
+      <cell>1/24</cell>
+      <cell>1/3</cell>
+    </row>
+
+    <row>
+      <cell>12</cell>
+      <cell>1/3</cell>
+      <cell>1/12</cell>
+      <cell>1/36</cell>
+      <cell>2/9</cell>
+    </row>
+  </tabular>
+</table>
     <p>
       The posterior probability of the 6-sided die is 4/9, which is a little more than the probabilities for the other dice, 3/9 and 2/9. Intuitively, the 6-sided die is the most likely because it had the highest likelihood of producing the outcome we saw.
     </p>
@@ -442,7 +595,29 @@ table3['prior'] = Fraction(1, 3)
 table3
       </input>
     </program>
-    
+    <table xml:id="tbl-mh-1">
+  <tabular>
+    <row>
+      <cell></cell>
+      <cell>prior</cell>
+    </row>
+
+    <row>
+      <cell>Door 1</cell>
+      <cell>1/3</cell>
+    </row>
+
+    <row>
+      <cell>Door 2</cell>
+      <cell>1/3</cell>
+    </row>
+
+    <row>
+      <cell>Door 3</cell>
+      <cell>1/3</cell>
+    </row>
+  </tabular>
+</table>
     <p>
       The data is that Monty opened Door 3 and revealed a goat. So let's consider the probability of the data under each hypothesis:
     </p>
@@ -465,7 +640,34 @@ table3['likelihood'] = Fraction(1, 2), 1, 0
 table3
       </input>
     </program>
-    
+
+<table xml:id="tbl-montyhall-posterior-2">
+  <tabular>
+    <row>
+      <cell></cell>
+      <cell>prior</cell>
+      <cell>likelihood</cell>
+    </row>
+
+    <row>
+      <cell>Door 1</cell>
+      <cell>1/3</cell>
+      <cell>1/2</cell>
+    </row>
+
+    <row>
+      <cell>Door 2</cell>
+      <cell>1/3</cell>
+      <cell>1</cell>
+    </row>
+
+    <row>
+      <cell>Door 3</cell>
+      <cell>1/3</cell>
+      <cell>0</cell>
+    </row>
+  </tabular>
+</table>
     <p>
       Now that we have priors and likelihoods, we can use <c>update</c> to compute the posterior probabilities.
     </p>
@@ -476,7 +678,42 @@ update(table3)
 table3
       </input>
     </program>
-    
+
+<table xml:id="tbl-montyhall-posterior-3">
+  <tabular>
+    <row>
+      <cell></cell>
+      <cell>prior</cell>
+      <cell>likelihood</cell>
+      <cell>unnorm</cell>
+      <cell>posterior</cell>
+    </row>
+
+    <row>
+      <cell>Door 1</cell>
+      <cell>1/3</cell>
+      <cell>1/2</cell>
+      <cell>1/6</cell>
+      <cell>1/3</cell>
+    </row>
+
+    <row>
+      <cell>Door 2</cell>
+      <cell>1/3</cell>
+      <cell>1</cell>
+      <cell>1/3</cell>
+      <cell>2/3</cell>
+    </row>
+
+    <row>
+      <cell>Door 3</cell>
+      <cell>1/3</cell>
+      <cell>0</cell>
+      <cell>0</cell>
+      <cell>0</cell>
+    </row>
+  </tabular>
+</table>
     <p>
       After Monty opens Door 3, the posterior probability of Door 1 is <m>1/3</m>; the posterior probability of Door 2 is <m>2/3</m>. So you are better off switching from Door 1 to Door 2.
     </p>
@@ -546,6 +783,34 @@ update(table4)
 table4
       </input>
     </program>
+<table xml:id="tbl-coinposterior">
+  <title>Posterior probabilities for the trick-coin problem.</title>
+  <tabular>
+    <row>
+      <cell></cell>
+      <cell>prior</cell>
+      <cell>likelihood</cell>
+      <cell>unnorm</cell>
+      <cell>posterior</cell>
+    </row>
+
+    <row>
+      <cell>Normal</cell>
+      <cell>0.5</cell>
+      <cell>0.5</cell>
+      <cell>0.25</cell>
+      <cell>0.333333</cell>
+    </row>
+
+    <row>
+      <cell>Trick</cell>
+      <cell>0.5</cell>
+      <cell>1.0</cell>
+      <cell>0.50</cell>
+      <cell>0.666667</cell>
+    </row>
+  </tabular>
+</table>
   </solution>
     </exercise>
     
@@ -569,6 +834,50 @@ update(table5)
 table5
       </input>
     </program>
+<table xml:id="tbl-girlsbayes">
+  <title>Posterior probabilities for the two-child gender problem.</title>
+  <tabular>
+    <row>
+      <cell></cell>
+      <cell>prior</cell>
+      <cell>likelihood</cell>
+      <cell>unnorm</cell>
+      <cell>posterior</cell>
+    </row>
+
+    <row>
+      <cell>GG</cell>
+      <cell>0.25</cell>
+      <cell>1</cell>
+      <cell>0.25</cell>
+      <cell>0.333333</cell>
+    </row>
+
+    <row>
+      <cell>GB</cell>
+      <cell>0.25</cell>
+      <cell>1</cell>
+      <cell>0.25</cell>
+      <cell>0.333333</cell>
+    </row>
+
+    <row>
+      <cell>BG</cell>
+      <cell>0.25</cell>
+      <cell>1</cell>
+      <cell>0.25</cell>
+      <cell>0.333333</cell>
+    </row>
+
+    <row>
+      <cell>BB</cell>
+      <cell>0.25</cell>
+      <cell>0</cell>
+      <cell>0.00</cell>
+      <cell>0.000000</cell>
+    </row>
+  </tabular>
+</table>
   </solution>
     </exercise>
     
@@ -599,6 +908,42 @@ update(table6)
 table6
       </input>
     </program>
+<table xml:id="tbl-montyhall-case1">
+  <title>Posterior probabilities (Case 1).</title>
+  <tabular>
+    <row>
+      <cell></cell>
+      <cell>prior</cell>
+      <cell>likelihood</cell>
+      <cell>unnorm</cell>
+      <cell>posterior</cell>
+    </row>
+
+    <row>
+      <cell>Door 1</cell>
+      <cell>0.333333</cell>
+      <cell>1</cell>
+      <cell>0.333333</cell>
+      <cell>0.5</cell>
+    </row>
+
+    <row>
+      <cell>Door 2</cell>
+      <cell>0.333333</cell>
+      <cell>0</cell>
+      <cell>0.000000</cell>
+      <cell>0.0</cell>
+    </row>
+
+    <row>
+      <cell>Door 3</cell>
+      <cell>0.333333</cell>
+      <cell>1</cell>
+      <cell>0.333333</cell>
+      <cell>0.5</cell>
+    </row>
+  </tabular>
+</table>
     <program language="python">
       <input>
 # If the car is behind Door 1, Monty would have opened Door 2
@@ -613,6 +958,42 @@ update(table7)
 table7
       </input>
     </program>
+<table xml:id="tbl-montyhall-case2">
+  <title>Posterior probabilities (Case 2).</title>
+  <tabular>
+    <row>
+      <cell></cell>
+      <cell>prior</cell>
+      <cell>likelihood</cell>
+      <cell>unnorm</cell>
+      <cell>posterior</cell>
+    </row>
+
+    <row>
+      <cell>Door 1</cell>
+      <cell>0.333333</cell>
+      <cell>0</cell>
+      <cell>0.000000</cell>
+      <cell>0.0</cell>
+    </row>
+
+    <row>
+      <cell>Door 2</cell>
+      <cell>0.333333</cell>
+      <cell>1</cell>
+      <cell>0.333333</cell>
+      <cell>1.0</cell>
+    </row>
+
+    <row>
+      <cell>Door 3</cell>
+      <cell>0.333333</cell>
+      <cell>0</cell>
+      <cell>0.000000</cell>
+      <cell>0.0</cell>
+    </row>
+  </tabular>
+</table>
   </solution>
     </exercise>
     
@@ -649,6 +1030,34 @@ update(table8)
 table8
       </input>
     </program>
+<table xml:id="tbl-abposterior">
+  <title>Posterior probabilities for hypotheses A and B.</title>
+  <tabular>
+    <row>
+      <cell></cell>
+      <cell>prior</cell>
+      <cell>likelihood</cell>
+      <cell>unnorm</cell>
+      <cell>posterior</cell>
+    </row>
+
+    <row>
+      <cell>A</cell>
+      <cell>0.5</cell>
+      <cell>0.040</cell>
+      <cell>0.020</cell>
+      <cell>0.740741</cell>
+    </row>
+
+    <row>
+      <cell>B</cell>
+      <cell>0.5</cell>
+      <cell>0.014</cell>
+      <cell>0.007</cell>
+      <cell>0.259259</cell>
+    </row>
+  </tabular>
+</table>
 </solution>
     </exercise>
   </exercises>
