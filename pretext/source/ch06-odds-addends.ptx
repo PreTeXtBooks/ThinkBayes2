@@ -229,7 +229,7 @@ Bayes's Rule is convenient for computing a Bayesian update on paper or in your h
   </input>
     </program>
 <pre>
-0.6
+0.42857142857142855
 </pre>
   </section>
 
@@ -436,9 +436,9 @@ Because the same sum might appear more than once, we have to add up the total pr
   Notice a subtle element of this line:
 </p>
 <p>
-  ``<c>
+  <me>
           res[q] = res(q) + p
-</c>``
+</me>
 </p>
 <p>
   I use parentheses on the right side of the assignment, which returns 0 if <c>q</c> does not appear yet in <c>res</c>.
@@ -849,21 +849,6 @@ The question contains two pieces of information we can use to update this prior.
       <p>
         If you are curious about where those numbers come from, I wrote <url href="https://www.allendowney.com/blog/2020/01/28/the-elvis-problem-revisited">a blog post about it</url>.
       </p>
-      <program language="python">
-        <input>
-        # Solution goes here
-        </input>
-      </program>
-      <program language="python">
-        <input>
-        # Solution goes here
-        </input>
-      </program>
-      <program language="python">
-        <input>
-        # Solution goes here
-        </input>
-      </program>
       </statement>
     <solution>
       <program language="python">
@@ -884,6 +869,9 @@ post_odds = prior_odds * 2 * 1.25
 prob(post_odds)
         </input>
       </program>
+<pre>
+0.5555555555555555
+</pre>
     </solution>
     </exercise>
 
@@ -904,21 +892,6 @@ prob(post_odds)
       <p>
         This question causes some confusion about the differences between Bayesian and frequentist interpretations of probability; if you are curious about this point, <url href="http://allendowney.blogspot.com/2016/09/bayess-theorem-is-not-optional.html">I wrote a blog article about it</url>.
       </p>
-      <program language="python">
-        <input>
-        # Solution goes here
-        </input>
-      </program>
-      <program language="python">
-        <input>
-        # Solution goes here
-        </input>
-      </program>
-      <program language="python">
-        <input>
-        # Solution goes here
-        </input>
-      </program>
       </statement>
     <solution>
       <program language="python">
@@ -939,6 +912,9 @@ post_odds = prior_odds * 2 * 2 * 2
 prob(post_odds)
         </input>
       </program>
+<pre>
+0.4705882352941177
+</pre>
     </solution>
     </exercise>
 
@@ -952,21 +928,6 @@ prob(post_odds)
         <url href="https://www.cdc.gov/tobacco/data_statistics/fact_sheets/adult_data/cig_smoking/index.htm">Also according to the CDC</url>, about 14\% of adults in the U.S. are smokers.
 If you learn that someone has lung cancer, what is the probability they are a smoker?
       </p>
-      <program language="python">
-        <input>
-        # Solution goes here
-        </input>
-      </program>
-      <program language="python">
-        <input>
-        # Solution goes here
-        </input>
-      </program>
-      <program language="python">
-        <input>
-        # Solution goes here
-        </input>
-      </program>
       </statement>
     <solution>
       <program language="python">
@@ -987,6 +948,9 @@ post_odds = prior_odds * 25
 prob(post_odds)
         </input>
       </program>
+<pre>
+0.8027522935779816
+</pre>
     </solution>
     </exercise>
 
@@ -1003,46 +967,6 @@ A goblin is defeated if the total damage you inflict is greater than or equal to
       <p>
         Hint: You can use <c>Pmf.sub_dist</c> to subtract a constant amount, like 3, from a <c>Pmf</c>.
       </p>
-      <program language="python">
-        <input>
-        # Solution goes here
-        </input>
-      </program>
-      <program language="python">
-        <input>
-        # Solution goes here
-        </input>
-      </program>
-      <program language="python">
-        <input>
-        # Solution goes here
-        </input>
-      </program>
-      <program language="python">
-        <input>
-        # Solution goes here
-        </input>
-      </program>
-      <program language="python">
-        <input>
-        # Solution goes here
-        </input>
-      </program>
-      <program language="python">
-        <input>
-        # Solution goes here
-        </input>
-      </program>
-      <program language="python">
-        <input>
-        # Solution goes here
-        </input>
-      </program>
-      <program language="python">
-        <input>
-        # Solution goes here
-        </input>
-      </program>
       </statement>
     <solution>
       <program language="python">
@@ -1098,6 +1022,9 @@ points_left = Pmf.sub_dist(hp_after, damage)
 points_left.prob_le(0)
         </input>
       </program>
+<pre>
+0.4545454545454545
+</pre>
     </solution>
     </exercise>
 
@@ -1112,26 +1039,6 @@ What is the probability that I chose the 8-sided die?
       <p>
         Hint: <c>Pmf</c> provides a function called <c>mul_dist</c> that takes two <c>Pmf</c> objects and returns a <c>Pmf</c> that represents the distribution of the product.
       </p>
-      <program language="python">
-        <input>
-        # Solution goes here
-        </input>
-      </program>
-      <program language="python">
-        <input>
-        # Solution goes here
-        </input>
-      </program>
-      <program language="python">
-        <input>
-        # Solution goes here
-        </input>
-      </program>
-      <program language="python">
-        <input>
-        # Solution goes here
-        </input>
-      </program>
       </statement>
     <solution>
       <program language="python">
@@ -1181,41 +1088,6 @@ posterior
       <p>
         If a randomly chosen character attempts a task three times and rolls a total of 3 on the first attempt, 4 on the second, and 5 on the third, which character do you think it was?
       </p>
-      <program language="python">
-        <input>
-        # Solution goes here
-        </input>
-      </program>
-      <program language="python">
-        <input>
-        # Solution goes here
-        </input>
-      </program>
-      <program language="python">
-        <input>
-        # Solution goes here
-        </input>
-      </program>
-      <program language="python">
-        <input>
-        # Solution goes here
-        </input>
-      </program>
-      <program language="python">
-        <input>
-        # Solution goes here
-        </input>
-      </program>
-      <program language="python">
-        <input>
-        # Solution goes here
-        </input>
-      </program>
-      <program language="python">
-        <input>
-        # Solution goes here
-        </input>
-      </program>
       </statement>
     <solution>
       <program language="python">
@@ -1283,50 +1155,6 @@ posterior
         There are 538 members of the United States Congress. Suppose we audit their investment portfolios and find that 312 of them out-perform the market.
 Let's assume that an honest member of Congress has only a 50% chance of out-performing the market, but a dishonest member who trades on inside information has a 90% chance.  How many members of Congress are honest?
       </p>
-      <p>
-        <em>Think Bayes</em>, Second Edition
-      </p>
-      <p>
-        Copyright 2020 Allen B. Downey
-      </p>
-      <p>
-        License: <url href="https://creativecommons.org/licenses/by-nc-sa/4.0/">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)</url>
-      </p>
-      <program language="python">
-        <input>
-        # Solution goes here
-        </input>
-      </program>
-      <program language="python">
-        <input>
-        # Solution goes here
-        </input>
-      </program>
-      <program language="python">
-        <input>
-        # Solution goes here
-        </input>
-      </program>
-      <program language="python">
-        <input>
-        # Solution goes here
-        </input>
-      </program>
-      <program language="python">
-        <input>
-        # Solution goes here
-        </input>
-      </program>
-      <program language="python">
-        <input>
-        # Solution goes here
-        </input>
-      </program>
-      <program language="python">
-        <input>
-        # Solution goes here
-        </input>
-      </program>
       </statement>
     <solution>
       <program language="python">
@@ -1394,6 +1222,14 @@ posterior.credible_interval(0.9)
       </program>
     </solution>
     </exercise>
-
+      <p>
+        <em>Think Bayes</em>, Second Edition
+      </p>
+      <p>
+        Copyright 2020 Allen B. Downey
+      </p>
+      <p>
+        License: <url href="https://creativecommons.org/licenses/by-nc-sa/4.0/">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)</url>
+      </p>
   </exercises>
 </chapter>
