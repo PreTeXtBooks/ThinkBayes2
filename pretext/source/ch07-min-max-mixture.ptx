@@ -1,75 +1,154 @@
 <?xml version='1.0' encoding='utf-8'?>
 
 <chapter xml:id="ch-min-max-mixture" xmlns:xi="http://www.w3.org/2001/XInclude">
-  <title>Minima, Maxima, and Mixtures</title>
+  <title>Minimum, Maximum, and Mixture</title>
 
   <introduction>
-    <p>
-      In the previous chapter we computed distributions of sums, differences, products, and quotients.
-    </p>
-    <p>
-      In this chapter, we'll compute distributions of minima and maxima and use them to solve inference problems.
-      Then we'll look at distributions that are mixtures of other distributions, which will turn out to be particularly useful for making predictions.
-    </p>
-    <p>
-      But we'll start with a powerful tool for working with distributions, the cumulative distribution function.
-    </p>
+<p>
+  You can order print and ebook versions of <em>Think Bayes 2e</em> from
+<url href="https://bookshop.org/a/98697/9781492089469">Bookshop.org</url> and
+<url href="https://amzn.to/334eqGo">Amazon</url>.
+</p>
+<program language="python">
+  <input>
+# install empiricaldist if necessary
+
+try:
+    import empiricaldist
+except ImportError:
+    !pip install empiricaldist
+    import empiricaldist
+  </input>
+</program>
+<program language="python">
+  <input>
+# Get utils.py
+
+from os.path import basename, exists
+
+def download(url):
+    filename = basename(url)
+    if not exists(filename):
+        from urllib.request import urlretrieve
+        local, _ = urlretrieve(url, filename)
+        print('Downloaded ' + local)
+    
+download('https://github.com/AllenDowney/ThinkBayes2/raw/master/soln/utils.py')
+  </input>
+</program>
+<program language="python">
+  <input>
+from utils import set_pyplot_params
+set_pyplot_params()
+  </input>
+</program>
+<p>
+  In the previous chapter we computed distributions of sums.
+  In this chapter, we'll compute distributions of minimums and maximums, and use them to solve both forward and inverse problems.
+</p>
+<p>
+  Then we'll look at distributions that are mixtures of other distributions, which will turn out to be particularly useful for making predictions.
+</p>
+<p>
+  But we'll start with a powerful tool for working with distributions, the cumulative distribution function.
+</p>
   </introduction>
 
   <section xml:id="sec-min-max-mixture-cdf">
-    <title>Cumulative distribution functions</title>
+    <title>Cumulative Distribution Functions</title>
 
-    <p>
-      So far we have been using probability mass functions to represent distributions.
-      A useful alternative is the <term>cumulative distribution function</term>, or CDF.
-    </p>
+<p>
+  So far we have been using probability mass functions to represent distributions.
+  A useful alternative is the <term>cumulative distribution function</term>, or CDF.
+</p>
+<p>
+  As an example, I'll use the posterior distribution from the Euro problem, which we computed in Section 4.2.
+</p>
+<p>
+  Here's the uniform prior we started with.
+</p>
+<program language="python">
+  <input>
+import numpy as np
+from empiricaldist import Pmf
 
-    <p>
-      As an example, I'll use the posterior distribution from the Euro problem, which we computed in Section 4.2.
-    </p>
-
-    <program language="python">
-      <input>
 hypos = np.linspace(0, 1, 101)
 pmf = Pmf(1, hypos)
 data = 140, 250
+  </input>
+</program>
+<p>
+  And here's the update.
+</p>
+<program language="python">
+  <input>
+from scipy.stats import binom
+
+def update_binomial(pmf, data):
+    """Update pmf using the binomial distribution."""
+    k, n = data
+    xs = pmf.qs
+    likelihood = binom.pmf(k, n, xs)
+    pmf *= likelihood
+    pmf.normalize()
+  </input>
+</program>
+<program language="python">
+  <input>
 update_binomial(pmf, data)
-      </input>
-    </program>
-
-    <p>
-      The CDF is the cumulative sum of the PMF, so we can compute it like this:
-    </p>
-
-    <program language="python">
-      <input>
+  </input>
+</program>
+<p>
+  The CDF is the cumulative sum of the PMF, so we can compute it like this:
+</p>
+<program language="python">
+  <input>
 cumulative = pmf.cumsum()
-      </input>
-    </program>
+  </input>
+</program>
+<p>
+  Here's what it looks like, along with the PMF.
+</p>
+<program language="python">
+  <input>
+from utils import decorate
 
-    <p>
-      The result is a Pandas Series, so we can use the bracket operator to select an element:
-    </p>
-
-    <program language="python">
-      <input>
+def decorate_euro(title):
+    decorate(xlabel='Proportion of heads (x)',
+             ylabel='Probability',
+             title=title)
+  </input>
+</program>
+<program language="python">
+  <input>
+cumulative.plot(label='CDF')
+pmf.plot(label='PMF')
+decorate_euro(title='Posterior distribution for the Euro problem')
+  </input>
+</program>
+<!-- Figure fig07-01: Posterior distribution from the Euro problem represented as a PMF and CDF. -->
+<p>
+  The range of the CDF is always from 0 to 1, in contrast with the PMF, where the maximum can be any probability.
+</p>
+<p>
+  The result from <c>cumsum</c> is a Pandas <c>Series</c>, so we can use the bracket operator to select an element:
+</p>
+<program language="python">
+  <input>
 cumulative[0.61]
-      </input>
-    </program>
+  </input>
+</program>
 <pre>
 0.9638303193984253
 </pre>
-
-    <p>
-      The result is about 0.96, which means that the total probability of all quantities less than or equal to 0.61 is 96%.
-    </p>
-
-    <p>
-      To go the other way <mdash/> to look up a probability and get the corresponding quantile <mdash/> we can use interpolation:
-    </p>
-
-    <program language="python">
-      <input>
+<p>
+  The result is about 0.96, which means that the total probability of all quantities less than or equal to 0.61 is 96%.
+</p>
+<p>
+  To go the other way <mdash/> to look up a probability and get the corresponding quantile <mdash/> we can use interpolation:
+</p>
+<program language="python">
+  <input>
 from scipy.interpolate import interp1d
 
 ps = cumulative.values
@@ -77,570 +156,717 @@ qs = cumulative.index
 
 interp = interp1d(ps, qs)
 interp(0.96)
-      </input>
-    </program>
+  </input>
+</program>
 <pre>
 array(0.60890171)
 </pre>
-
-    <p>
-      The result is about 0.61, so that confirms that the 96th percentile of this distribution is 0.61.
-    </p>
-
-    <p>
-      <c>empiricaldist</c> provides a class called <c>Cdf</c> that represents a cumulative distribution function.
-      Given a <c>Pmf</c>, you can compute a <c>Cdf</c> like this:
-    </p>
-
-    <program language="python">
-      <input>
+<p>
+  The result is about 0.61, so that confirms that the 96th percentile of this distribution is 0.61.
+</p>
+<p>
+  <c>empiricaldist</c> provides a class called <c>Cdf</c> that represents a cumulative distribution function.
+  Given a <c>Pmf</c>, you can compute a <c>Cdf</c> like this:
+</p>
+<program language="python">
+  <input>
 cdf = pmf.make_cdf()
-      </input>
-    </program>
-
-    <p>
-      <c>make_cdf</c> uses <c>np.cumsum</c> to compute the cumulative sum of the probabilities.
-      <!-- Figure fig06-01: Posterior distribution from the Euro problem represented as a PMF and CDF. -->
-      The range of the CDF is always from 0 to 1, in contrast with the PMF, where the maximum can be any probability.
-    </p>
-
-    <p>
-      You can use brackets to select an element from a <c>Cdf</c>:
-    </p>
-
-    <program language="python">
-      <input>
+  </input>
+</program>
+<p>
+  <c>make_cdf</c> uses <c>np.cumsum</c> to compute the cumulative sum of the probabilities.
+</p>
+<p>
+  You can use brackets to select an element from a <c>Cdf</c>:
+</p>
+<program language="python">
+  <input>
 cdf[0.61]
-      </input>
-    </program>
+  </input>
+</program>
 <pre>
 0.9638303193984253
 </pre>
-
-    <p>
-      But if you look up a value that's not in the distribution, you get a <c>KeyError</c>.
-      You can also call a <c>Cdf</c> as a function, using parentheses.
-      If the argument does not appear in the <c>Cdf</c>, it interpolates between quantities.
-    </p>
-
-    <program language="python">
-      <input>
+<p>
+  But if you look up a quantity that's not in the distribution, you get a <c>KeyError</c>.
+</p>
+<program language="python">
+  <input>
+try:
+    cdf[0.615]
+except KeyError as e:
+    print(repr(e))
+  </input>
+</program>
+<pre>
+KeyError(0.615)
+</pre>
+<p>
+  To avoid this problem, you can call a <c>Cdf</c> as a function, using parentheses.
+  If the argument does not appear in the <c>Cdf</c>, it interpolates between quantities.
+</p>
+<program language="python">
+  <input>
 cdf(0.615)
-      </input>
-    </program>
+  </input>
+</program>
 <pre>
 array(0.96383032)
 </pre>
-
-    <p>
-      Going the other way, you can use <c>quantile</c> to look up a cumulative probability and get the corresponding quantity:
-    </p>
-
-    <program language="python">
-      <input>
-cdf.quantile(0.96)
-      </input>
-    </program>
-
-    <p>
-      <c>Cdf</c> also provides <c>credible_interval</c>, which computes a credible interval that contains the given probability:
-    </p>
-
-    <program language="python">
-      <input>
+<p>
+  Going the other way, you can use <c>quantile</c> to look up a cumulative probability and get the corresponding quantity:
+</p>
+<program language="python">
+  <input>
+cdf.quantile(0.9638303)
+  </input>
+</program>
+<pre>
+array(0.61)
+</pre>
+<p>
+  <c>Cdf</c> also provides <c>credible_interval</c>, which computes a credible interval that contains the given probability:
+</p>
+<program language="python">
+  <input>
 cdf.credible_interval(0.9)
-      </input>
-    </program>
+  </input>
+</program>
 <pre>
 array([0.51, 0.61])
 </pre>
-
-    <p>
-      CDFs and PMFs are equivalent in the sense that they contain the same information about the distribution, and you can always convert from one to the other.
-      Given a <c>Cdf</c>, you can get the equivalent <c>Pmf</c> like this:
-    </p>
-
-    <program language="python">
-      <input>
+<p>
+  CDFs and PMFs are equivalent in the sense that they contain the
+  same information about the distribution, and you can always convert
+  from one to the other.
+  Given a <c>Cdf</c>, you can get the equivalent <c>Pmf</c> like this:
+</p>
+<program language="python">
+  <input>
 pmf = cdf.make_pmf()
-      </input>
-    </program>
-
-    <p>
-      <c>make_pmf</c> uses <c>np.diff</c> to compute differences between consecutive cumulative probabilities.
-    </p>
-
-    <p>
-      One reason <c>Cdf</c> objects are useful is that they compute quantiles efficiently.
-      Another is that they make it easy to compute the distribution of a maximum or minimum, as we'll see in the next section.
-    </p>
+  </input>
+</program>
+<p>
+  <c>make_pmf</c> uses <c>np.diff</c> to compute differences between consecutive cumulative probabilities.
+</p>
+<p>
+  One reason <c>Cdf</c> objects are useful is that they compute quantiles efficiently.
+  Another is that they make it easy to compute the distribution of a maximum or minimum, as we'll see in the next section.
+</p>
   </section>
 
   <section xml:id="sec-min-max-mixture-best-three">
     <title>Best Three of Four</title>
 
-    <p>
-      In <em>Dungeons &amp; Dragons</em>, each character has six attributes: strength, intelligence, wisdom, dexterity, constitution, and charisma.
-    </p>
+<p>
+  In <em>Dungeons &amp; Dragons</em>, each character has six attributes: strength, intelligence, wisdom, dexterity, constitution, and charisma.
+</p>
+<p>
+  To generate a new character, players roll four 6-sided dice for each attribute and add up the best three.
+  For example, if I roll for strength and get 1, 2, 3, 4 on the dice, my character's strength would be the sum of 2, 3, and 4, which is 9.
+</p>
+<p>
+  As an exercise, let's figure out the distribution of these attributes.
+  Then, for each character, we'll figure out the distribution of their best attribute.
+</p>
+<p>
+  I'll import two functions from the previous chapter: <c>make_die</c>, which makes a <c>Pmf</c> that represents the outcome of rolling a die, and <c>add_dist_seq</c>, which takes a sequence of <c>Pmf</c> objects and computes the distribution of their sum.
+</p>
+<p>
+  Here's a <c>Pmf</c> that represents a six-sided die and a sequence with three references to it.
+</p>
+<program language="python">
+  <input>
+from utils import make_die
 
-    <p>
-      To generate a new character, players roll four 6-sided dice for each attribute and add up the best three.
-      For example, if I roll for strength and get 1, 2, 3, 4 on the dice, my character's strength would be 9.
-    </p>
-
-    <p>
-      As an exercise, let's figure out the distribution of these attributes.
-      Then, for each character, we'll figure out the distribution of their best attribute.
-    </p>
-
-    <p>
-      In Section 6.1, we computed the distribution of the sum of three dice like this:
-    </p>
-
-    <program language="python">
-      <input>
 die = make_die(6)
 dice = [die] * 3
+  </input>
+</program>
+<p>
+  And here's the distribution of the sum of three dice.
+</p>
+<program language="python">
+  <input>
+from utils import add_dist_seq
+
 pmf_3d6 = add_dist_seq(dice)
-      </input>
-    </program>
-
-    <p>
-      The definitions of <c>make_die</c> and <c>add_dist_seq</c> are in that section.
-    </p>
-
-    <p>
-      But if we roll four dice and add up the best three, computing the distribution of the sum is a bit more complicated.
-      I'll estimate the distribution by simulating 10,000 rolls.
-    </p>
-
-    <p>
-      First I'll create an array of random values from 1 to 6, with 10,000 rows and 4 columns:
-    </p>
-
-    <program language="python">
-      <input>
+  </input>
+</program>
+<p>
+  Here's what it looks like:
+</p>
+<program language="python">
+  <input>
+def decorate_dice(title=''):
+    decorate(xlabel='Outcome',
+             ylabel='PMF',
+             title=title)
+  </input>
+</program>
+<program language="python">
+  <input>
+pmf_3d6.plot()
+decorate_dice('Distribution of attributes')
+  </input>
+</program>
+<!-- Figure fig07-02: Distribution of the sum of three dice. -->
+<p>
+  If we roll four dice and add up the best three, computing the distribution of the sum is a bit more complicated.
+  I'll estimate the distribution by simulating 10,000 rolls.
+</p>
+<p>
+  First I'll create an array of random values from 1 to 6, with 10,000 rows and 4 columns:
+</p>
+<program language="python">
+  <input>
 n = 10000
 a = np.random.randint(1, 7, size=(n, 4))
-      </input>
-    </program>
-
-    <p>
-      To find the best three outcomes in each row, I'll sort along <c>axis=1</c>, which means across the columns.
-    </p>
-
-    <program language="python">
-      <input>
+  </input>
+</program>
+<p>
+  To find the best three outcomes in each row, I'll use <c>sort</c> with <c>axis=1</c>, which sorts the rows in ascending order.
+</p>
+<program language="python">
+  <input>
 a.sort(axis=1)
-      </input>
-    </program>
-
-    <p>
-      Finally, I'll select the last three columns and add them up.
-    </p>
-
-    <program language="python">
-      <input>
+  </input>
+</program>
+<p>
+  Finally, I'll select the last three columns and add them up.
+</p>
+<program language="python">
+  <input>
 t = a[:, 1:].sum(axis=1)
-      </input>
-    </program>
+  </input>
+</program>
+<p>
+  Now <c>t</c> is an array with a single column and 10,000 rows.
+  We can compute the PMF of the values in <c>t</c> like this:
+</p>
+<program language="python">
+  <input>
+pmf_best3 = Pmf.from_seq(t)
+  </input>
+</program>
+<p>
+  The following figure shows the distribution of the sum of three dice, <c>pmf_3d6</c>, and the distribution of the best three out of four, <c>pmf_best3</c>.
+</p>
+<program language="python">
+  <input>
+pmf_3d6.plot(label='sum of 3 dice')
+pmf_best3.plot(label='best 3 of 4', ls='--')
 
-    <p>
-      Now <c>t</c> is an array with a single column and 10,000 rows.
-      We can compute the PMF of the values in <c>t</c> like this:
-    </p>
-
-    <program language="python">
-      <input>
-pmf_4d6 = Pmf.from_seq(t)
-      </input>
-    </program>
-
-    <p>
-      <!-- Figure fig06-02: Distributions of the sum of three dice and the best three of four. -->
-      As you might expect, choosing the best three out of four tends to yield higher values.
-    </p>
-
-    <p>
-      Next we'll find the distribution for the maximum of six attributes, each the sum of the best three of four dice.
-    </p>
+decorate_dice('Distribution of attributes')
+  </input>
+</program>
+<!-- Figure fig07-03: Distributions of the sum of three dice and the best three of four. -->
+<p>
+  As you might expect, choosing the best three out of four tends to yield higher values.
+</p>
+<p>
+  Next we'll find the distribution for the maximum of six attributes, each the sum of the best three of four dice.
+</p>
   </section>
 
   <section xml:id="sec-min-max-mixture-maximum">
-    <title>Maximum of Six</title>
+    <title>Maximum</title>
 
-    <p>
-      To compute the distribution of a maximum or minimum, we can make good use of the cumulative distribution function.
-      First, I'll compute the <c>Cdf</c> of the best three of four distribution:
-    </p>
+<p>
+  To compute the distribution of a maximum or minimum, we can make good use of the cumulative distribution function.
+  First, I'll compute the <c>Cdf</c> of the best three of four distribution:
+</p>
+<program language="python">
+  <input>
+cdf_best3 = pmf_best3.make_cdf()
+  </input>
+</program>
+<p>
+  Recall that <c>Cdf(x)</c> is the sum of probabilities for quantities less than or equal to <c>x</c>.
+  Equivalently, it is the probability that a random value chosen from the distribution is less than or equal to <c>x</c>.
+</p>
+<p>
+  Now suppose I draw 6 values from this distribution.
+  The probability that all 6 of them are less than or equal to <c>x</c> is <c>Cdf(x)</c> raised to the 6th power, which we can compute like this:
+</p>
+<program language="python">
+  <input>
+cdf_best3**6
+  </input>
+</program>
+<p>
+  If all 6 values are less than or equal to <c>x</c>, that means that their maximum is less than or equal to <c>x</c>.
+  So the result is the CDF of their maximum.
+  We can convert it to a <c>Cdf</c> object, like this:
+</p>
+<program language="python">
+  <input>
+from empiricaldist import Cdf
 
-    <program language="python">
-      <input>
-cdf_4d6 = pmf_4d6.make_cdf()
-      </input>
-    </program>
-
-    <p>
-      Recall that <c>Cdf(x)</c> is the sum of probabilities for quantities less than or equal to <c>x</c>.
-      Equivalently, it is the probability that a random value chosen from the distribution is less than or equal to <c>x</c>.
-    </p>
-
-    <p>
-      Now suppose I draw 6 values from this distribution.
-      The probability that all 6 of them are less than or equal to <c>x</c> is <c>Cdf(x)</c> raised to the 6th power, which we can compute like this:
-    </p>
-
-    <program language="python">
-      <input>
-cdf_4d6**6
-      </input>
-    </program>
-
-    <p>
-      If all 6 values are less than or equal to <c>x</c>, that means that their maximum is less than or equal to <c>x</c>.
-      So the result is the CDF of their maximum.
-      We can convert it to a <c>Cdf</c> object, like this:
-    </p>
-
-    <program language="python">
-      <input>
-cdf_max6 = Cdf(cdf_4d6**6)
-      </input>
-    </program>
-
-    <p>
-      And compute the equivalent <c>Pmf</c> like this:
-    </p>
-
-    <program language="python">
-      <input>
+cdf_max6 = Cdf(cdf_best3**6)
+  </input>
+</program>
+<p>
+  And compute the equivalent <c>Pmf</c> like this:
+</p>
+<program language="python">
+  <input>
 pmf_max6 = cdf_max6.make_pmf()
-      </input>
-    </program>
+  </input>
+</program>
+<p>
+  The following figure shows the result.
+</p>
+<program language="python">
+  <input>
+pmf_max6.plot(label='max of 6 attributes')
 
-    <p>
-      <!-- Figure fig06-03: Distribution for the minimum and maximum of six attributes. -->
-      Most characters have at least one attribute greater than 12; almost 10% of them have an 18.
-    </p>
+decorate_dice('Distribution of attributes')
+  </input>
+</program>
+<!-- Figure fig07-04: Distribution of the maximum of six attributes. -->
+<p>
+  Most characters have at least one attribute greater than 12; almost 10% of them have an 18.
+</p>
+<p>
+  The following figure shows the CDFs for the three distributions we have computed.
+</p>
+<program language="python">
+  <input>
+import matplotlib.pyplot as plt
 
-    <p>
-      <c>Pmf</c> and <c>Cdf</c> provide <c>max_dist</c>, which does the same computation.
-      We can compute the <c>Pmf</c> of the maximum like this:
-    </p>
+cdf_3d6 = pmf_3d6.make_cdf()
+cdf_3d6.plot(label='sum of 3 dice')
 
-    <program language="python">
-      <input>
-pmf_4d6.max_dist(6)
-      </input>
-    </program>
+cdf_best3 = pmf_best3.make_cdf()
+cdf_best3.plot(label='best 3 of 4 dice', ls='--')
 
-    <p>
-      And the <c>Cdf</c> of the maximum like this:
-    </p>
+cdf_max6.plot(label='max of 6 attributes', ls=':')
 
-    <program language="python">
-      <input>
-cdf_4d6.max_dist(6)
-      </input>
-    </program>
-
-    <p>
-      In the next section we'll find the distribution of the minimum.
-      The process is similar, but a little more complicated.
-      See if you can figure it out before you go on.
-    </p>
+decorate_dice('Distribution of attributes')
+plt.ylabel('CDF');
+  </input>
+</program>
+<!-- Figure fig07-05: CDFs for the distribution of three dice, best three of four, and maximum of six. -->
+<p>
+  <c>Cdf</c> provides <c>max_dist</c>, which does the same computation, so we can also compute the <c>Cdf</c> of the maximum like this:
+</p>
+<program language="python">
+  <input>
+cdf_max_dist6 = cdf_best3.max_dist(6)
+  </input>
+</program>
+<p>
+  And we can confirm that the differences are small.
+</p>
+<program language="python">
+  <input>
+np.allclose(cdf_max_dist6, cdf_max6)
+  </input>
+</program>
+<pre>
+True
+</pre>
+<p>
+  In the next section we'll find the distribution of the minimum.
+  The process is similar, but a little more complicated.
+  See if you can figure it out before you go on.
+</p>
   </section>
 
   <section xml:id="sec-min-max-mixture-minimum">
-    <title>Minimum of Six</title>
+    <title>Minimum</title>
 
-    <p>
-      In the previous section we computed the distribution of a character's best attribute.
-      Now let's compute the distribution of the worst.
-    </p>
-
-    <p>
-      To compute the distribution of the minimum, we'll use the <term>complementary CDF</term>, which we can compute like this:
-    </p>
-
-    <program language="python">
-      <input>
-prob_gt = 1 - cdf_4d6
-      </input>
-    </program>
-
-    <p>
-      As the variable name suggests, the complementary CDF is the probability that a value from the distribution is greater than <c>x</c>.
-      If we draw 6 values from the distribution, the probability that all 6 exceed <c>x</c> is:
-    </p>
-
-    <program language="python">
-      <input>
+<p>
+  In the previous section we computed the distribution of a character's best attribute.
+  Now let's compute the distribution of the worst.
+</p>
+<p>
+  To compute the distribution of the minimum, we'll use the <term>complementary CDF</term>, which we can compute like this:
+</p>
+<program language="python">
+  <input>
+prob_gt = 1 - cdf_best3
+  </input>
+</program>
+<p>
+  As the variable name suggests, the complementary CDF is the probability that a value from the distribution is greater than <c>x</c>.
+  If we draw 6 values from the distribution, the probability that all 6 exceed <c>x</c> is:
+</p>
+<program language="python">
+  <input>
 prob_gt6 = prob_gt**6
-      </input>
-    </program>
-
-    <p>
-      If all 6 exceed <c>x</c>, that means their minimum exceeds <c>x</c>, so <c>prob_gt6</c> is the complementary CDF of the minimum.
-      And that means we can compute the CDF of the minimum like this:
-    </p>
-
-    <program language="python">
-      <input>
+  </input>
+</program>
+<p>
+  If all 6 exceed <c>x</c>, that means their minimum exceeds <c>x</c>, so <c>prob_gt6</c> is the complementary CDF of the minimum.
+  And that means we can compute the CDF of the minimum like this:
+</p>
+<program language="python">
+  <input>
 prob_le6 = 1 - prob_gt6
-      </input>
-    </program>
-
-    <p>
-      The result is a Pandas Series that represents the CDF of the minimum of six attributes.
-      We can put those values in a <c>Cdf</c> object like this:
-    </p>
-
-    <program language="python">
-      <input>
+  </input>
+</program>
+<p>
+  The result is a Pandas <c>Series</c> that represents the CDF of the minimum of six attributes.  We can put those values in a <c>Cdf</c> object like this:
+</p>
+<program language="python">
+  <input>
 cdf_min6 = Cdf(prob_le6)
-      </input>
-    </program>
-
-    <p>
-      <c>Pmf</c> and <c>Cdf</c> provide <c>min_dist</c>, which does the same computation.
-      We can compute the <c>Pmf</c> of the minimum like this:
-    </p>
-
-    <program language="python">
-      <input>
-pmf_4d6.min_dist(6)
-      </input>
-    </program>
-
-    <p>
-      And the <c>Cdf</c> of the minimum like this:
-    </p>
-
-    <program language="python">
-      <input>
-cdf_4d6.min_dist(6)
-      </input>
-    </program>
-
-    <p>
-      In the exercises at the end of the chapter, you'll use distributions of the minimum and maximum to do Bayesian inference.
-      But first we'll see what happens when we mix distributions.
-    </p>
+  </input>
+</program>
+<p>
+  Here's what it looks like, along with the distribution of the maximum.
+</p>
+<program language="python">
+  <input>
+cdf_min6.plot(color='C4', label='minimum of 6')
+cdf_max6.plot(color='C2', label='maximum of 6', ls=':')
+decorate_dice('Minimum and maximum of six attributes')
+plt.ylabel('CDF');
+  </input>
+</program>
+<!-- Figure fig07-06: Minimum and maximum of six attributes. -->
+<p>
+  <c>Cdf</c> provides <c>min_dist</c>, which does the same computation, so we can also compute the <c>Cdf</c> of the minimum like this:
+</p>
+<program language="python">
+  <input>
+cdf_min_dist6 = cdf_best3.min_dist(6)
+  </input>
+</program>
+<p>
+  And we can confirm that the differences are small.
+</p>
+<program language="python">
+  <input>
+np.allclose(cdf_min_dist6, cdf_min6)
+  </input>
+</program>
+<pre>
+True
+</pre>
+<p>
+  In the exercises at the end of this chapter, you'll use distributions of the minimum and maximum to do Bayesian inference.
+  But first we'll see what happens when we mix distributions.
+</p>
   </section>
 
   <section xml:id="sec-min-max-mixture-mixtures">
-    <title>Mixtures</title>
+    <title>Mixture</title>
 
-    <p>
-      Let's do one more example inspired by <em>Dungeons &amp; Dragons</em>.
-      Suppose I have a 4-sided die and a 6-sided die.
-      I choose one of them at random and roll it.
-      What is the distribution of the outcome?
-    </p>
-
-    <p>
-      If you know which die it is, the answer is easy.
-      A die with <c>n</c> sides yields a uniform distribution from 1 to <c>n</c>, including both.
-      We can compute <c>Pmf</c> objects to represent the dice, like this:
-    </p>
-
-    <program language="python">
-      <input>
+<p>
+  In this section I'll show how we can compute a distribution which is a mixture of other distributions.
+  I'll explain what that means with some simple examples;
+  then, more usefully, we'll see how these mixtures are used to make predictions.
+</p>
+<p>
+  Here's another example inspired by <em>Dungeons &amp; Dragons</em>:
+</p>
+<p>
+  <ul>
+    <li><p>Suppose your character is armed with a dagger in one hand and a short sword in the other.</p></li>
+    <li><p>During each round, you attack a monster with one of your two weapons, chosen at random.</p></li>
+    <li><p>The dagger causes one 4-sided die of damage; the short sword causes one 6-sided die of damage.</p></li>
+  </ul>
+</p>
+<p>
+  What is the distribution of damage you inflict in each round?
+</p>
+<p>
+  To answer this question, I'll make a <c>Pmf</c> to represent the 4-sided and 6-sided dice:
+</p>
+<program language="python">
+  <input>
 d4 = make_die(4)
 d6 = make_die(6)
-      </input>
-    </program>
+  </input>
+</program>
+<p>
+  Now, let's compute the probability you inflict 1 point of damage.
+</p>
+<p>
+  <ul>
+    <li><p>If you attacked with the dagger, it's 1/4.</p></li>
+    <li><p>If you attacked with the short sword, it's 1/6.</p></li>
+  </ul>
+</p>
+<p>
+  Because the probability of choosing either weapon is 1/2, the total probability is the average:
+</p>
+<program language="python">
+  <input>
+prob_1 = (d4(1) + d6(1)) / 2
+prob_1
+  </input>
+</program>
+<pre>
+0.20833333333333331
+</pre>
+<p>
+  For the outcomes 2, 3, and 4, the probability is the same, but for 5 and 6 it's different, because those outcomes are impossible with the 4-sided die.
+</p>
+<program language="python">
+  <input>
+prob_6 = (d4(6) + d6(6)) / 2
+prob_6
+  </input>
+</program>
+<pre>
+0.08333333333333333
+</pre>
+<p>
+  To compute the distribution of the mixture, we could loop through the possible outcomes and compute their probabilities.
+</p>
+<p>
+  But we can do the same computation using the <c>+</c> operator:
+</p>
+<program language="python">
+  <input>
+mix1 = (d4 + d6) / 2
+  </input>
+</program>
+<p>
+  Here's what the mixture of these distributions looks like.
+</p>
+<program language="python">
+  <input>
+mix1.bar(alpha=0.7)
+decorate_dice('Mixture of one 4-sided and one 6-sided die')
+  </input>
+</program>
+<!-- Figure fig07-07: Mixture of one 4-sided and one 6-sided die. -->
+<p>
+  Now suppose you are fighting three monsters:
+</p>
+<p>
+  <ul>
+    <li><p>One has a club, which causes one 4-sided die of damage.</p></li>
+    <li><p>One has a mace, which causes one 6-sided die.</p></li>
+    <li><p>And one has a quarterstaff, which also causes one 6-sided die.</p></li>
+  </ul>
+</p>
+<p>
+  Because the melee is disorganized, you are attacked by one of these monsters each round, chosen at random.
+  To find the distribution of the damage they inflict, we can compute a weighted average of the distributions, like this:
+</p>
+<program language="python">
+  <input>
+mix2 = (d4 + 2*d6) / 3
+  </input>
+</program>
+<p>
+  This distribution is a mixture of one 4-sided die and two 6-sided dice.
+  Here's what it looks like.
+</p>
+<program language="python">
+  <input>
+mix2.bar(alpha=0.7)
+decorate_dice('Mixture of one 4-sided and two 6-sided die')
+  </input>
+</program>
+<!-- Figure fig07-08: Mixture of one 4-sided and two 6-sided dice. -->
+<p>
+  In this section we used the <c>+</c> operator, which adds the probabilities in the distributions, not to be confused with <c>Pmf.add_dist</c>, which computes the distribution of the sum of the distributions.
+</p>
+<p>
+  To demonstrate the difference, I'll use <c>Pmf.add_dist</c> to compute the distribution of the total damage done per round, which is the sum of the two mixtures:
+</p>
+<program language="python">
+  <input>
+total_damage = Pmf.add_dist(mix1, mix2)
+  </input>
+</program>
+<p>
+  And here's what it looks like.
+</p>
+<program language="python">
+  <input>
+total_damage.bar(alpha=0.7)
+decorate_dice('Total damage inflicted by both parties')
+  </input>
+</program>
+<!-- Figure fig07-09: Total damage inflicted by both parties. -->
+  </section>
 
-    <p>
-      To compute the distribution of the mixture, we can compute the average of the two distributions by adding them and dividing the result by 2:
-    </p>
+  <section xml:id="sec-min-max-mixture-general-mixtures">
+    <title>General Mixtures</title>
 
-    <program language="python">
-      <input>
-total = Pmf.add(d4, d6, fill_value=0) / 2
-      </input>
-    </program>
-
-    <p>
-      We have to use <c>Pmf.add</c> with <c>fill_value=0</c> because the two distributions don't have the same set of quantities.
-      If they did, we could use the <c>+</c> operator.
-    </p>
-
-    <p>
-      Now suppose I have a 4-sided die and <em>two</em> 6-sided dice.
-      Again, I choose one of them at random and roll it.
-      What is the distribution of the outcome?
-    </p>
-
-    <p>
-      We can solve this problem by computing a weighted average of the distributions, like this:
-    </p>
-
-    <program language="python">
-      <input>
-total = Pmf.add(d4, 2*d6, fill_value=0) / 3
-      </input>
-    </program>
-
-    <p>
-      Finally, suppose we have a box with the following mix:
-    </p>
-
-    <pre>
-1  4-sided die
-2  6-sided dice
-3  8-sided dice
-    </pre>
-
-    <p>
-      If I draw a die from this mix at random, we can use a <c>Pmf</c> to represent the hypothetical number of sides on the die:
-    </p>
-
-    <program language="python">
-      <input>
+<p>
+  In the previous section we computed mixtures in an <em>ad hoc</em> way.
+  Now we'll see a more general solution.
+  In future chapters, we'll use this solution to generate predictions for real-world problems, not just role-playing games.
+  But if you'll bear with me, we'll continue the previous example for one more section.
+</p>
+<p>
+  Suppose three more monsters join the combat, each of them with a battle axe that causes one 8-sided die of damage.
+  Still, only one monster attacks per round, chosen at random, so the damage they inflict is a mixture of:
+</p>
+<p>
+  <ul>
+    <li><p>One 4-sided die,</p></li>
+    <li><p>Two 6-sided dice, and</p></li>
+    <li><p>Three 8-sided dice.</p></li>
+  </ul>
+</p>
+<p>
+  I'll use a <c>Pmf</c> to represent a randomly chosen monster:
+</p>
+<program language="python">
+  <input>
 hypos = [4,6,8]
 counts = [1,2,3]
 pmf_dice = Pmf(counts, hypos)
-      </input>
-    </program>
-
-    <p>
-      And I'll make a sequence of <c>Pmf</c> objects to represent the dice:
-    </p>
-
-    <program language="python">
-      <input>
+pmf_dice.normalize()
+pmf_dice
+  </input>
+</program>
+<pre>
+4    0.166667
+6    0.333333
+8    0.500000
+dtype: float64
+</pre>
+<p>
+  This distribution represents the number of sides on the die we'll roll and the probability of rolling each one.
+  For example, one of the six monsters has a dagger, so the probability is <m>1/6</m> that we roll a 4-sided die.
+</p>
+<p>
+  Next I'll make a sequence of <c>Pmf</c> objects to represent the dice:
+</p>
+<program language="python">
+  <input>
 dice = [make_die(sides) for sides in hypos]
-      </input>
-    </program>
+  </input>
+</program>
+<p>
+  To compute the distribution of the mixture, I'll compute the weighted average of the dice, using the probabilities in <c>pmf_dice</c> as the weights.
+</p>
+<p>
+  To express this computation concisely, it is convenient to put the distributions into a Pandas <c>DataFrame</c>:
+</p>
+<program language="python">
+  <input>
+import pandas as pd
 
-    <p>
-      Now we have to multiply each distribution in <c>dice</c> by the corresponding probabilities in <c>pmf_dice</c>.
-      To express this computation concisely, it is convenient to put the distributions into a Pandas DataFrame:
-    </p>
-
-    <program language="python">
-      <input>
 pd.DataFrame(dice)
-      </input>
-    </program>
-
-    <p>
-      The result is a DataFrame with one row for each distribution and one column for each possible outcome.
-      Not all rows are the same length, so Pandas fills the extra spaces with the special value <c>NaN</c>, which stands for <q>not a number</q>.
-      We can use <c>fillna</c> to replace the <c>NaN</c> values with 0.
-    </p>
-
-    <program language="python">
-      <input>
+  </input>
+</program>
+<p>
+  The result is a <c>DataFrame</c> with one row for each distribution and one column for each possible outcome.
+  Not all rows are the same length, so Pandas fills the extra spaces with the special value <c>NaN</c>, which stands for <q>not a number</q>.
+  We can use <c>fillna</c> to replace the <c>NaN</c> values with 0.
+</p>
+<program language="python">
+  <input>
 pd.DataFrame(dice).fillna(0)
-      </input>
-    </program>
-
-    <p>
-      Before we multiply by the probabilities in <c>pmf_dice</c>, we have to transpose the matrix so the distributions run down the columns rather than across the rows:
-    </p>
-
-    <program language="python">
-      <input>
+  </input>
+</program>
+<p>
+  The next step is to multiply each row by the probabilities in <c>pmf_dice</c>, which turns out to be easier if we transpose the matrix so the distributions run down the columns rather than across the rows:
+</p>
+<program language="python">
+  <input>
 df = pd.DataFrame(dice).fillna(0).transpose()
-      </input>
-    </program>
-
-    <p>
-      Now we can multiply by the probabilities:
-    </p>
-
-    <program language="python">
-      <input>
+  </input>
+</program>
+<program language="python">
+  <input>
+df
+  </input>
+</program>
+<p>
+  Now we can multiply by the probabilities in <c>pmf_dice</c>:
+</p>
+<program language="python">
+  <input>
 df *= pmf_dice.ps
-      </input>
-    </program>
-
-    <p>
-      And add up the weighted distributions:
-    </p>
-
-    <program language="python">
-      <input>
-total = df.sum(axis=1)
-      </input>
-    </program>
-
-    <p>
-      The argument <c>axis=1</c> means we want to sum across the rows.
-      The result is a Pandas Series.
-    </p>
-
-    <p>
-      Putting it all together, here's a function that makes a weighted mixture of distributions.
-    </p>
-
-    <program language="python">
-      <input>
+  </input>
+</program>
+<program language="python">
+  <input>
+df
+  </input>
+</program>
+<p>
+  And add up the weighted distributions:
+</p>
+<program language="python">
+  <input>
+df.sum(axis=1)
+  </input>
+</program>
+<p>
+  The argument <c>axis=1</c> means we want to sum across the rows.
+  The result is a Pandas <c>Series</c>.
+</p>
+<p>
+  Putting it all together, here's a function that makes a weighted mixture of distributions.
+</p>
+<program language="python">
+  <input>
 def make_mixture(pmf, pmf_seq):
+    """Make a mixture of distributions."""
     df = pd.DataFrame(pmf_seq).fillna(0).transpose()
-    df *= pmf.ps
+    df *= np.array(pmf)
     total = df.sum(axis=1)
     return Pmf(total)
-      </input>
-    </program>
-
-    <p>
-      The first parameter is a <c>Pmf</c> that maps from each hypothesis to a probability.
-      The second parameter is a sequence of <c>Pmf</c> objects, one for each hypothesis.
-      We can call it like this:
-    </p>
-
-    <program language="python">
-      <input>
+  </input>
+</program>
+<p>
+  The first parameter is a <c>Pmf</c> that maps from each hypothesis to a probability.
+  The second parameter is a sequence of <c>Pmf</c> objects, one for each hypothesis.
+  We can call it like this:
+</p>
+<program language="python">
+  <input>
 mix = make_mixture(pmf_dice, dice)
-      </input>
-    </program>
-
-    <p>
-      <!-- Figure fig06-04: Mixture of uniform distributions from three kinds of dice. -->
-    </p>
+  </input>
+</program>
+<p>
+  And here's what it looks like.
+</p>
+<program language="python">
+  <input>
+mix.bar(label='mixture', alpha=0.6)
+decorate_dice('Distribution of damage with three different weapons')
+  </input>
+</program>
+<!-- Figure fig07-10: Mixture of uniform distributions from three kinds of dice. -->
+<p>
+  In this section I used Pandas so that <c>make_mixture</c> is concise, efficient, and hopefully not too hard to understand.
+  In the exercises at the end of the chapter, you'll have a chance to practice with mixtures, and we will use <c>make_mixture</c> again in the next chapter.
+</p>
   </section>
 
   <section xml:id="sec-min-max-mixture-summary">
     <title>Summary</title>
 
-    <p>
-      We have seen two representations of distributions: Pmfs and Cdfs.
-      These representations are equivalent in the sense that they contain the same information, so you can convert from one to the other.
-      The primary difference between them is performance: some operations are faster and easier with a Pmf; others are faster with a Cdf.
-    </p>
-
-    <p>
-      In this chapter we used <c>Cdf</c> objects to compute distributions of maxima and minima; these distributions are useful for inference if we are given a maximum or minimum as data.
-    </p>
-
-    <p>
-      We also computed mixtures of distributions, which we will use in the next chapter to make predictions.
-    </p>
+<p>
+  This chapter introduces the <c>Cdf</c> object, which represents the cumulative distribution function (CDF).
+</p>
+<p>
+  A <c>Pmf</c> and the corresponding <c>Cdf</c> are equivalent in the sense that they contain the same information, so you can convert from one to the other.
+  The primary difference between them is performance: some operations are faster and easier with a <c>Pmf</c>; others are faster with a <c>Cdf</c>.
+</p>
+<p>
+  In this chapter we used <c>Cdf</c> objects to compute distributions of maximums and minimums; these distributions are useful for inference if we are given a maximum or minimum as data.
+  You will see some examples in the exercises, and in future chapters.
+  We also computed mixtures of distributions, which we will use in the next chapter to make predictions.
+</p>
+<p>
+  But first you might want to work on these exercises.
+</p>
   </section>
 
   <exercises xml:id="exercises-min-max-mixture">
     <title>Exercises</title>
 
-    <p>
-      The code for this chapter is in <c>chap06.ipynb</c>, which is in the repository for this book.
-      You can run the notebook on Colab at <url href="https://colab.research.google.com/github/AllenDowney/ThinkBayes2/blob/master/code/chap06.ipynb">https://colab.research.google.com/github/AllenDowney/ThinkBayes2/blob/master/code/chap06.ipynb</url>.
-    </p>
-
-    <p>
-      The notebook provides space where you can work on the following problems.
-    </p>
-
     <exercise xml:id="ex-min-max-mixture-standard-array">
+      <title>Exercise 1</title>
       <statement>
         <p>
-          When you generate a <em>Dungeons &amp; Dragons</em> character, instead of rolling dice, you can use the <q>standard array</q> of attributes, which is 15, 14, 13, 12, 10, and 8.
-        </p>
-
-        <p>
+          When you generate a <em>D&amp;D</em> character, instead of rolling dice, you can use the <q>standard array</q> of attributes, which is 15, 14, 13, 12, 10, and 8.
           Do you think you are better off using the standard array or (literally) rolling the dice?
         </p>
 
@@ -656,92 +882,127 @@ mix = make_mixture(pmf_dice, dice)
             <li><p>The highest value in the standard array is 15.  For each attribute, what is the probability of getting a value greater than 15?  If you roll the dice six times, what's the probability that at least one of your attributes is greater than 15?</p></li>
           </ul>
         </p>
+
+        <p>
+          To get you started, here's a <c>Cdf</c> that represents the distribution of attributes in the standard array:
+        </p>
+        <program language="python">
+          <input>
+standard = [15,14,13,12,10,8]
+cdf_standard = Cdf.from_seq(standard)
+          </input>
+        </program>
+        <p>
+          We can compare it to the distribution of attributes you get by rolling four dice at adding up the best three.
+        </p>
+        <program language="python">
+          <input>
+cdf_best3.plot(label='best 3 of 4', color='C1', ls='--')
+cdf_standard.step(label='standard set', color='C7')
+
+decorate_dice('Distribution of attributes')
+plt.ylabel('CDF');
+          </input>
+        </program>
+        <!-- Figure fig07-11: Distribution of attributes from standard array and best three of four. -->
+        <p>
+          I plotted <c>cdf_standard</c> as a step function to show more clearly that it contains only a few quantities.
+        </p>
       </statement>
       <solution>
-        <p>Here are the means:</p>
         <program language="python">
           <input>
-# Here are the means
-cdf_best3.mean(), cdf_standard.mean()
+# Solution goes here
           </input>
         </program>
-        <p>And the standard deviations:</p>
         <program language="python">
           <input>
-# And the standard deviations
-cdf_best3.std(), cdf_standard.std()
+# Solution goes here
           </input>
         </program>
-        <p>Here's the probability that a single attribute is less than 8:</p>
         <program language="python">
           <input>
-# Here's the probability that a single attribute is less than 8
-cdf_best3.lt_dist(8)
+# Solution goes here
           </input>
         </program>
-        <p>And the probability that a single attribute is greater than 15:</p>
         <program language="python">
           <input>
-# And the probability that a single attribute is greater than 15
-cdf_best3.gt_dist(15)
+# Solution goes here
           </input>
         </program>
-        <p>Here are two ways to compute the probability that at least one attribute is less than 8:</p>
         <program language="python">
           <input>
-# Here are two ways to compute the probability that at
-# least one attribute is less than 8
-cdf_min6.lt_dist(8), 1 - (1-cdf_best3.lt_dist(8))**6
+# Solution goes here
           </input>
         </program>
-        <p>And two ways to compute the probability that at least one attribute is greater than 15:</p>
         <program language="python">
           <input>
-# And two ways to compute the probability that at least
-# one attribute is greater than 15
-cdf_max6.gt_dist(15), 1 - (1-cdf_best3.gt_dist(15))**6
+# Solution goes here
           </input>
         </program>
       </solution>
     </exercise>
 
-    <exercise xml:id="ex-min-max-mixture-dice-box">
+    <exercise xml:id="ex-min-max-mixture-monsters">
+      <title>Exercise 2</title>
       <statement>
         <p>
-          Suppose I have a box with a 6-sided die, an 8-sided die, and a 12-sided die.
-          I choose one of the dice at random, roll it, and report that the outcome is a 1.
-          If I roll the same die again, what is the probability that I get another 1?
-        </p>
-
-        <p>
-          Hint: Compute the posterior distribution as we have done before and pass it as one of the arguments to <c>make_mixture</c>.
-        </p>
-      </statement>
-    </exercise>
-
-    <exercise xml:id="ex-min-max-mixture-two-boxes">
-      <statement>
-        <p>
-          Suppose I have two boxes of dice:
+          Suppose you are fighting three monsters:
         </p>
 
         <p>
           <ul>
-            <li><p>One contains a 4-sided die and a 6-sided die.</p></li>
-            <li><p>The other contains a 6-sided die and an 8-sided die.</p></li>
+            <li><p>One is armed with a short sword that causes one 6-sided die of damage,</p></li>
+            <li><p>One is armed with a battle axe that causes one 8-sided die of damage, and</p></li>
+            <li><p>One is armed with a bastard sword that causes one 10-sided die of damage.</p></li>
           </ul>
         </p>
 
         <p>
-          I choose a box at random, choose a die, and roll it 3 times.  If I get 2, 4, and 6, which box do you think I chose?
+          One of the monsters, chosen at random, attacks you and does 1 point of damage.
+        </p>
+
+        <p>
+          Which monster do you think it was?  Compute the posterior probability that each monster was the attacker.
+        </p>
+
+        <p>
+          If the same monster attacks you again, what is the probability that you suffer 6 points of damage?
+        </p>
+
+        <p>
+          Hint: Compute a posterior distribution as we have done before and pass it as one of the arguments to <c>make_mixture</c>.
         </p>
       </statement>
+      <solution>
+        <program language="python">
+          <input>
+# Solution goes here
+          </input>
+        </program>
+        <program language="python">
+          <input>
+# Solution goes here
+          </input>
+        </program>
+        <program language="python">
+          <input>
+# Solution goes here
+          </input>
+        </program>
+        <program language="python">
+          <input>
+# Solution goes here
+          </input>
+        </program>
+      </solution>
     </exercise>
 
     <exercise xml:id="ex-min-max-mixture-poincare">
+      <title>Exercise 3</title>
       <statement>
         <p>
-          Henri Poincaré was a French mathematician who taught at the Sorbonne around 1900. The following anecdote about him is probably fabricated, but it makes an interesting probability problem.
+          Henri Poincaré was a French mathematician who taught at the Sorbonne around 1900. The following anecdote about him is probably fiction, but it makes an interesting probability problem.
         </p>
 
         <p>
@@ -749,81 +1010,52 @@ cdf_max6.gt_dist(15), 1 - (1-cdf_best3.gt_dist(15))**6
         </p>
 
         <p>
-          For the next year, Poincaré continued the practice of weighing his bread every day. At the end of the year, he found that the average weight was 1000 g, just as it should be, but again he complained to the bread police, and this time they fined the baker.
+          For the next year, Poincaré continued to weigh his bread every day. At the end of the year, he found that the average weight was 1000 g, just as it should be, but again he complained to the bread police, and this time they fined the baker.
         </p>
 
         <p>
-          Why? Because the shape of the distribution was asymmetric. Unlike the normal distribution, it was skewed to the right, which is consistent with the hypothesis that the baker was still making 950 g loaves, but deliberately giving Poincaré the heavier ones.
+          Why? Because the shape of the new distribution was asymmetric. Unlike the normal distribution, it was skewed to the right, which is consistent with the hypothesis that the baker was still making 950 g loaves, but deliberately giving Poincaré the heavier ones.
         </p>
 
         <p>
           To see whether this anecdote is plausible, let's suppose that when the baker sees Poincaré coming, he hefts <c>n</c> loaves of bread and gives Poincaré the heaviest one.  How many loaves would the baker have to heft to make the average of the maximum 1000 g?
         </p>
-      </statement>
-      <solution>
-        <p>Here's the mean of the maximum of n loaves, for a range of values of n:</p>
+
+        <p>
+          To get you started, I'll generate a year's worth of data from a normal distribution with the given parameters.
+        </p>
         <program language="python">
           <input>
-# Here's the mean of the maximum of `n` loaves,
-# for a range of values of `n`
+mean = 950
+std = 50
 
-cdf = Cdf.from_seq(sample)
-
-for n in range(2, 6):
-    cdf_max = cdf.max_dist(n)
-    print(n, cdf_max.mean())
+np.random.seed(17)
+sample = np.random.normal(mean, std, size=365)
           </input>
         </program>
-        <p>It looks like hefting 4 loaves is enough to get the mean over 1000, so the story is not entirely implausible. Here's what the distribution of the maximum looks like, compared to the actual distribution of weights:</p>
+      </statement>
+      <solution>
         <program language="python">
           <input>
-# Here's what the distribution of the maximum looks like, compared
-# to the actual distribution of weights.
-
-cdf.plot(label='one loaf')
-cdf.max_dist(4).plot(label='maximum of four loaves')
-
-decorate(xlabel='Weight in grams',
-         ylabel='CDF')
+# Solution goes here
+          </input>
+        </program>
+        <program language="python">
+          <input>
+# Solution goes here
           </input>
         </program>
       </solution>
     </exercise>
 
-    <exercise xml:id="ex-min-max-mixture-hospitals">
-      <statement>
-        <p>
-          Two doctors fresh out of medical school are arguing about whose hospital delivers more babies.  The first doctor say, <q>I've been at Hospital A for two weeks, and already we've had a day when we delivered 20 babies.</q>
-        </p>
-
-        <p>
-          The second doctor says, <q>I've only been at Hospital B for one week, but already there's been a 19-baby day.</q>
-        </p>
-
-        <p>
-          Which hospital do you think delivers more babies on average?  You can assume that the number of babies born in a day is well modeled by a Poisson distribution with parameter <m>\lambda</m> (see <url href="https://en.wikipedia.org/wiki/Poisson_distribution">https://en.wikipedia.org/wiki/Poisson_distribution</url>).
-        </p>
-      </statement>
-    </exercise>
-
-    <exercise xml:id="ex-min-max-mixture-traffic">
-      <statement>
-        <p>
-          This question is related to a method I developed for estimating the minimum time for a packet of data to travel through a path in the internet.
-        </p>
-
-        <p>
-          Suppose I drive the same route three times and the fastest of the three attempts takes 8 minutes.
-        </p>
-
-        <p>
-          There are two traffic lights on the route. As I approach each light, there is a 40% chance that it is green; in that case, it causes no delay. And there is a 60% change it is red; in that case it causes a delay that is uniformly distributed from 0 to 60 seconds.
-        </p>
-
-        <p>
-          What is the posterior distribution of the time it would take to drive the route with no delays?
-        </p>
-      </statement>
-    </exercise>
+      <p>
+        <em>Think Bayes</em>, Second Edition
+      </p>
+      <p>
+        Copyright 2020 Allen B. Downey
+      </p>
+      <p>
+        License: <url href="https://creativecommons.org/licenses/by-nc-sa/4.0/">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)</url>
+      </p>
   </exercises>
 </chapter>
