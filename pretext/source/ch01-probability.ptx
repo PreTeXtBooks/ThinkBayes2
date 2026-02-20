@@ -1057,6 +1057,7 @@ Rather than use the specific ages 25 and 35, let's define <c>young</c> and <c>ol
       <input>
 prob(old &amp; conservative)
       </input>
+    </program>
 <program language="python">
       <input>
     old = (gss['age'] &gt;= 65)
@@ -1103,7 +1104,7 @@ prob(old &amp; conservative)
     <program language="python">
       <input>
 # Solution
-prob(young & liberal)
+prob(young &amp; liberal)
       </input>
     </program>
 <pre>
@@ -1127,7 +1128,7 @@ conditional(liberal, given=young)
     <program language="python">
       <input>
 # Solution
-prob(old & conservative)
+prob(old &amp; conservative)
       </input>
     </program>
 <pre>
