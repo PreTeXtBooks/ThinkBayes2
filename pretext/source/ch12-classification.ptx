@@ -1098,9 +1098,9 @@ accuracy(df)
       Is it more accurate than the model with two features?
     </p>
 
+<solution>
     <program language="python">
       <input>
-# Solution
 
 # Here are the norm maps for the other two features
 
@@ -1111,7 +1111,6 @@ mass_map = make_norm_map(df, 'Body Mass (g)')
 
     <program language="python">
       <input>
-# Solution
 
 # And here are sequences for the features and the norm maps
 
@@ -1124,7 +1123,6 @@ norm_maps4 = [culmen_map, flipper_map,
 
     <program language="python">
       <input>
-# Solution
 
 # Now let's classify and compute accuracy.
 
@@ -1144,6 +1142,7 @@ accuracy(df)
 <pre>
 0.9678362573099415
 </pre>
+</solution>
 
     <p>
       <em>Exercise:</em>  One of the reasons the penguin dataset was collected was to quantify sexual dimorphism in different penguin species, that is, physical differences between male and female penguins.  One way to quantify dimorphism is to use measurements to classify penguins by sex.  If a species is more dimorphic, we expect to be able to classify them more accurately.
@@ -1195,10 +1194,9 @@ subset = df[valid &amp; gentoo].copy()
       OK, you can finish it off from here.
     </p>
 
+<solution>
     <program language="python">
       <input>
-# Solution
-
 # Here are the feature distributions grouped by sex
 
 plot_cdfs(subset, 'Culmen Length (mm)', by='Sex')
@@ -1208,8 +1206,6 @@ plot_cdfs(subset, 'Culmen Length (mm)', by='Sex')
 
     <program language="python">
       <input>
-# Solution
-
 plot_cdfs(subset, 'Culmen Depth (mm)', by='Sex')
       </input>
     </program>
@@ -1226,8 +1222,6 @@ plot_cdfs(subset, 'Flipper Length (mm)', by='Sex')
 
     <program language="python">
       <input>
-# Solution
-
 plot_cdfs(subset, 'Body Mass (g)', by='Sex')
       </input>
     </program>
@@ -1235,8 +1229,6 @@ plot_cdfs(subset, 'Body Mass (g)', by='Sex')
 
     <program language="python">
       <input>
-# Solution
-
 # Here are the norm maps for the features, grouped by sex
 
 culmen_map = make_norm_map(subset, 'Culmen Length (mm)', by='Sex')
@@ -1248,8 +1240,6 @@ mass_map = make_norm_map(subset, 'Body Mass (g)', by='Sex')
 
     <program language="python">
       <input>
-# Solution
-
 # And here are the sequences we need for `update_naive`
 
 norm_maps4 = [culmen_map, flipper_map, depth_map, mass_map]
@@ -1260,8 +1250,6 @@ colnames4 = ['Culmen Length (mm)', 'Flipper Length (mm)',
 
     <program language="python">
       <input>
-# Solution
-
 # Here's the prior
 
 hypos = culmen_map.keys()
@@ -1277,8 +1265,6 @@ dtype: float64
 
     <program language="python">
       <input>
-# Solution
-
 # And the update
 
 subset['Classification'] = "None"
@@ -1292,8 +1278,6 @@ for i, row in subset.iterrows():
 
     <program language="python">
       <input>
-# Solution
-
 # This function computes accuracy
 
 def accuracy_sex(df):
@@ -1311,8 +1295,6 @@ def accuracy_sex(df):
 
     <program language="python">
       <input>
-# Solution
-
 # Using these features we can classify Gentoo penguins by
 # sex with almost 92% accuracy
 
@@ -1325,8 +1307,6 @@ accuracy_sex(subset)
 
     <program language="python">
       <input>
-# Solution
-
 # Here's the whole process in a function so we can
 # classify the other species
 
@@ -1358,8 +1338,6 @@ def classify_by_sex(subset):
 
     <program language="python">
       <input>
-# Solution
-
 # Here's the subset of Adelie penguins
 
 # The accuracy is about 88%
@@ -1375,8 +1353,6 @@ classify_by_sex(subset)
 
     <program language="python">
       <input>
-# Solution
-
 # And for Chinstrap, accuracy is about 92%
 
 chinstrap = df['Species2']=='Chinstrap'
@@ -1390,14 +1366,13 @@ classify_by_sex(subset)
 
     <program language="python">
       <input>
-# Solution
-
 # It looks like Gentoo and Chinstrap penguins are about equally
 # dimorphic, Adelie penguins a little less so.
 
 # All of these results are consistent with what's in the paper.
       </input>
     </program>
+</solution>
 
     <p>
       <em>Think Bayes</em>, Second Edition
