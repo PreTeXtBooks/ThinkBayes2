@@ -1317,11 +1317,7 @@ np.mean(sample_800 &gt; sample_700)
         <p>For the first version of <c>choose</c>, what is the ideal distribution of difficulties?</p>
         <p>For the second version, what is the adaptive strategy that maximizes the precision of the test over the range of abilities?</p>
       </statement>
-    <solution>
-      <program language="python">
-        <input>
-# Solution
-
+<solution>
 # I don't know what the optimal distribution of questions
 # is, but my guess is that it would follow the distribution
 # of ability.
@@ -1344,14 +1340,8 @@ def choose(i, belief):
     returns: difficulty
     """
     return difficulties[i]
-        </input>
-      </program>
-    </solution>
-    <solution>
-      <program language="python">
-        <input>
-# Solution
-
+</solution>
+<solution
 # I suspect that the optimal strategy is to choose
 # a question so that the test-taker has a 50% chance
 # of getting it right.
@@ -1371,9 +1361,7 @@ def choose(i, belief):
     returns: difficulty
     """
     return belief.mean()
-        </input>
-      </program>
-    </solution>
+</solution>
     </exercise>
   </section>
 
