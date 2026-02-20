@@ -55,11 +55,10 @@ cumulative = pmf.cumsum()
       <input>
 cumulative[0.61]
       </input>
-    
-      <output>
-      0.9638303193984253
-      </output>
     </program>
+<pre>
+0.9638303193984253
+</pre>
 
     <p>
       The result is about 0.96, which means that the total probability of all quantities less than or equal to 0.61 is 96%.
@@ -79,11 +78,10 @@ qs = cumulative.index
 interp = interp1d(ps, qs)
 interp(0.96)
       </input>
-    
-      <output>
-      array(0.60890171)
-      </output>
     </program>
+<pre>
+array(0.60890171)
+</pre>
 
     <p>
       The result is about 0.61, so that confirms that the 96th percentile of this distribution is 0.61.
@@ -114,11 +112,10 @@ cdf = pmf.make_cdf()
       <input>
 cdf[0.61]
       </input>
-    
-      <output>
-      0.9638303193984253
-      </output>
     </program>
+<pre>
+0.9638303193984253
+</pre>
 
     <p>
       But if you look up a value that's not in the distribution, you get a <c>KeyError</c>.
@@ -130,11 +127,10 @@ cdf[0.61]
       <input>
 cdf(0.615)
       </input>
-    
-      <output>
-      array(0.96383032)
-      </output>
     </program>
+<pre>
+array(0.96383032)
+</pre>
 
     <p>
       Going the other way, you can use <c>quantile</c> to look up a cumulative probability and get the corresponding quantity:
@@ -154,11 +150,10 @@ cdf.quantile(0.96)
       <input>
 cdf.credible_interval(0.9)
       </input>
-    
-      <output>
-      array([0.51, 0.61])
-      </output>
     </program>
+<pre>
+array([0.51, 0.61])
+</pre>
 
     <p>
       CDFs and PMFs are equivalent in the sense that they contain the same information about the distribution, and you can always convert from one to the other.

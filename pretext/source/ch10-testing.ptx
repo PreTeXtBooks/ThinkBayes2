@@ -82,11 +82,10 @@ likelihood = binom.pmf(k, n, xs)
 posterior = uniform * likelihood
 posterior.normalize()
       </input>
-    
-      <output>
-      0.3984063745019918
-      </output>
     </program>
+<pre>
+0.3984063745019918
+</pre>
     <p>
       And here's what it looks like.
     </p>
@@ -110,11 +109,10 @@ decorate(xlabel='Proportion of heads (x)',
 print(posterior.mean(), 
       posterior.credible_interval(0.9))
       </input>
-    
-      <output>
-      0.5595238095238095 [0.51 0.61]
-      </output>
     </program>
+<pre>
+0.5595238095238095 [0.51 0.61]
+</pre>
     <p>
       The prior mean was 0.5, and the posterior mean is 0.56, so it seems like the data is evidence that the coin is biased.
     </p>
@@ -148,11 +146,10 @@ n = 250
 like_fair = binom.pmf(k, n, p=0.5)
 like_fair
       </input>
-    
-      <output>
-      0.008357181724918188
-      </output>
     </program>
+<pre>
+0.008357181724918188
+</pre>
     <p>
       That's the probability of the data, given that the coin is fair.
     </p>
@@ -164,11 +161,10 @@ like_fair
 like_biased = binom.pmf(k, n, p=0.56)
 like_biased
       </input>
-    
-      <output>
-      0.05077815959518337
-      </output>
     </program>
+<pre>
+0.05077815959518337
+</pre>
     <p>
       Now we can compute the likelihood ratio:
     </p>
@@ -177,11 +173,10 @@ like_biased
 K = like_biased / like_fair
 K
       </input>
-    
-      <output>
-      6.075990838368477
-      </output>
     </program>
+<pre>
+6.075990838368477
+</pre>
     <p>
       The data are about 6 times more likely if the coin is biased, by this definition, than if it is fair.
     </p>
@@ -205,11 +200,10 @@ biased_uniform = uniform.copy()
 biased_uniform[0.5] = 0
 biased_uniform.normalize()
       </input>
-    
-      <output>
-      100
-      </output>
     </program>
+<pre>
+100
+</pre>
     <p>
       To compute the total probability of the data under this hypothesis, we compute the conditional probability of the data for each value of <m>x</m>.
     </p>
@@ -227,11 +221,10 @@ likelihood = binom.pmf(k, n, xs)
 like_uniform = np.sum(biased_uniform * likelihood)
 like_uniform
       </input>
-    
-      <output>
-      0.0039004919277707355
-      </output>
     </program>
+<pre>
+0.0039004919277707355
+</pre>
     <p>
       So that's the probability of the data under the "biased uniform" hypothesis.
     </p>
@@ -243,11 +236,10 @@ like_uniform
 K = like_fair / like_uniform
 K
       </input>
-    
-      <output>
-      2.142596851801358
-      </output>
     </program>
+<pre>
+2.142596851801358
+</pre>
     <p>
       The data are about two times more likely if the coin is fair than if it is biased, by this definition of "biased".
     </p>
@@ -260,11 +252,10 @@ prior_odds = 1
 posterior_odds = prior_odds * K
 posterior_odds
       </input>
-    
-      <output>
-      2.142596851801358
-      </output>
     </program>
+<pre>
+2.142596851801358
+</pre>
     <program language="python">
       <input>
 def prob(o):
@@ -276,11 +267,10 @@ def prob(o):
 posterior_probability = prob(posterior_odds)
 posterior_probability
       </input>
-    
-      <output>
-      0.6817918278551087
-      </output>
     </program>
+<pre>
+0.6817918278551087
+</pre>
     <p>
       Evidence that "moves the needle" from 50% to 68% is not very strong.
     </p>
@@ -296,11 +286,10 @@ a = np.append(ramp_up, ramp_down)
 triangle = Pmf(a, xs, name='triangle')
 triangle.normalize()
       </input>
-    
-      <output>
-      2500
-      </output>
     </program>
+<pre>
+2500
+</pre>
     <p>
       As we did with the uniform distribution, we can remove 50% as a possible value of <m>x</m> (but it doesn't make much difference if we skip this detail).
     </p>
@@ -310,11 +299,10 @@ biased_triangle = triangle.copy()
 biased_triangle[0.5] = 0
 biased_triangle.normalize()
       </input>
-    
-      <output>
-      0.98
-      </output>
     </program>
+<pre>
+0.98
+</pre>
     <p>
       Here's what the triangle prior looks like, compared to the uniform prior.
     </p>
@@ -401,11 +389,10 @@ xs = np.linspace(0, 1, 101)
 prior = Pmf(1, xs)
 prior.normalize()
       </input>
-    
-      <output>
-      101
-      </output>
     </program>
+<pre>
+101
+</pre>
     <p>
       Supposing we are choosing from four slot machines, I'll make four copies of the prior, one for each machine.
     </p>
@@ -603,15 +590,14 @@ def summarize_beliefs(beliefs):
       <input>
 summarize_beliefs(beliefs)
       </input>
-    
-      <output>
-      Actual P(win)  Posterior mean Credible interval
+    </program>
+<pre>
+Actual P(win)  Posterior mean Credible interval
 0            0.1           0.250      [0.08, 0.47]
 1            0.2           0.250      [0.08, 0.47]
 2            0.3           0.500      [0.27, 0.73]
 3            0.4           0.417       [0.2, 0.65]
-      </output>
-    </program>
+</pre>
     <p>
       We expect the credible intervals to contain the actual probabilities most of the time.
     </p>
@@ -638,11 +624,10 @@ samples = np.array([b.choice(1000)
                     for b in beliefs])
 samples.shape
       </input>
-    
-      <output>
-      (4, 1000)
-      </output>
     </program>
+<pre>
+(4, 1000)
+</pre>
     <p>
       The result has 4 rows and 1000 columns.  We can use <c>argmax</c> to find the index of the largest value in each column:
     </p>
@@ -651,11 +636,10 @@ samples.shape
 indices = np.argmax(samples, axis=0)
 indices.shape
       </input>
-    
-      <output>
-      (1000,)
-      </output>
     </program>
+<pre>
+(1000,)
+</pre>
     <p>
       The <c>Pmf</c> of these indices is the fraction of times each machine yielded the highest values.
     </p>
@@ -664,15 +648,14 @@ indices.shape
 pmf = Pmf.from_seq(indices)
 pmf
       </input>
-    
-      <output>
-      0    0.048
+    </program>
+<pre>
+0    0.048
 1    0.043
 2    0.625
 3    0.284
 Name: , dtype: float64
-      </output>
-    </program>
+</pre>
     <p>
       These fractions approximate the probability of superiority for each machine.  So we could choose the next machine by choosing a value from this <c>Pmf</c>.
     </p>
@@ -680,11 +663,10 @@ Name: , dtype: float64
       <input>
 pmf.choice()
       </input>
-    
-      <output>
-      array([1])
-      </output>
     </program>
+<pre>
+array([1])
+</pre>
     <p>
       But that's a lot of work to choose a single value, and it's not really necessary, because there's a shortcut.
     </p>
@@ -717,11 +699,10 @@ def choose(beliefs):
       <input>
 choose(beliefs)
       </input>
-    
-      <output>
-      3
-      </output>
     </program>
+<pre>
+3
+</pre>
   </section>
 
   <section xml:id="sec-ch10-the-strategy">
@@ -772,15 +753,14 @@ plot(beliefs)
       <input>
 summarize_beliefs(beliefs)
       </input>
-    
-      <output>
-      Actual P(win)  Posterior mean Credible interval
+    </program>
+<pre>
+Actual P(win)  Posterior mean Credible interval
 0            0.1           0.250      [0.08, 0.47]
 1            0.2           0.250      [0.08, 0.47]
 2            0.3           0.500      [0.27, 0.73]
 3            0.4           0.417       [0.2, 0.65]
-      </output>
-    </program>
+</pre>
     <p>
       The credible intervals usually contain the actual probabilities of winning. The estimates are still rough, especially for the lower-probability machines.  But that's a feature, not a bug: the goal is to play the high-probability machines most often.  Making the estimates more precise is a means to that end, but not an end itself.
     </p>
@@ -808,15 +788,14 @@ def summarize_counter(counter):
       <input>
 summarize_counter(counter)
       </input>
-    
-      <output>
-      Actual P(win) Times played
+    </program>
+<pre>
+Actual P(win) Times played
 0           0.1            7
 1           0.2           24
 2           0.3           39
 3           0.4           30
-      </output>
-    </program>
+</pre>
     <p>
       If things go according to plan, the machines with higher probabilities should get played more often.
     </p>
@@ -913,11 +892,10 @@ def play(ability, difficulty):
         <input>
 prob_correct(600, 500)
         </input>
-      
-      <output>
-      0.7982939339725037
-      </output>
     </program>
+<pre>
+0.7982939339725037
+</pre>
       <program language="python">
         <input>
 np.random.seed(18)
@@ -929,11 +907,10 @@ num_questions = 51
 outcomes = [play(600, 500) for _ in range(num_questions)]
 np.mean(outcomes)
         </input>
-      
-      <output>
-      0.803921568627451
-      </output>
     </program>
+<pre>
+0.803921568627451
+</pre>
       <program language="python">
         <input>
 from scipy.stats import norm
@@ -947,11 +924,10 @@ ps = norm(mean, std).pdf(qs)
 prior = Pmf(ps, qs)
 prior.normalize()
         </input>
-      
-      <output>
-      0.04464186995102338
-      </output>
     </program>
+<pre>
+0.04464186995102338
+</pre>
       <program language="python">
         <input>
 prior.plot(label='std=300', color='C5')
@@ -1003,11 +979,10 @@ decorate(xlabel='Ability',
         <input>
 actual_600.mean()
         </input>
-      
-      <output>
-      604.3325737356816
-      </output>
     </program>
+<pre>
+604.3325737356816
+</pre>
       <program language="python">
         <input>
 def choose(i, belief):
@@ -1041,11 +1016,10 @@ belief, trace = simulate_test(600)
         <input>
 trace['outcome'].sum()
         </input>
-      
-      <output>
-      42
-      </output>
     </program>
+<pre>
+42
+</pre>
       <program language="python">
         <input>
 belief.plot(color='C4', label='ability=600')
@@ -1060,11 +1034,10 @@ decorate(xlabel='Ability',
         <input>
 belief.mean(), belief.std()
         </input>
-      
-      <output>
-      (618.6942050450824, 40.08554296596485)
-      </output>
     </program>
+<pre>
+(618.6942050450824, 40.08554296596485)
+</pre>
       <program language="python">
         <input>
 actual_abilities = np.linspace(200, 800)
@@ -1291,11 +1264,10 @@ def play(ability, difficulty):
       <input>
 prob_correct(600, 500)
       </input>
-    
-      <output>
-      0.7982939339725037
-      </output>
     </program>
+<pre>
+0.7982939339725037
+</pre>
     <p>
       Suppose this person takes a test with 51 questions, all with the same difficulty, <c>500</c>. We expect them to get about 80% of the questions correct.
     </p>
@@ -1313,11 +1285,10 @@ num_questions = 51
 outcomes = [play(600, 500) for _ in range(num_questions)]
 np.mean(outcomes)
       </input>
-    
-      <output>
-      0.803921568627451
-      </output>
     </program>
+<pre>
+0.803921568627451
+</pre>
     <p>
       We expect them to get about 80% of the questions right.
     </p>
@@ -1342,11 +1313,10 @@ ps = norm(mean, std).pdf(qs)
 prior = Pmf(ps, qs)
 prior.normalize()
       </input>
-    
-      <output>
-      0.04464186995102338
-      </output>
     </program>
+<pre>
+0.04464186995102338
+</pre>
     <p>
       And here's what it looks like.
     </p>
@@ -1418,11 +1388,10 @@ decorate(xlabel='Ability',
       <input>
 actual_600.mean()
       </input>
-    
-      <output>
-      604.3325737356816
-      </output>
     </program>
+<pre>
+604.3325737356816
+</pre>
     <p>
       If we run this simulation again, we'll get different results.
     </p>
@@ -1482,11 +1451,10 @@ belief, trace = simulate_test(600)
       <input>
 trace['outcome'].sum()
       </input>
-    
-      <output>
-      42
-      </output>
     </program>
+<pre>
+42
+</pre>
     <p>
       And here's what the posterior looks like.
     </p>
@@ -1512,11 +1480,10 @@ decorate(xlabel='Ability',
       <input>
 belief.mean(), belief.std()
       </input>
-    
-      <output>
-      (618.6942050450824, 40.08554296596485)
-      </output>
     </program>
+<pre>
+(618.6942050450824, 40.08554296596485)
+</pre>
     <p>
       For an exam where all questions have the same difficulty, the precision of the estimate depends strongly on the ability of the test-taker.  To show that, I'll loop through a range of abilities and simulate a test using the version of <c>choice</c> that always returns <c>difficulty=500</c>.
     </p>

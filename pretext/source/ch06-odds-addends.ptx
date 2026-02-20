@@ -82,11 +82,10 @@ it will occur to the probability that it will not.
   <input>
   odds(0.75)
   </input>
-
-      <output>
-      3.0
-      </output>
     </program>
+<pre>
+3.0
+</pre>
 <p>
   You can write odds in decimal form, but it is also common to
 write them as a ratio of integers.
@@ -101,11 +100,10 @@ For example, if my horse has a 10% chance of winning, the odds in favor are <m>1
   <input>
   odds(0.1)
   </input>
-
-      <output>
-      0.11111111111111112
-      </output>
     </program>
+<pre>
+0.11111111111111112
+</pre>
 <p>
   But in that case it would be more common I to say that the odds against are <m>9:1</m>.
 </p>
@@ -113,11 +111,10 @@ For example, if my horse has a 10% chance of winning, the odds in favor are <m>1
   <input>
   odds(0.9)
   </input>
-
-      <output>
-      9.000000000000002
-      </output>
     </program>
+<pre>
+9.000000000000002
+</pre>
 <p>
   Given the odds in favor, in decimal form, you can convert to probability like this:
 </p>
@@ -134,11 +131,10 @@ For example, if my horse has a 10% chance of winning, the odds in favor are <m>1
   <input>
   prob(3/2)
   </input>
-
-      <output>
-      0.6
-      </output>
     </program>
+<pre>
+0.6
+</pre>
 <p>
   Or if you represent odds with a numerator and denominator, you can convert to probability like this:
 </p>
@@ -152,11 +148,10 @@ For example, if my horse has a 10% chance of winning, the odds in favor are <m>1
   <input>
   prob2(3, 2)
   </input>
-
-      <output>
-      0.6
-      </output>
     </program>
+<pre>
+0.6
+</pre>
 <p>
   Probabilities and odds are different representations of the
 same information; given either one, you can compute the other.
@@ -198,21 +193,19 @@ Bayes's Rule is convenient for computing a Bayesian update on paper or in your h
   post_odds = prior_odds * likelihood_ratio
   post_odds
   </input>
-
-      <output>
-      1.5
-      </output>
     </program>
+<pre>
+1.5
+</pre>
 <program language="python">
   <input>
   post_prob = prob(post_odds)
   post_prob
   </input>
-
-      <output>
-      0.6
-      </output>
     </program>
+<pre>
+0.6
+</pre>
 <p>
   If we draw another cookie and it's chocolate, we can do another update:
 </p>
@@ -222,11 +215,10 @@ Bayes's Rule is convenient for computing a Bayesian update on paper or in your h
   post_odds *= likelihood_ratio
   post_odds
   </input>
-
-      <output>
-      0.75
-      </output>
     </program>
+<pre>
+0.75
+</pre>
 <p>
   And convert back to probability.
 </p>
@@ -235,11 +227,10 @@ Bayes's Rule is convenient for computing a Bayesian update on paper or in your h
   post_prob = prob(post_odds)
   post_prob
   </input>
-
-      <output>
-      0.6
-      </output>
     </program>
+<pre>
+0.6
+</pre>
   </section>
 
   <section xml:id="sec-ch06-olivers-blood">
@@ -319,11 +310,10 @@ So the data are a little more likely if Oliver is <em>not</em> one of the people
   likelihood_ratio = like1 / like2
   likelihood_ratio
   </input>
-
-      <output>
-      0.8333333333333334
-      </output>
     </program>
+<pre>
+0.8333333333333334
+</pre>
 <p>
   Since the likelihood ratio is less than 1, the blood tests are evidence <em>against</em> the hypothesis that Oliver left blood at the scence.
 </p>
@@ -335,11 +325,10 @@ So the data are a little more likely if Oliver is <em>not</em> one of the people
   post_odds = 1 * like1 / like2
   prob(post_odds)
   </input>
-
-      <output>
-      0.45454545454545453
-      </output>
     </program>
+<pre>
+0.45454545454545453
+</pre>
 <p>
   So this evidence doesn't "move the needle" very much.
 </p>
@@ -691,9 +680,9 @@ For each value, it computes the distribution of the total number of correct iden
   <input>
   table.head(3)
   </input>
-
-      <output>
-      0             1             2             3             4   \
+    </program>
+<pre>
+0             1             2             3             4   \
 0  1.719071e-08  1.432559e-09  1.193799e-10  9.948326e-12  8.290272e-13   
 1  4.011165e-07  5.968996e-08  7.162795e-09  7.792856e-10  8.013930e-11   
 2  4.545987e-06  9.741401e-07  1.709122e-07  2.506426e-08  3.269131e-09   
@@ -714,8 +703,7 @@ For each value, it computes the distribution of the total number of correct iden
 2  1.022555e-36  9.066202e-38  8.023344e-39  7.088005e-40  6.251357e-41  
 
 [3 rows x 36 columns]
-      </output>
-    </program>
+</pre>
 <p>
   The following figure shows selected columns from the <c>DataFrame</c>, corresponding to different hypothetical values of <c>num_sensitive</c>:
 </p>
@@ -762,11 +750,10 @@ And that's exactly the likelihood we need to do a Bayesian update.
   posterior1 = prior * likelihood1
   posterior1.normalize()
   </input>
-
-      <output>
-      0.4754741648615131
-      </output>
     </program>
+<pre>
+0.4754741648615131
+</pre>
 <p>
   For comparison, I also compute the posterior for another possible outcome, 20 correct identifications.
 </p>
@@ -776,11 +763,10 @@ And that's exactly the likelihood we need to do a Bayesian update.
   posterior2 = prior * likelihood2
   posterior2.normalize()
   </input>
-
-      <output>
-      1.7818649765887378
-      </output>
     </program>
+<pre>
+1.7818649765887378
+</pre>
 <p>
   The following figure shows posterior distributions of <c>num_sensitive</c> based on the actual data, 12 correct identifications, and the other possible outcome, 20 correct identifications.
 </p>
@@ -803,20 +789,18 @@ If there had been 20 correct identifications, the most likely conclusion would b
   <input>
   posterior1.max_prob()
   </input>
-
-      <output>
-      0
-      </output>
     </program>
+<pre>
+0
+</pre>
 <program language="python">
   <input>
   posterior2.max_prob()
   </input>
-
-      <output>
-      11
-      </output>
     </program>
+<pre>
+11
+</pre>
   </section>
 
   <section xml:id="sec-ch06-summary">

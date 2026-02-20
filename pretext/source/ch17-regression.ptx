@@ -67,9 +67,9 @@ df = pd.read_csv('2239075.csv', parse_dates=[2])
       <input>
 df.tail(3)
       </input>
-    
-      <output>
-      STATION                   NAME       DATE  PRCP  SNOW  SNWD  TMAX  \
+    </program>
+<pre>
+STATION                   NAME       DATE  PRCP  SNOW  SNWD  TMAX  \
 19357  USC00190736  BLUE HILL COOP, MA US 2020-05-09  0.45   0.0   0.0    57   
 19358  USC00190736  BLUE HILL COOP, MA US 2020-05-10  0.00   0.0   0.0    44   
 19359  USC00190736  BLUE HILL COOP, MA US 2020-05-11  0.00   0.0   0.0    59   
@@ -83,8 +83,7 @@ df.tail(3)
 19357   NaN  
 19358   NaN  
 19359   NaN
-      </output>
-    </program>
+</pre>
     <p>
       The columns we'll use are:
     </p>
@@ -118,11 +117,10 @@ snow = df.groupby('YEAR')['SNOW'].sum()
 snow = snow.iloc[1:-1]
 len(snow)
       </input>
-    
-      <output>
-      52
-      </output>
     </program>
+<pre>
+52
+</pre>
     <p>
       The following figure shows total snowfall during each of the complete years in my lifetime.
     </p>
@@ -148,15 +146,14 @@ decorate(xlabel='Year',
       <input>
 snow.loc[[1978, 1996, 2015]]
       </input>
-    
-      <output>
-      YEAR
+    </program>
+<pre>
+YEAR
 1978    100.6
 1996    124.2
 2015    141.1
 Name: SNOW, dtype: float64
-      </output>
-    </program>
+</pre>
   </section>
 
   <section xml:id="sec-ch17-regression-model">
@@ -205,11 +202,10 @@ pmf_snowfall = Pmf.from_seq(snow)
 mean, std = pmf_snowfall.mean(), pmf_snowfall.std()
 mean, std
       </input>
-    
-      <output>
-      (64.19038461538462, 26.28802198439569)
-      </output>
     </program>
+<pre>
+(64.19038461538462, 26.28802198439569)
+</pre>
     <p>
       I'll use the <c>norm</c> object from SciPy to compute the CDF of a normal distribution with the same mean and standard deviation.
     </p>
@@ -259,14 +255,13 @@ To help with that, I'll use StatsModel to fit a line to the data by <url href="h
 data = snow.reset_index()
 data.head(3)
       </input>
-    
-      <output>
-      YEAR  SNOW
+    </program>
+<pre>
+YEAR  SNOW
 0  1968  44.7
 1  1969  99.2
 2  1970  66.8
-      </output>
-    </program>
+</pre>
     <p>
       The result is a <c>DataFrame</c> with two columns, <c>YEAR</c> and <c>SNOW</c>, in a format we can use with StatsModels.
     </p>
@@ -279,11 +274,10 @@ offset = round(data['YEAR'].mean())
 data['x'] = data['YEAR'] - offset
 offset
       </input>
-    
-      <output>
-      1994
-      </output>
     </program>
+<pre>
+1994
+</pre>
     <p>
       And I'll add a column to <c>data</c> so the dependent variable has a standard name.
     </p>
@@ -303,13 +297,12 @@ formula = 'y ~ x'
 results = smf.ols(formula, data=data).fit()
 results.params
       </input>
-    
-      <output>
-      Intercept    64.446325
+    </program>
+<pre>
+Intercept    64.446325
 x             0.511880
 dtype: float64
-      </output>
-    </program>
+</pre>
     <p>
       The intercept, about 64 inches, is the expected snowfall when <c>x=0</c>, which is the beginning of 1994.
 The estimated slope indicates that total snowfall is increasing at a rate of about 0.5 inches per year.
@@ -322,11 +315,10 @@ The standard deviation of the residuals is an estimate of <c>sigma</c>.
       <input>
 results.resid.std()
       </input>
-    
-      <output>
-      25.385680731210623
-      </output>
     </program>
+<pre>
+25.385680731210623
+</pre>
     <p>
       We'll use these estimates to choose prior distributions for the parameters.
     </p>
@@ -387,15 +379,14 @@ def make_joint3(pmf1, pmf2, pmf3):
 prior = make_joint3(prior_slope, prior_inter, prior_sigma)
 prior.head(3)
       </input>
-    
-      <output>
-      Slope  Intercept  Sigma
+    </program>
+<pre>
+Slope  Intercept  Sigma
 -0.5   54.0       20.0     0.000015
                   20.5     0.000015
                   21.0     0.000015
 dtype: float64
-      </output>
-    </program>
+</pre>
     <p>
       The index of <c>Pmf</c> has three columns, containing values of <c>slope</c>, <c>inter</c>, and <c>sigma</c>, in that order.
     </p>
@@ -406,29 +397,26 @@ dtype: float64
       <input>
 len(prior_slope), len(prior_inter), len(prior_sigma)
       </input>
-    
-      <output>
-      (51, 41, 31)
-      </output>
     </program>
+<pre>
+(51, 41, 31)
+</pre>
     <program language="python">
       <input>
 len(prior_slope) * len(prior_inter) * len(prior_sigma)
       </input>
-    
-      <output>
-      64821
-      </output>
     </program>
+<pre>
+64821
+</pre>
     <program language="python">
       <input>
 len(prior)
       </input>
-    
-      <output>
-      64821
-      </output>
     </program>
+<pre>
+64821
+</pre>
   </section>
 
   <section xml:id="sec-ch17-likelihood">
@@ -479,11 +467,10 @@ densities = norm(0, sigma).pdf(resid)
 likelihood = densities.prod()
 likelihood
       </input>
-    
-      <output>
-      1.3551948769060997e-105
-      </output>
     </program>
+<pre>
+1.3551948769060997e-105
+</pre>
     <p>
       As we saw in the previous chapter, the likelihood of any particular dataset tends to be small.
 If it's too small, we might exceed the limits of floating-point arithmetic.
@@ -521,11 +508,10 @@ We are approaching the limit of what we can do with grid approximations.
 posterior = prior * likelihood
 posterior.normalize()
       </input>
-    
-      <output>
-      6.769832641515688e-107
-      </output>
     </program>
+<pre>
+6.769832641515688e-107
+</pre>
     <p>
       The result is a <c>Pmf</c> with a three-level index containing values of <c>slope</c>, <c>inter</c>, and <c>sigma</c>.
 To get the marginal distributions from the joint posterior, we can use <c>Pmf.marginal</c>, which we saw in <xref ref="ch-mark-recapture"/>.
@@ -586,11 +572,10 @@ from utils import summarize
     
 summarize(posterior_inter) 
       </input>
-    
-      <output>
-      64.448 [58.725 70.275]
-      </output>
     </program>
+<pre>
+64.448 [58.725 70.275]
+</pre>
     <p>
       The posterior mean is about 64 inches, which is the expected amount of snow during the year at the midpoint of the range, 1994.
     </p>
@@ -610,11 +595,10 @@ decorate(xlabel='Slope (inches per year)',
       <input>
 summarize(posterior_slope)
       </input>
-    
-      <output>
-      0.512 [0.1 0.9]
-      </output>
     </program>
+<pre>
+0.512 [0.1 0.9]
+</pre>
     <p>
       The posterior mean is about 0.51 inches, which is consistent with the estimate we got from least squared regression.
     </p>
@@ -625,11 +609,10 @@ summarize(posterior_slope)
       <input>
 posterior_slope.make_cdf()(0)
       </input>
-    
-      <output>
-      array(0.01840519)
-      </output>
     </program>
+<pre>
+array(0.01840519)
+</pre>
     <p>
       However, it is more likely that my conjecture was wrong: we are actually getting more snow around here than we used to, increasing at a rate of about a half-inch per year, which is substantial.  On average, we get an additional 25 inches of snow per year than we did when I was young.
     </p>
@@ -664,9 +647,9 @@ posterior_slope.make_cdf()(0)
 joint3 = prior.unstack()
 joint3.head(3)
       </input>
-    
-      <output>
-      Sigma                20.0      20.5      21.0      21.5      22.0      22.5  \
+    </program>
+<pre>
+Sigma                20.0      20.5      21.0      21.5      22.0      22.5  \
 Slope Intercept                                                               
 -0.5  54.000     0.000015  0.000015  0.000015  0.000015  0.000015  0.000015   
       54.525     0.000015  0.000015  0.000015  0.000015  0.000015  0.000015   
@@ -691,8 +674,7 @@ Slope Intercept
       55.050     0.000015  0.000015  0.000015  
 
 [3 rows x 31 columns]
-      </output>
-    </program>
+</pre>
     <p>
       The result is a <c>DataFrame</c> with <c>slope</c> and <c>intercept</c> down the rows and <c>sigmas</c> across the columns.
     </p>
@@ -736,11 +718,10 @@ def update_optimized(prior, data):
       <input>
 len(prior_slope) * len(prior_inter)
       </input>
-    
-      <output>
-      2091
-      </output>
     </program>
+<pre>
+2091
+</pre>
     <p>
       Each time through the loop, it uses a grid mesh to compute the likelihood of the data for all values of <c>sigma</c>.  The result is an array with one column for each data point and one row for each value of <c>sigma</c>.  Taking the product across the columns (<c>axis=1</c>) yields the probability of the data for each value of sigma, which we assign as a row in <c>likelihood</c>.
     </p>
@@ -748,12 +729,11 @@ len(prior_slope) * len(prior_inter)
       <input>
 %time posterior_opt = update_optimized(joint3, data)
       </input>
-    
-      <output>
-      CPU times: user 1.23 s, sys: 3.86 ms, total: 1.23 s
-Wall time: 1.23 s
-      </output>
     </program>
+<pre>
+CPU times: user 1.23 s, sys: 3.86 ms, total: 1.23 s
+Wall time: 1.23 s
+</pre>
     <p>
       We get the same result either way.
     </p>
@@ -761,11 +741,10 @@ Wall time: 1.23 s
       <input>
 np.allclose(posterior, posterior_opt.stack())
       </input>
-    
-      <output>
-      True
-      </output>
     </program>
+<pre>
+True
+</pre>
     <p>
       But this version is about 25 times faster than the previous version.
     </p>
@@ -782,15 +761,14 @@ from utils import marginal
 posterior2 = marginal(posterior_opt, 1)
 posterior2.head(3)
       </input>
-    
-      <output>
-      Slope  Intercept
+    </program>
+<pre>
+Slope  Intercept
 -0.5   54.000       7.633362e-08
        54.525       1.013295e-07
        55.050       1.327249e-07
 dtype: float64
-      </output>
-    </program>
+</pre>
     <p>
       The result is a <c>Pmf</c> with two columns in the index.
 To plot it, we have to unstack it.
@@ -800,9 +778,9 @@ To plot it, we have to unstack it.
 joint_posterior = posterior2.unstack().transpose()
 joint_posterior.head(3)
       </input>
-    
-      <output>
-      Slope             -0.50         -0.46         -0.42         -0.38  \
+    </program>
+<pre>
+Slope             -0.50         -0.46         -0.42         -0.38  \
 Intercept                                                           
 54.000     7.633362e-08  1.244120e-07  1.999617e-07  3.168007e-07   
 54.525     1.013295e-07  1.658787e-07  2.678095e-07  4.262364e-07   
@@ -833,8 +811,7 @@ Intercept
 55.050     1.057750e-07  
 
 [3 rows x 51 columns]
-      </output>
-    </program>
+</pre>
     <p>
       Here's what it looks like.
     </p>
@@ -884,11 +861,10 @@ url = "https://github.com/AllenDowney/ThinkBayes2/raw/master/data/Marathon_world
 tables = pd.read_html(url)
 len(tables)
       </input>
-    
-      <output>
-      5
-      </output>
     </program>
+<pre>
+5
+</pre>
     <p>
       The first table is the one we want.
     </p>
@@ -897,9 +873,9 @@ len(tables)
 table = tables[0]
 table.tail(3)
       </input>
-    
-      <output>
-      Time            Name Nationality                Date      Event/Place  \
+    </program>
+<pre>
+Time            Name Nationality                Date      Event/Place  \
 47  2:03:23  Wilson Kipsang       Kenya  September 29, 2013  Berlin Marathon   
 48  2:02:57  Dennis Kimetto       Kenya  September 28, 2014  Berlin Marathon   
 49  2:01:39  Eliud Kipchoge       Kenya  September 16, 2018  Berlin Marathon   
@@ -908,8 +884,7 @@ table.tail(3)
 47  IAAF[83][84] ARRS[82]  The ARRS notes Kipsang's extended time as 2:03...  
 48  IAAF[85][86] ARRS[82]  The ARRS notes Kimetto's extended time as 2:02...  
 49                IAAF[1]                                                NaN
-      </output>
-    </program>
+</pre>
     <p>
       We can use Pandas to parse the dates.
 A few of them include notes that cause parsing problems, but the argument <c>errors='coerce'</c> tells Pandas to fill invalid dates with <c>NaT</c>, which is a version of <c>NaN</c> that represents "not a time".
@@ -919,16 +894,15 @@ A few of them include notes that cause parsing problems, but the argument <c>err
 table['date'] = pd.to_datetime(table['Date'], errors='coerce')
 table['date'].head()
       </input>
-    
-      <output>
-      0   1908-07-24
+    </program>
+<pre>
+0   1908-07-24
 1   1909-01-01
 2   1909-02-12
 3   1909-05-08
 4          NaT
 Name: date, dtype: datetime64[ns]
-      </output>
-    </program>
+</pre>
     <p>
       We can also use Pandas to parse the record times.
     </p>
@@ -945,16 +919,15 @@ table['time'] = pd.to_timedelta(table['Time'])
 table['y'] = 26.2 / table['time'].dt.total_seconds() * 3600
 table['y'].head()
       </input>
-    
-      <output>
-      0    8.967143
+    </program>
+<pre>
+0    8.967143
 1    9.099504
 2    9.419942
 3    9.465508
 4    9.672854
 Name: y, dtype: float64
-      </output>
-    </program>
+</pre>
     <p>
       The following function plots the results.
     </p>
@@ -1039,9 +1012,9 @@ data['x'] = timedelta.dt.total_seconds() / 3600 / 24 / 365.24
       <input>
 data['x'].describe()
       </input>
-    
-      <output>
-      count    18.000000
+    </program>
+<pre>
+count    18.000000
 mean      0.740913
 std      15.417918
 min     -24.444201
@@ -1050,8 +1023,7 @@ min     -24.444201
 75%      13.492498
 max      23.707699
 Name: x, dtype: float64
-      </output>
-    </program>
+</pre>
     <p>
       As in the previous example, I'll use least squares regression to compute point estimates for the parameters, which will help with choosing priors.
     </p>
@@ -1063,13 +1035,12 @@ formula = 'y ~ x'
 results = smf.ols(formula, data=data).fit()
 results.params
       </input>
-    
-      <output>
-      Intercept    64.446325
+    </program>
+<pre>
+Intercept    64.446325
 x             0.511880
 dtype: float64
-      </output>
-    </program>
+</pre>
     <p>
       The estimated intercept is about 12.5 mph, which is the interpolated world record pace for 1995.  The estimated slope is about 0.015 mph per year, which is the rate the world record pace is increasing, according to the model.
     </p>
@@ -1080,11 +1051,10 @@ dtype: float64
       <input>
 results.resid.std()
       </input>
-    
-      <output>
-      25.385680731210623
-      </output>
     </program>
+<pre>
+25.385680731210623
+</pre>
     <p>
       These parameters give us a good idea where we should put the prior distributions.
     </p>
@@ -1122,15 +1092,14 @@ prior_sigma = make_uniform(qs, 'Sigma')
 prior = make_joint3(prior_slope, prior_inter, prior_sigma)
 prior.head()
       </input>
-    
-      <output>
-      Slope  Intercept  Sigma   
+    </program>
+<pre>
+Slope  Intercept  Sigma   
 0.012  12.4       0.010000    0.000015
                   0.016667    0.000015
                   0.023333    0.000015
 dtype: float64
-      </output>
-    </program>
+</pre>
     <p>
       Now we can compute likelihoods as in the previous example:
     </p>
@@ -1155,11 +1124,10 @@ for slope, inter, sigma in prior.index:
 posterior = prior * likelihood
 posterior.normalize()
       </input>
-    
-      <output>
-      6.769832641515688e-107
-      </output>
     </program>
+<pre>
+6.769832641515688e-107
+</pre>
     <p>
       And unpack the marginals:
     </p>
@@ -1192,11 +1160,10 @@ decorate(xlabel='intercept',
       <input>
 summarize(posterior_inter)
       </input>
-    
-      <output>
-      12.46 [12.4425 12.4775]
-      </output>
     </program>
+<pre>
+12.46 [12.4425 12.4775]
+</pre>
     <p>
       The posterior mean is about 12.5 mph, which is the world record marathon pace the model predicts for the midpoint of the date range, 1994.
     </p>
@@ -1216,11 +1183,10 @@ decorate(xlabel='Slope',
       <input>
 summarize(posterior_slope)
       </input>
-    
-      <output>
-      0.512 [0.1 0.9]
-      </output>
     </program>
+<pre>
+0.512 [0.1 0.9]
+</pre>
     <p>
       The posterior mean is about 0.015 mph per year, or 0.15 mph per decade.
     </p>
@@ -1309,14 +1275,13 @@ dts = pd.to_timedelta(future*365.24, unit='day') + offset
 pd.DataFrame(dict(datetime=dts),
              index=['early', 'median', 'late'])
       </input>
-    
-      <output>
-      datetime
+    </program>
+<pre>
+datetime
 early  2030-06-21 12:40:01.592340389
 median 2036-09-20 09:03:28.522400448
 late   2042-08-13 11:20:06.313348412
-      </output>
-    </program>
+</pre>
     <p>
       The median prediction is 2036, with a 90% credible interval from 2032 to 2043.  So there is about a 5% chance we'll see a two-hour marathon before 2032.
     </p>
@@ -1365,9 +1330,9 @@ With more than three parameters, it becomes impractical to use grid algorithms.
 df = pd.read_csv('2239075.csv', parse_dates=[2])
 df.head(3)
           </input>
-        
-      <output>
-      STATION                   NAME       DATE  PRCP  SNOW  SNWD  TMAX  \
+    </program>
+<pre>
+STATION                   NAME       DATE  PRCP  SNOW  SNWD  TMAX  \
 0  USC00190736  BLUE HILL COOP, MA US 1967-05-11  0.43   0.0   0.0    57   
 1  USC00190736  BLUE HILL COOP, MA US 1967-05-12  0.00   0.0   0.0    58   
 2  USC00190736  BLUE HILL COOP, MA US 1967-05-13  0.00   0.0   0.0    64   
@@ -1381,8 +1346,7 @@ df.head(3)
 0   NaN  
 1   NaN  
 2   NaN
-      </output>
-    </program>
+</pre>
         <p>
           Again, I'll create a column that contains the year part of the dates.
         </p>
@@ -1408,11 +1372,10 @@ df['TMID'] = (df['TMIN'] + df['TMAX']) / 2
 tmid = df.groupby('YEAR')['TMID'].mean()
 len(tmid)
           </input>
-        
-      <output>
-      54
-      </output>
     </program>
+<pre>
+54
+</pre>
         <p>
           Again, I'll drop the first and last years, which are incomplete.
         </p>
@@ -1421,11 +1384,10 @@ len(tmid)
 complete = tmid.iloc[1:-1]
 len(complete)
           </input>
-        
-      <output>
-      52
-      </output>
     </program>
+<pre>
+52
+</pre>
         <p>
           Here's what the time series looks like.
         </p>
@@ -1446,46 +1408,42 @@ decorate(xlabel='Year',
 data = complete.reset_index()
 data.head()
           </input>
-        
-      <output>
-      YEAR       TMID
+    </program>
+<pre>
+YEAR       TMID
 0  1968  48.071038
 1  1969  48.687671
 2  1970  48.258904
 3  1971  48.804110
 4  1972  47.112022
-      </output>
-    </program>
+</pre>
         <program language="python">
           <input>
 offset = round(data['YEAR'].mean())
 offset
           </input>
-        
-      <output>
-      1994
-      </output>
     </program>
+<pre>
+1994
+</pre>
         <program language="python">
           <input>
 data['x'] = data['YEAR'] - offset
 data['x'].mean()
           </input>
-        
-      <output>
-      -0.5
-      </output>
     </program>
+<pre>
+-0.5
+</pre>
         <program language="python">
           <input>
 data['y'] = data['TMID']
 data['y'].std()
           </input>
-        
-      <output>
-      1.2389114009625752
-      </output>
     </program>
+<pre>
+1.2389114009625752
+</pre>
         <p>
           Now we can use StatsModels to estimate the parameters.
         </p>
@@ -1497,13 +1455,12 @@ formula = 'y ~ x'
 results = smf.ols(formula, data=data).fit()
 results.params
           </input>
-        
-      <output>
-      Intercept    64.446325
+    </program>
+<pre>
+Intercept    64.446325
 x             0.511880
 dtype: float64
-      </output>
-    </program>
+</pre>
         <p>
           And compute the standard deviation of the parameters.
         </p>
@@ -1511,11 +1468,10 @@ dtype: float64
           <input>
 results.resid.std()
           </input>
-        
-      <output>
-      25.385680731210623
-      </output>
     </program>
+<pre>
+25.385680731210623
+</pre>
         <p>
           According to the least squares regression model, annual average temperature is increasing by about 0.044 degrees F per year.
         </p>
@@ -1550,9 +1506,9 @@ results.resid.std()
 df = pd.read_csv('2239075.csv', parse_dates=[2])
 df.head(3)
         </input>
-      
-      <output>
-      STATION                   NAME       DATE  PRCP  SNOW  SNWD  TMAX  \
+    </program>
+<pre>
+STATION                   NAME       DATE  PRCP  SNOW  SNWD  TMAX  \
 0  USC00190736  BLUE HILL COOP, MA US 1967-05-11  0.43   0.0   0.0    57   
 1  USC00190736  BLUE HILL COOP, MA US 1967-05-12  0.00   0.0   0.0    58   
 2  USC00190736  BLUE HILL COOP, MA US 1967-05-13  0.00   0.0   0.0    64   
@@ -1566,8 +1522,7 @@ df.head(3)
 0   NaN  
 1   NaN  
 2   NaN
-      </output>
-    </program>
+</pre>
       <program language="python">
         <input>
 df['YEAR'] = df['DATE'].dt.year
@@ -1583,21 +1538,19 @@ df['TMID'] = (df['TMIN'] + df['TMAX']) / 2
 tmid = df.groupby('YEAR')['TMID'].mean()
 len(tmid)
         </input>
-      
-      <output>
-      54
-      </output>
     </program>
+<pre>
+54
+</pre>
       <program language="python">
         <input>
 complete = tmid.iloc[1:-1]
 len(complete)
         </input>
-      
-      <output>
-      52
-      </output>
     </program>
+<pre>
+52
+</pre>
       <program language="python">
         <input>
 complete.plot(ls='', marker='o', alpha=0.5)
@@ -1612,46 +1565,42 @@ decorate(xlabel='Year',
 data = complete.reset_index()
 data.head()
         </input>
-      
-      <output>
-      YEAR       TMID
+    </program>
+<pre>
+YEAR       TMID
 0  1968  48.071038
 1  1969  48.687671
 2  1970  48.258904
 3  1971  48.804110
 4  1972  47.112022
-      </output>
-    </program>
+</pre>
       <program language="python">
         <input>
 offset = round(data['YEAR'].mean())
 offset
         </input>
-      
-      <output>
-      1994
-      </output>
     </program>
+<pre>
+1994
+</pre>
       <program language="python">
         <input>
 data['x'] = data['YEAR'] - offset
 data['x'].mean()
         </input>
-      
-      <output>
-      -0.5
-      </output>
     </program>
+<pre>
+-0.5
+</pre>
       <program language="python">
         <input>
 data['y'] = data['TMID']
 data['y'].std()
         </input>
-      
-      <output>
-      1.2389114009625752
-      </output>
     </program>
+<pre>
+1.2389114009625752
+</pre>
       <program language="python">
         <input>
 import statsmodels.formula.api as smf
@@ -1660,22 +1609,20 @@ formula = 'y ~ x'
 results = smf.ols(formula, data=data).fit()
 results.params
         </input>
-      
-      <output>
-      Intercept    64.446325
+    </program>
+<pre>
+Intercept    64.446325
 x             0.511880
 dtype: float64
-      </output>
-    </program>
+</pre>
       <program language="python">
         <input>
 results.resid.std()
         </input>
-      
-      <output>
-      25.385680731210623
-      </output>
     </program>
+<pre>
+25.385680731210623
+</pre>
       <program language="python">
         <input>
 
@@ -1703,15 +1650,14 @@ prior_sigma = make_uniform(qs, 'Sigma')
 prior = make_joint3(prior_slope, prior_inter, prior_sigma)
 prior.head()
         </input>
-      
-      <output>
-      Slope  Intercept  Sigma   
+    </program>
+<pre>
+Slope  Intercept  Sigma   
 0.012  12.4       0.010000    0.000015
                   0.016667    0.000015
                   0.023333    0.000015
 dtype: float64
-      </output>
-    </program>
+</pre>
       <program language="python">
         <input>
 
@@ -1732,11 +1678,10 @@ for slope, inter, sigma in prior.index:
 posterior = prior * likelihood
 posterior.normalize()
         </input>
-      
-      <output>
-      6.769832641515688e-107
-      </output>
     </program>
+<pre>
+6.769832641515688e-107
+</pre>
       <program language="python">
         <input>
 

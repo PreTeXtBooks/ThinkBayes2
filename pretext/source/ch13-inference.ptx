@@ -46,14 +46,13 @@
     df = pd.read_csv('drp_scores.csv', skiprows=21, delimiter='\t')
     df.head(3)
       </input>
-    
-      <output>
-      Treatment  Response
+    </program>
+<pre>
+Treatment  Response
 0   Treated        24
 1   Treated        43
 2   Treated        58
-      </output>
-    </program>
+</pre>
     <p>
       The <c>Treatment</c> column indicates whether each student was in the treated or control group. The <c>Response</c> is their score on the test.
     </p>
@@ -165,11 +164,10 @@
     data = responses['Control']
     data.shape
       </input>
-    
-      <output>
-      (23,)
-      </output>
     </program>
+<pre>
+(23,)
+</pre>
     <p>
       In the next section we'll compute the likelihood of this data for each pair of parameters in the prior distribution.
     </p>
@@ -188,11 +186,10 @@
     
     mu_mesh.shape
       </input>
-    
-      <output>
-      (101, 101, 23)
-      </output>
     </program>
+<pre>
+(101, 101, 23)
+</pre>
     <p>
       Now we can use <c>norm.pdf</c> to compute the probability density of each score for each hypothetical pair of parameters.
     </p>
@@ -203,11 +200,10 @@
     densities = norm(mu_mesh, sigma_mesh).pdf(data_mesh)
     densities.shape
       </input>
-    
-      <output>
-      (101, 101, 23)
-      </output>
     </program>
+<pre>
+(101, 101, 23)
+</pre>
     <p>
       The result is a 3-D array.  To compute likelihoods, I'll multiply these densities along <c>axis=2</c>, which is the axis of the data:
     </p>
@@ -216,11 +212,10 @@
     likelihood = densities.prod(axis=2)
     likelihood.shape
       </input>
-    
-      <output>
-      (101, 101)
-      </output>
     </program>
+<pre>
+(101, 101)
+</pre>
     <p>
       The result is a 2-D array that contains the likelihood of the entire dataset for each hypothetical pair of parameters.
     </p>
@@ -235,11 +230,10 @@
     normalize(posterior)
     posterior.shape
       </input>
-    
-      <output>
-      (101, 101)
-      </output>
     </program>
+<pre>
+(101, 101)
+</pre>
     <p>
       The result is a <c>DataFrame</c> that represents the joint posterior distribution.
     </p>
@@ -343,11 +337,10 @@
       <input>
     Pmf.prob_gt(pmf_mean_treated, pmf_mean_control)
       </input>
-    
-      <output>
-      0.980479025187326
-      </output>
     </program>
+<pre>
+0.980479025187326
+</pre>
     <p>
       There is a 98% chance that the mean in the treated group is higher.
     </p>
@@ -371,11 +364,10 @@
       <input>
     len(pmf_mean_treated), len(pmf_mean_control), len(pmf_diff)
       </input>
-    
-      <output>
-      (101, 101, 879)
-      </output>
     </program>
+<pre>
+(101, 101, 879)
+</pre>
     <p>
       In the worst case, the size of the result can be the product of the sizes of the originals.
     </p>
@@ -458,11 +450,10 @@
       <input>
     pmf_diff.mean()
       </input>
-    
-      <output>
-      9.954413088940848
-      </output>
     </program>
+<pre>
+9.954413088940848
+</pre>
     <p>
       We can use <c>credible_interval</c> to compute a 90% credible interval.
     </p>
@@ -470,11 +461,10 @@
       <input>
     pmf_diff.credible_interval(0.9)
       </input>
-    
-      <output>
-      array([ 2.4, 17.4])
-      </output>
     </program>
+<pre>
+array([ 2.4, 17.4])
+</pre>
     <p>
       Based on this interval, we are pretty sure the treatment improves test scores by 2 to 17 points.
     </p>
@@ -544,11 +534,10 @@
     like1 = dist_m.pdf(m)
     like1
       </input>
-    
-      <output>
-      0.10137915138497372
-      </output>
     </program>
+<pre>
+0.10137915138497372
+</pre>
     <p>
       Now let's compute the likelihood of the observed value of <c>s</c>, which is 18. First, we compute the transformed value <c>t</c>:
     </p>
@@ -557,11 +546,10 @@
     t = n * s**2 / sigma**2
     t
       </input>
-    
-      <output>
-      22.422145328719722
-      </output>
     </program>
+<pre>
+22.422145328719722
+</pre>
     <p>
       Then we create a <c>chi2</c> object to represent the distribution of <c>t</c>:
     </p>
@@ -580,11 +568,10 @@
     like2 = dist_s.pdf(t)
     like2
       </input>
-    
-      <output>
-      0.04736427909437004
-      </output>
     </program>
+<pre>
+0.04736427909437004
+</pre>
     <p>
       Finally, because <c>m</c> and <c>s</c> are independent, their joint likelihood is the product of their likelihoods:
     </p>
@@ -593,11 +580,10 @@
     like = like1 * like2
     like
       </input>
-    
-      <output>
-      0.004801750420548287
-      </output>
     </program>
+<pre>
+0.004801750420548287
+</pre>
     <p>
       Now we can compute the likelihood of the data for any values of $\mu$ and $\sigma$, which we'll use in the next section to do the update.
     </p>
@@ -618,12 +604,11 @@
         
     summary
       </input>
-    
-      <output>
-      {'Control': (23, 41.52173913043478, 17.148733229699484),
- 'Treated': (21, 51.476190476190474, 11.00735684721381)}
-      </output>
     </program>
+<pre>
+{'Control': (23, 41.52173913043478, 17.148733229699484),
+ 'Treated': (21, 51.476190476190474, 11.00735684721381)}
+</pre>
     <p>
       The result is a dictionary that maps from group name to a tuple that contains the sample size, <c>n</c>, the sample mean, <c>m</c>, and the sample standard deviation <c>s</c>, for each group.
     </p>
@@ -643,11 +628,10 @@
     mus, sigmas = np.meshgrid(prior.columns, prior.index)
     mus.shape
       </input>
-    
-      <output>
-      (101, 101)
-      </output>
     </program>
+<pre>
+(101, 101)
+</pre>
     <p>
       Now we can compute the likelihood of seeing the sample mean, <c>m</c>, for each pair of parameters.
     </p>
@@ -656,11 +640,10 @@
     like1 = norm(mus, sigmas/np.sqrt(n)).pdf(m)
     like1.shape
       </input>
-    
-      <output>
-      (101, 101)
-      </output>
     </program>
+<pre>
+(101, 101)
+</pre>
     <p>
       And we can compute the likelihood of the sample standard deviation, <c>s</c>, for each pair of parameters.
     </p>
@@ -670,11 +653,10 @@
     like2 = chi2(n-1).pdf(ts)
     like2.shape
       </input>
-    
-      <output>
-      (101, 101)
-      </output>
     </program>
+<pre>
+(101, 101)
+</pre>
     <p>
       Finally, we can do the update with both likelihoods:
     </p>
@@ -683,11 +665,10 @@
     posterior_control2 = prior * like1 * like2
     normalize(posterior_control2)
       </input>
-    
-      <output>
-      0.00030965351017402847
-      </output>
     </program>
+<pre>
+0.00030965351017402847
+</pre>
     <p>
       To compute the posterior distribution for the treatment group, I'll put the previous steps in a function:
     </p>
@@ -816,11 +797,10 @@
     samples = dist.rvs((1000, n))
     samples.shape
       </input>
-    
-      <output>
-      (1000, 20)
-      </output>
     </program>
+<pre>
+(1000, 20)
+</pre>
     <p>
       The result is an array with 1000 rows, each containing a sample or 20 simulated test scores.
     </p>
@@ -832,11 +812,10 @@
     sample_means = samples.mean(axis=1)
     sample_means.shape
       </input>
-    
-      <output>
-      (1000,)
-      </output>
     </program>
+<pre>
+(1000,)
+</pre>
     <p>
       Now, let's compare the distribution of these means to <c>dist_m</c>. I'll use <c>pmf_from_dist</c> to make a discrete approximation of <c>dist_m</c>:
     </p>
@@ -914,11 +893,10 @@
     sample_stds = samples.std(axis=1)
     sample_stds.shape
       </input>
-    
-      <output>
-      (1000,)
-      </output>
     </program>
+<pre>
+(1000,)
+</pre>
     <p>
       Now we'll compute the transformed values, $t = n s^2 / \sigma^2$.
     </p>
@@ -983,11 +961,10 @@
       <input>
     np.corrcoef(sample_means, sample_stds)[0][1]
       </input>
-    
-      <output>
-      0.017673583293253373
-      </output>
     </program>
+<pre>
+0.017673583293253373
+</pre>
     <p>
       Their correlation is near zero, which is consistent with their being independent.
     </p>
@@ -1067,11 +1044,10 @@
     
     Pmf.prob_gt(pmf_std_control, pmf_std_treated)
       </input>
-    
-      <output>
-      0.9685103375300469
-      </output>
     </program>
+<pre>
+0.9685103375300469
+</pre>
     <program language="python">
       <input>
     # Solution
@@ -1085,22 +1061,20 @@
     
     pmf_diff2.mean()
       </input>
-    
-      <output>
-      6.41717132817218
-      </output>
     </program>
+<pre>
+6.41717132817218
+</pre>
     <program language="python">
       <input>
     # Solution
     
     pmf_diff2.credible_interval(0.9)
       </input>
-    
-      <output>
-      array([ 1. , 12.5])
-      </output>
     </program>
+<pre>
+array([ 1. , 12.5])
+</pre>
     <program language="python">
       <input>
     # Solution
@@ -1151,21 +1125,19 @@
     sample_treated = sample_joint(posterior_treated, 1000)
     sample_treated.shape
       </input>
-    
-      <output>
-      (1000,)
-      </output>
     </program>
+<pre>
+(1000,)
+</pre>
     <program language="python">
       <input>
     sample_control = sample_joint(posterior_control, 1000)
     sample_control.shape
       </input>
-    
-      <output>
-      (1000,)
-      </output>
     </program>
+<pre>
+(1000,)
+</pre>
     <p>
       The result is an array of tuples, where each tuple contains a possible pair of values for $\mu$ and $\sigma$. Now you can loop through the samples, compute the Cohen effect size for each, and estimate the distribution of effect sizes.
     </p>
@@ -1193,11 +1165,10 @@
     
     cohen_effect(sample_treated[0], sample_control[0])
       </input>
-    
-      <output>
-      0.28051948051948006
-      </output>
     </program>
+<pre>
+0.28051948051948006
+</pre>
     <program language="python">
       <input>
     # Solution
@@ -1227,22 +1198,20 @@
     
     cdf.mean()
       </input>
-    
-      <output>
-      0.6744533768739635
-      </output>
     </program>
+<pre>
+0.6744533768739635
+</pre>
     <program language="python">
       <input>
     # Solution
     
     cdf.credible_interval(0.9)
       </input>
-    
-      <output>
-      array([0.12857143, 1.2       ])
-      </output>
     </program>
+<pre>
+array([0.12857143, 1.2       ])
+</pre>
     <p>
       <em>Exercise:</em> This exercise is inspired by <url href="https://www.reddit.com/r/statistics/comments/hcvl2j/q_reverse_empirical_distribution_rule_question/">a question that appeared on Reddit</url>.
     </p>
@@ -1280,11 +1249,10 @@
     pgt90 = norm(81, hypos).sf(90)
     pgt90.shape
       </input>
-    
-      <output>
-      (101,)
-      </output>
     </program>
+<pre>
+(101,)
+</pre>
     <program language="python">
       <input>
     # Solution
@@ -1297,11 +1265,10 @@
     likelihood1 = binom(25, pgt90).pmf(5)
     likelihood1.shape
       </input>
-    
-      <output>
-      (101,)
-      </output>
     </program>
+<pre>
+(101,)
+</pre>
     <program language="python">
       <input>
     # Solution
@@ -1312,11 +1279,10 @@
     posterior = prior * likelihood1
     posterior.normalize()
       </input>
-    
-      <output>
-      5.299480018256258
-      </output>
     </program>
+<pre>
+5.299480018256258
+</pre>
     <program language="python">
       <input>
     # Solution
@@ -1370,11 +1336,10 @@
     posterior2 = prior * likelihood1 * likelihood2
     posterior2.normalize()
       </input>
-    
-      <output>
-      0.01425455531129565
-      </output>
     </program>
+<pre>
+0.01425455531129565
+</pre>
     <program language="python">
       <input>
     # Solution
@@ -1394,22 +1359,20 @@
     
     posterior.mean(), posterior2.mean()
       </input>
-    
-      <output>
-      (18.150261186811544, 10.189707962198526)
-      </output>
     </program>
+<pre>
+(18.150261186811544, 10.189707962198526)
+</pre>
     <program language="python">
       <input>
     # Solution
     
     posterior2.credible_interval(0.9)
       </input>
-    
-      <output>
-      array([ 7., 15.])
-      </output>
     </program>
+<pre>
+array([ 7., 15.])
+</pre>
     <p>
       <em>Exercise:</em> The <url href="http://en.wikipedia.org/wiki/Variability_hypothesis">Variability Hypothesis</url> is the observation that many physical traits are more variable among males than among females, in many species. 
     </p>
@@ -1547,22 +1510,20 @@
     ratio_cv = Pmf.div_dist(pmf_cv_female, pmf_cv_male)
     ratio_cv.max_prob()
       </input>
-    
-      <output>
-      1.0233615721208176
-      </output>
     </program>
+<pre>
+1.0233615721208176
+</pre>
     <program language="python">
       <input>
     # Solution
     
     ratio_cv.credible_interval(0.9)
       </input>
-    
-      <output>
-      array([1.0193799 , 1.02734473])
-      </output>
     </program>
+<pre>
+array([1.0193799 , 1.02734473])
+</pre>
     <p>
       <em>Think Bayes</em>, Second Edition
     </p>

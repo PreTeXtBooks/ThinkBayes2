@@ -70,10 +70,6 @@ k = 1
 
 binom.pmf(k, n, p)
       </input>
-    
-      <output>
-      0.5000000000000002
-      </output>
     </program>
 <pre>
 0.5000000000000002
@@ -91,10 +87,6 @@ ks = np.arange(n+1)
 ps = binom.pmf(ks, n, p)
 ps
       </input>
-    
-      <output>
-      array([0.25, 0.5 , 0.25])
-      </output>
     </program>
 <pre>
 array([0.25, 0.5 , 0.25])
@@ -115,13 +107,6 @@ from empiricaldist import Pmf
 pmf_k = Pmf(ps, ks)
 pmf_k
       </input>
-    
-      <output>
-      0    0.25
-1    0.50
-2    0.25
-dtype: float64
-      </output>
     </program>
 <pre>
 0    0.25
@@ -180,10 +165,6 @@ decorate(xlabel='Number of heads (k)',
       <input>
 pmf_k.max_prob()
       </input>
-    
-      <output>
-      125
-      </output>
     </program>
 <pre>
 125
@@ -197,10 +178,6 @@ pmf_k.max_prob()
       <input>
 pmf_k[125]
       </input>
-    
-      <output>
-      0.050412213147309655
-      </output>
     </program>
 <pre>
 0.050412213147309655
@@ -214,10 +191,6 @@ pmf_k[125]
       <input>
 pmf_k[140]
       </input>
-    
-      <output>
-      0.008357181724918188
-      </output>
     </program>
 <pre>
 0.008357181724918204
@@ -248,10 +221,6 @@ def prob_ge(pmf, threshold):
       <input>
 prob_ge(pmf_k, 140)
       </input>
-    
-      <output>
-      0.03321057562002166
-      </output>
     </program>
 <pre>
 0.03321057562002167
@@ -265,10 +234,6 @@ prob_ge(pmf_k, 140)
       <input>
 pmf_k.prob_ge(140)
       </input>
-    
-      <output>
-      0.03321057562002166
-      </output>
     </program>
 <pre>
 0.03321057562002167
@@ -319,10 +284,6 @@ decorate(xlabel='Number of heads (k)',
       <input>
 pmf_k.prob_le(110)
       </input>
-    
-      <output>
-      0.033210575620021665
-      </output>
     </program>
 <pre>
 0.03321057562002166
@@ -483,10 +444,6 @@ It indicates that values less than 0.4 and greater than 0.7 are unlikely; values
       <input>
 posterior.max_prob()
       </input>
-    
-      <output>
-      0.56
-      </output>
     </program>
 <pre>
 0.56
@@ -507,11 +464,10 @@ posterior.max_prob()
 uniform = Pmf(1, hypos, name='uniform')
 uniform.normalize()
       </input>
-    
-      <output>
-      101
-      </output>
     </program>
+<pre>
+101
+</pre>
 
     <p>
       But that might not be a reasonable choice based on what we know about coins.
@@ -537,11 +493,10 @@ a = np.append(ramp_up, ramp_down)
 triangle = Pmf(a, hypos, name='triangle')
 triangle.normalize()
       </input>
-    
-      <output>
-      2500
-      </output>
     </program>
+<pre>
+2500
+</pre>
 
     <p>
       <c>arange</c> returns a NumPy array, so we can use <c>np.append</c> to append <c>ramp_down</c> to the end of <c>ramp_up</c>.
@@ -684,10 +639,6 @@ decorate_euro(title='Posterior distributions computed two ways')
       <input>
 np.allclose(uniform, uniform2)
       </input>
-    
-      <output>
-      True
-      </output>
     </program>
 <pre>
 True
@@ -890,11 +841,10 @@ for data in 'YYY':
 
 posterior.normalize()
       </input>
-    
-      <output>
-      0.017944179687707326
-      </output>
     </program>
+<pre>
+0.017944179687707326
+</pre>
 
         <program language="python">
           <input>
@@ -914,11 +864,10 @@ decorate(xlabel='Probability of getting a hit',
 
 prior.max_prob()
       </input>
-    
-      <output>
-      0.25
-      </output>
     </program>
+<pre>
+0.25
+</pre>
 
         <program language="python">
           <input>
@@ -926,11 +875,10 @@ prior.max_prob()
 
 posterior.max_prob()
       </input>
-    
-      <output>
-      0.271
-      </output>
     </program>
+<pre>
+0.271
+</pre>
       </solution>
     </exercise>
 
@@ -998,11 +946,10 @@ for data in dataset:
 
 posterior.normalize()
       </input>
-    
-      <output>
-      3.6945139133967024e-21
-      </output>
     </program>
+<pre>
+3.6945139133967024e-21
+</pre>
 
         <program language="python">
           <input>
@@ -1180,11 +1127,10 @@ decorate(xlabel='Probability of hitting the target',
 posterior = prior * likelihood
 posterior.normalize()
       </input>
-    
-      <output>
-      49.129627998379995
-      </output>
     </program>
+<pre>
+49.129627998379995
+</pre>
 
         <program language="python">
           <input>
