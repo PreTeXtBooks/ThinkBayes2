@@ -292,7 +292,7 @@ Treatment  Response
     </program>
     <image source="images/ch13_inference_de1ad889.png" width="80%"/>
     <p>
-      Along the $x$-axis, it looks like the mean score for the treated group is higher. Along the $y$-axis, it looks like the standard deviation for the treated group is lower.
+      Along the <m>x</m>-axis, it looks like the mean score for the treated group is higher. Along the <m>y</m>-axis, it looks like the standard deviation for the treated group is lower.
     </p>
     <p>
       If we think the treatment causes these differences, the data suggest that the treatment increases the mean of the scores and decreases their spread. We can see these differences more clearly by looking at the marginal distributions for <c>mu</c> and <c>sigma</c>.
@@ -483,7 +483,7 @@ array([ 2.4, 17.4])
       An alternative is to compute a summary of the dataset and compute the likelihood of the summary. For example, if we compute the mean and standard deviation of the data, we can compute the likelihood of those summary statistics under each hypothesis.
     </p>
     <p>
-      As an example, suppose we know that the actual mean of the population, $\mu$,  is 42 and the actual standard deviation, $\sigma$, is 17.
+      As an example, suppose we know that the actual mean of the population, <m>\mu</m>,  is 42 and the actual standard deviation, <m>\sigma</m>, is 17.
     </p>
     <program language="python">
       <input>
@@ -505,18 +505,18 @@ array([ 2.4, 17.4])
       </input>
     </program>
     <p>
-      The summary statistics, <c>m</c> and <c>s</c>, are not too far from the parameters $\mu$ and $\sigma$, so it seems like they are not too unlikely.
+      The summary statistics, <c>m</c> and <c>s</c>, are not too far from the parameters <m>\mu</m> and <m>\sigma</m>, so it seems like they are not too unlikely.
     </p>
     <p>
       To compute their likelihood, we will take advantage of three results from mathematical statistics:
     </p>
     <ul>
-      <li><p>Given $\mu$ and $\sigma$, the distribution of <c>m</c> is normal with parameters $\mu$ and $\sigma/\sqrt{n}$;</p></li>
-      <li><p>The distribution of $s$ is more complicated, but if we compute the transform $t = n s^2 / \sigma^2$, the distribution of $t$ is chi-squared with parameter $n-1$; and</p></li>
+      <li><p>Given <m>\mu</m> and <m>\sigma</m>, the distribution of <c>m</c> is normal with parameters <m>\mu</m> and <m>\sigma/\sqrt{n}</m>;</p></li>
+      <li><p>The distribution of <m>s</m> is more complicated, but if we compute the transform <m>t = n s^2 / \sigma^2</m>, the distribution of <m>t</m> is chi-squared with parameter <m>n-1</m>; and</p></li>
       <li><p>According to <url href="https://en.wikipedia.org/wiki/Basu%27s_theorem">Basu's theorem</url>, <c>m</c> and <c>s</c> are independent.</p></li>
     </ul>
     <p>
-      So let's compute the likelihood of <c>m</c> and <c>s</c> given $\mu$ and $\sigma$.
+      So let's compute the likelihood of <c>m</c> and <c>s</c> given <m>\mu</m> and <m>\sigma</m>.
     </p>
     <p>
       First I'll create a <c>norm</c> object that represents the distribution of <c>m</c>.
@@ -585,7 +585,7 @@ array([ 2.4, 17.4])
 0.004801750420548287
 </pre>
     <p>
-      Now we can compute the likelihood of the data for any values of $\mu$ and $\sigma$, which we'll use in the next section to do the update.
+      Now we can compute the likelihood of the data for any values of <m>\mu</m> and <m>\sigma</m>, which we'll use in the next section to do the update.
     </p>
   </section>
 
@@ -898,7 +898,7 @@ array([ 2.4, 17.4])
 (1000,)
 </pre>
     <p>
-      Now we'll compute the transformed values, $t = n s^2 / \sigma^2$.
+      Now we'll compute the transformed values, <m>t = n s^2 / \sigma^2</m>.
     </p>
     <program language="python">
       <input>
@@ -906,7 +906,7 @@ array([ 2.4, 17.4])
       </input>
     </program>
     <p>
-      We expect the transformed values to follow a chi-square distribution with parameter $n-1$. SciPy provides <c>chi2</c>, which we can use to represent this distribution.
+      We expect the transformed values to follow a chi-square distribution with parameter <m>n-1</m>. SciPy provides <c>chi2</c>, which we can use to represent this distribution.
     </p>
     <program language="python">
       <input>
@@ -1088,11 +1088,9 @@ array([ 1. , 12.5])
       An <url href="http://en.wikipedia.org/wiki/Effect_size">effect size</url> is a statistic intended to quantify the magnitude of a phenomenon. If the phenomenon is a difference in means between two groups, a common way to quantify it is Cohen's effect size, denoted $d$.
     </p>
     <p>
-      If the parameters for Group 1 are $(\mu_1, \sigma_1)$, and the parameters for Group 2 are $(\mu_2, \sigma_2)$, Cohen's effect size is
+      If the parameters for Group 1 are <m>(\mu_1, \sigma_1)</m>, and the parameters for Group 2 are <m>(\mu_2, \sigma_2)</m>, Cohen's effect size is
     </p>
-    <p>
-      $$ d = \frac{\mu_1 - \mu_2}{(\sigma_1 + \sigma_2)/2} $$
-    </p>
+    <me>d = \frac{\mu_1 - \mu_2}{(\sigma_1 + \sigma_2)/2}</me>
     <p>
       Use the joint posterior distributions for the two groups to compute the posterior distribution for Cohen's effect size.
     </p>
@@ -1136,7 +1134,7 @@ array([ 1. , 12.5])
 (1000,)
 </pre>
     <p>
-      The result is an array of tuples, where each tuple contains a possible pair of values for $\mu$ and $\sigma$. Now you can loop through the samples, compute the Cohen effect size for each, and estimate the distribution of effect sizes.
+      The result is an array of tuples, where each tuple contains a possible pair of values for <m>\mu</m> and <m>\sigma</m>. Now you can loop through the samples, compute the Cohen effect size for each, and estimate the distribution of effect sizes.
     </p>
       </statement>
     <solution>
