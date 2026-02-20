@@ -3,6 +3,18 @@
 <chapter xml:id="ch-poisson-processes" xmlns:xi="http://www.w3.org/2001/XInclude">
   <title>Poisson Processes</title>
 
+  <introduction>
+    <p>
+      This chapter introduces the <url href="https://en.wikipedia.org/wiki/Poisson_point_process">Poisson process</url>, which is a model used to describe events that occur at random intervals.
+      As an example of a Poisson process, we'll model goal-scoring in soccer, which is American English for the game everyone else calls <q>football</q>.
+      We'll use goals scored in a game to estimate the parameter of a Poisson process; then we'll use the posterior distribution to make predictions.
+    </p>
+
+    <p>
+      And we'll solve The World Cup Problem.
+    </p>
+  </introduction>
+
   <section xml:id="sec-poisson-world-cup">
     <title>The World Cup Problem</title>
 
@@ -20,7 +32,7 @@
     </p>
 
     <p>
-      First, I'll assume that for any team against any other team there is some unknown goal-scoring rate, measured in goals per game, which I'll denote <m>\lambda</m>.
+      First, I'll assume that for any team against another team there is some unknown goal-scoring rate, measured in goals per game, which I'll denote with the Python variable <c>lam</c> or the Greek letter <m>\lambda</m>, pronounced <q>lambda</q>.
     </p>
 
     <p>
@@ -32,65 +44,13 @@
     </p>
 
     <p>
-      Of course, none of these assumptions is absolutely true in the real world, but I think they are reasonable simplifications, and as we will see, they allow us to derive some useful results.
-      As George Box said, <q>All models are wrong; some are useful</q> (see <url href="https://en.wikipedia.org/wiki/All_models_are_wrong">https://en.wikipedia.org/wiki/All_models_are_wrong</url>).
+      Of course, none of these assumptions is completely true in the real world, but I think they are reasonable simplifications.
+      As George Box said, <q>All models are wrong; some are useful.</q>
+      (<url href="https://en.wikipedia.org/wiki/All_models_are_wrong">https://en.wikipedia.org/wiki/All_models_are_wrong</url>).
     </p>
 
     <p>
-      My strategy for answering this question is
-    </p>
-
-    <ol>
-      <li><p>Use statistics from previous games to choose a prior distribution for <m>\lambda</m>.</p></li>
-      <li><p>Use the score from the game to estimate <m>\lambda</m> for each team.</p></li>
-      <li><p>Use the posterior distributions of <m>\lambda</m> to compute distribution of goals for each team and the probability that each team wins the next game.</p></li>
-    </ol>
-  </section>
-
-  <section xml:id="sec-poisson-processes">
-    <title>Poisson processes</title>
-
-    <p>
-      In mathematical statistics, a <term>process</term> is a stochastic model of a physical system (<q>stochastic</q> means that the model has some kind of randomness in it).
-    </p>
-
-    <p>
-      For example, a <term>Bernoulli process</term> is a model of a sequence of events, called trials, in which each trial has two possible outcomes, usually called success and failure.
-      So a Bernoulli process is a natural model for a series of coin flips, or a series of shots on goal.
-    </p>
-
-    <p>
-      A <term>Poisson process</term> is the continuous version of a Bernoulli process, where an event can occur at any point in time with equal probability.
-      Poisson processes can be used to model customers arriving in a store, buses arriving at a bus stop, or goals scored in a soccer game.
-    </p>
-
-    <p>
-      In many real systems the probability of an event changes over time.
-      Customers are more likely to go to a store at certain times of day, buses are supposed to arrive at fixed intervals, and goals are more or less likely at different times during a game.
-    </p>
-
-    <p>
-      But all models are based on simplifications, and in this case modeling a soccer game with a Poisson process is a reasonable choice.  Heuer, Müller and Rubner (2010) analyze scoring in a German soccer league and come to the same conclusion (see <url href="http://www.cimat.mx/Eventos/vpec10/img/poisson.pdf">http://www.cimat.mx/Eventos/vpec10/img/poisson.pdf</url>).
-    </p>
-
-    <p>
-      The benefit of using this model is that we can compute the distribution of goals per game efficiently, as well as the distribution of time between goals.  Specifically, if the average number of goals in a game is <m>\lambda</m>, the distribution of goals per game is given by the Poisson PMF:
-    </p>
-
-    <me>
-      f(k; \lambda) = \lambda^k \exp(-\lambda) / k!
-    </me>
-
-    <p>
-      And the distribution of time between goals is given by the exponential PDF:
-    </p>
-
-    <me>
-      f(t; \lambda) = \lambda \exp(-\lambda t)
-    </me>
-
-    <p>
-      Let's start with the Poisson distribution.
+      In this case, the model is useful because if these assumptions are true, at least roughly, the number of goals scored in a game follows a Poisson distribution, at least roughly.
     </p>
   </section>
 
@@ -98,17 +58,58 @@
     <title>The Poisson Distribution</title>
 
     <p>
-      Suppose we know that the goal-scoring rate for one team against another is <m>\lambda = 1.4</m> goals per game.
-      The following function computes the Poisson distribution of <c>k</c>, the number of goals the team scores in one game.
+      If the number of goals scored in a game follows a <url href="https://en.wikipedia.org/wiki/Poisson_distribution">Poisson distribution</url> with a goal-scoring rate, <m>\lambda</m>, the probability of scoring <m>k</m> goals is
+    </p>
+
+    <me>
+      \lambda^k \exp(-\lambda) ~/~ k!
+    </me>
+
+    <p>
+      for any non-negative value of <m>k</m>.
+    </p>
+
+    <p>
+      SciPy provides a <c>poisson</c> object that represents a Poisson distribution.
+      We can create one with <m>\lambda=1.4</m> like this:
     </p>
 
     <program language="python">
       <input>
 from scipy.stats import poisson
 
-def make_poisson_pmf(lam, high):
-    qs = np.arange(high)
-    ps = poisson.pmf(qs, lam)
+lam = 1.4
+dist = poisson(lam)
+type(dist)
+      </input>
+    </program>
+
+    <p>
+      The result is an object that represents a <q>frozen</q> random variable and provides <c>pmf</c>, which evaluates the probability mass function of the Poisson distribution.
+    </p>
+
+    <program language="python">
+      <input>
+k = 4
+dist.pmf(k)
+      </input>
+    </program>
+
+    <p>
+      This result implies that if the average goal-scoring rate is 1.4 goals per game, the probability of scoring 4 goals in a game is about 4%.
+    </p>
+
+    <p>
+      We'll use the following function to make a <c>Pmf</c> that represents a Poisson distribution.
+    </p>
+
+    <program language="python">
+      <input>
+from empiricaldist import Pmf
+
+def make_poisson_pmf(lam, qs):
+    """Make a Pmf of a Poisson distribution."""
+    ps = poisson(lam).pmf(qs)
     pmf = Pmf(ps, qs)
     pmf.normalize()
     return pmf
@@ -116,42 +117,40 @@ def make_poisson_pmf(lam, high):
     </program>
 
     <p>
-      The first parameter is the goal-scoring rate.
-      The second is the upper bound of the distribution.
-      In theory the Poisson distribution goes to infinity, but we can cut it off when we get to quantities with negligible probability.
+      <c>make_poisson_pmf</c> takes as parameters the goal-scoring rate, <c>lam</c>, and an array of quantities, <c>qs</c>, where it should evaluate the Poisson PMF.  It returns a <c>Pmf</c> object.
     </p>
 
     <p>
-      As usual, the <c>qs</c> are the quantities in the distribution and the <c>ps</c> are their probabilities.
-      SciPy provides <c>poisson</c>, which has a function called <c>pmf</c> that evaluates the PMF of the Poisson distribution.
-    </p>
-
-    <p>
-      The return value is a normalized <c>Pmf</c>.
-      We can call <c>make_poisson_pmf</c> like this:
+      For example, here's the distribution of goals scored for <c>lam=1.4</c>, computed for values of <c>k</c> from 0 to 9.
     </p>
 
     <program language="python">
       <input>
-pmf_goals = make_poisson_pmf(lam=1.4, high=10)
+import numpy as np
+
+lam = 1.4
+goals = np.arange(10)
+pmf_goals = make_poisson_pmf(lam, goals)
       </input>
     </program>
 
     <p>
-      <!-- Figure fig07-01: Poisson distribution with lambda=1.4. -->
-      Figure shows the result, a Poisson distribution with <m>\lambda=1.4</m>.
-      The most likely outcomes are 0, 1, and 2; higher values are possible but increasingly unlikely.
-      Values above 7 are negligible.
+      And here's what it looks like.
     </p>
 
     <p>
-      If we know the goal scoring rate, we can predict the number of goals.
+      <!-- Figure fig07-01: Poisson distribution with lambda=1.4. -->
+      The most likely outcomes are 0, 1, and 2; higher values are possible but increasingly unlikely.
+      Values above 7 are negligible.
+      This distribution shows that if we know the goal scoring rate, we can predict the number of goals.
+    </p>
+
+    <p>
       Now let's turn it around: given a number of goals, what can we say about the goal-scoring rate?
     </p>
 
     <p>
-      To answer that, we need to think about the prior distribution of <m>\lambda</m>.
-      And for that, I am going to use a Gamma distribution.
+      To answer that, we need to think about the prior distribution of <c>lam</c>, which represents the range of possible values and their probabilities before we see the score.
     </p>
   </section>
 
@@ -159,36 +158,34 @@ pmf_goals = make_poisson_pmf(lam=1.4, high=10)
     <title>The Gamma Distribution</title>
 
     <p>
-      If you have ever seen a soccer game, you have some information about <m>\lambda</m>.
+      If you have ever seen a soccer game, you have some information about <c>lam</c>.
       In most games, teams score a few goals each.
       In rare cases, a team might score more than 5 goals, but they almost never score more than 10.
     </p>
 
     <p>
-      Using data from previous World Cups I estimate that each team scores about 1.4 goals per game, on average (see <url href="https://www.statista.com/statistics/269031/goals-scored-per-game-at-the-fifa-world-cup-since-1930/">https://www.statista.com/statistics/269031/goals-scored-per-game-at-the-fifa-world-cup-since-1930/</url>).  So I'll set the mean of <m>\lambda</m> to be 1.4.
+      Using <url href="https://www.statista.com/statistics/269031/goals-scored-per-game-at-the-fifa-world-cup-since-1930/">data from previous World Cups</url>, I estimate that each team scores about 1.4 goals per game, on average.  So I'll set the mean of <c>lam</c> to be 1.4.
     </p>
 
     <p>
-      For a good team against a bad one, we expect <m>\lambda</m> to be higher; for a bad team against a good one, we expect it to be lower.
+      For a good team against a bad one, we expect <c>lam</c> to be higher; for a bad team against a good one, we expect it to be lower.
     </p>
 
     <p>
-      To model the distribution of goal-scoring rates, I will use a gamma distribution, which I chose because:
+      To model the distribution of goal-scoring rates, I'll use a <url href="https://en.wikipedia.org/wiki/Gamma_distribution">gamma distribution</url>, which I chose because:
     </p>
 
     <ol>
-      <li><p>The goal scoring rate is a continuous quantity that cannot be less than 0; the gamma distribution is appropriate for this kind of quantity.</p></li>
-      <li><p>The gamma distribution has only one parameter, <m>\alpha</m>, which is the mean.  So it's easy to construct a gamma distribution with the mean we want.</p></li>
-      <li><p>As we'll see, the shape of the Gamma distribution is a reasonable choice, given what we know about soccer.</p></li>
+      <li><p>The goal scoring rate is continuous and non-negative, and the gamma distribution is appropriate for this kind of quantity.</p></li>
+      <li><p>The gamma distribution has only one parameter, <c>alpha</c>, which is the mean.  So it's easy to construct a gamma distribution with the mean we want.</p></li>
+      <li><p>As we'll see, the shape of the gamma distribution is a reasonable choice, given what we know about soccer.</p></li>
+      <li><p>And there's one more reason, which I will reveal in <xref ref="ch-conjugate-priors"/>.</p></li>
     </ol>
 
     <p>
-      For more about the gamma distribution, see <url href="https://en.wikipedia.org/wiki/Gamma_distribution">https://en.wikipedia.org/wiki/Gamma_distribution</url>.
-    </p>
-
-    <p>
-      The gamma distribution is continuous, but we'll approximate it with a discrete <c>Pmf</c>.
-      SciPy provides <c>gamma</c>, which provides <c>pdf</c>, which evaluates the <term>probability density function</term> (PDF) of the gamma distribution.
+      SciPy provides <c>gamma</c>, which creates an object that represents a gamma distribution.
+      And the <c>gamma</c> object provides <c>pdf</c>, which evaluates the <term>probability density function</term> (PDF) of the gamma distribution.
+      Here's how we use it.
     </p>
 
     <program language="python">
@@ -197,14 +194,18 @@ from scipy.stats import gamma
 
 alpha = 1.4
 qs = np.linspace(0, 10, 101)
-ps = gamma.pdf(qs, alpha)
+ps = gamma(alpha).pdf(qs)
       </input>
     </program>
 
     <p>
-      The <c>qs</c> are possible values of <m>\lambda</m> from 0 to 10.
-      The <c>ps</c> are probability densities, which we can think of as unnormalized probabilities.
-      If we put the densities in a <c>Pmf</c> and normalize them, like this:
+      The parameter, <c>alpha</c>, is the mean of the distribution.
+      The <c>qs</c> are possible values of <c>lam</c> between 0 and 10.
+      The <c>ps</c> are <term>probability densities</term>, which we can think of as unnormalized probabilities.
+    </p>
+
+    <p>
+      To normalize them, we can put them in a <c>Pmf</c> and call <c>normalize</c>:
     </p>
 
     <program language="python">
@@ -215,13 +216,17 @@ prior.normalize()
     </program>
 
     <p>
-      The result is a discrete approximation of a continuous distribution.
-      <!-- Figure fig07-02: A gamma prior distribution of goal-scoring rate. -->
-      Figure shows what it looks like.
+      The result is a discrete approximation of a gamma distribution.
+      Here's what it looks like.
     </p>
 
     <p>
-      This distribution represents our prior knowledge about goal scoring: <m>\lambda</m> is usually less than 2, occasionally as high as 6, and seldom higher than that.  And the mean is about 1.4.
+      <!-- Figure fig07-02: A gamma prior distribution of goal-scoring rate. -->
+      This distribution represents our prior knowledge about goal scoring: <c>lam</c> is usually less than 2, occasionally as high as 6, and seldom higher than that.
+    </p>
+
+    <p>
+      And we can confirm that the mean is about 1.4.
     </p>
 
     <p>
@@ -231,33 +236,49 @@ prior.normalize()
   </section>
 
   <section xml:id="sec-poisson-update">
-    <title>Update</title>
+    <title>The Update</title>
 
     <p>
-      Now that we have a prior, the next step is to compute the likelihood of the data.
-      For France, the data is the number of goals scored, 4.
-      We can use the Poisson distribution to compute the likelihoods:
+      Suppose you are given the goal-scoring rate, <m>\lambda</m>, and asked to compute the probability of scoring a number of goals, <m>k</m>.  That is precisely the question we answered by computing the Poisson PMF.
+    </p>
+
+    <p>
+      For example, if <m>\lambda</m> is 1.4, the probability of scoring 4 goals in a game is:
+    </p>
+
+    <program language="python">
+      <input>
+lam = 1.4
+k = 4
+poisson(lam).pmf(4)
+      </input>
+    </program>
+
+    <p>
+      Now suppose we have an array of possible values for <m>\lambda</m>; we can compute the likelihood of the data for each hypothetical value of <c>lam</c>, like this:
     </p>
 
     <program language="python">
       <input>
 lams = prior.qs
 k = 4
-likelihood = poisson.pmf(k, lams)
+likelihood = poisson(lams).pmf(k)
       </input>
     </program>
 
     <p>
-      The result is a NumPy array with the likelihood of the data for each hypothetical value of <m>\lambda</m>.
-      So we can do the update like this:
+      And that's all we need to do the update.
+      To get the posterior distribution, we multiply the prior by the likelihoods we just computed and normalize the result.
+      The following function encapsulates these steps.
     </p>
 
     <program language="python">
       <input>
 def update_poisson(pmf, data):
+    """Update Pmf with a Poisson likelihood."""
     k = data
     lams = pmf.qs
-    likelihood = poisson.pmf(k, lams)
+    likelihood = poisson(lams).pmf(k)
     pmf *= likelihood
     pmf.normalize()
       </input>
@@ -265,14 +286,30 @@ def update_poisson(pmf, data):
 
     <p>
       The first parameter is the prior; the second is the number of goals.
-      We can use this function to compute posterior distributions for France and Croatia:
+    </p>
+
+    <p>
+      In the example, France scored 4 goals, so I'll make a copy of the prior and update it with the data.
     </p>
 
     <program language="python">
       <input>
 france = prior.copy()
 update_poisson(france, 4)
+      </input>
+    </program>
 
+    <p>
+      Here's what the posterior distribution looks like, along with the prior.
+      The data, <c>k=4</c>, makes us think higher values of <c>lam</c> are more likely and lower values are less likely.  So the posterior distribution is shifted to the right.
+    </p>
+
+    <p>
+      Let's do the same for Croatia:
+    </p>
+
+    <program language="python">
+      <input>
 croatia = prior.copy()
 update_poisson(croatia, 2)
       </input>
@@ -280,11 +317,17 @@ update_poisson(croatia, 2)
 
     <p>
       <!-- Figure fig07-03: Posterior distributions for France and Croatia. -->
-      Figure shows the results.
+      Here are the posterior means for these distributions.
     </p>
 
+    <program language="python">
+      <input>
+print(croatia.mean(), france.mean())
+      </input>
+    </program>
+
     <p>
-      Recall that the mean of the prior distribution is 1.4.
+      The mean of the prior distribution is about 1.4.
       After Croatia scores 2 goals, their posterior mean is 1.7, which is near the midpoint of the prior and the data.
       Likewise after France scores 4 goals, their posterior mean is 2.7.
     </p>
@@ -307,12 +350,13 @@ update_poisson(croatia, 2)
     </p>
 
     <p>
-      One way to do that is to enumerate all pairs of values from the two distributions, adding up the total probability that one value exceeds the other, as in this function:
+      One way to do that is to enumerate all pairs of values from the two distributions, adding up the total probability that one value exceeds the other.
     </p>
 
     <program language="python">
       <input>
 def prob_gt(pmf1, pmf2):
+    """Compute the probability of superiority."""
     total = 0
     for q1, p1 in pmf1.items():
         for q2, p2 in pmf2.items():
@@ -323,7 +367,7 @@ def prob_gt(pmf1, pmf2):
     </program>
 
     <p>
-      This is similar to the method we used earlier to compute the distribution of a sum.
+      This is similar to the method we use in <xref ref="sec-ch06-addends"/> to compute the distribution of a sum.
       Here's how we use it:
     </p>
 
@@ -332,12 +376,9 @@ def prob_gt(pmf1, pmf2):
 prob_gt(france, croatia)
       </input>
     </program>
-<pre>
-0.7499366290930155
-</pre>
 
     <p>
-      <c>Pmf</c> provides a function that does the same thing, which we can call like this:
+      <c>Pmf</c> provides a function that does the same thing.
     </p>
 
     <program language="python">
@@ -345,12 +386,13 @@ prob_gt(france, croatia)
 Pmf.prob_gt(france, croatia)
       </input>
     </program>
-<pre>
-0.7499366290930174
-</pre>
 
     <p>
-      The result is close to 75%.  So, on the basis of this game, we are reasonably confident that France is the better team.
+      The results are slightly different because <c>Pmf.prob_gt</c> uses array operators rather than <c>for</c> loops.
+    </p>
+
+    <p>
+      Either way, the result is close to 75%.  So, on the basis of one game, we have moderate confidence that France is actually the better team.
     </p>
 
     <p>
@@ -364,56 +406,54 @@ Pmf.prob_gt(france, croatia)
   </section>
 
   <section xml:id="sec-poisson-distribution-goals">
-    <title>The distribution of goals</title>
+    <title>Predicting the Rematch</title>
 
     <p>
-      Now we can take on the second question: If the same teams played again, what is the chance France would win the rematch?
+      Now we can take on the second question: If the same teams played again, what is the chance Croatia would win?
+      To answer this question, we'll generate the <q>posterior predictive distribution</q>, which is the number of goals we expect a team to score.
     </p>
 
     <p>
-      To answer this question, we'll generate a <term>posterior predictive distribution</term> for each team, which is the number of goals we expect them to score.
+      If we knew the goal scoring rate, <c>lam</c>, the distribution of goals would be a Poisson distribution with parameter <c>lam</c>.
+      Since we don't know <c>lam</c>, the distribution of goals is a mixture of Poisson distributions with different values of <c>lam</c>.
     </p>
 
     <p>
-      If we knew the goal scoring rate, <m>\lambda</m>, the distribution of goals would be a Poisson distribution with parameter <m>\lambda</m>.
-    </p>
-
-    <p>
-      Since we don't know <m>\lambda</m>, the distribution of goals is a mixture of a Poisson distributions with different values of <m>\lambda</m>.
-    </p>
-
-    <p>
-      First I'll generate a sequence of Poisson distributions, one for each hypothetical value of <m>\lambda</m>:
+      First I'll generate a sequence of <c>Pmf</c> objects, one for each value of <c>lam</c>.
     </p>
 
     <program language="python">
       <input>
-pmf_seq = [make_poisson_pmf(lam, 12) for lam in prior.qs]
+pmf_seq = [make_poisson_pmf(lam, goals)
+           for lam in prior.qs]
       </input>
     </program>
 
     <p>
-      Now we can use <c>make_mixture</c> from <xref ref="sec-min-max-mixture-mixtures"/> to compute posterior predictive distributions for France and Croatia:
+      The following figure shows what these distributions look like for a few values of <c>lam</c>.
+    </p>
+
+    <p>
+      The predictive distribution is a mixture of these <c>Pmf</c> objects, weighted with the posterior probabilities.
+      We can use <c>make_mixture</c> from <xref ref="sec-min-max-mixture-mixtures"/> to compute this mixture.
     </p>
 
     <program language="python">
       <input>
+from utils import make_mixture
+
 pred_france = make_mixture(france, pmf_seq)
 pred_croatia = make_mixture(croatia, pmf_seq)
       </input>
     </program>
 
     <p>
-      <!-- Figure fig07-04: Posterior predictive distributions for the number of goals in a rematch. -->
-      Figure shows posterior predictive distributions for the number of goals in a rematch.
+      Here's the predictive distribution for the number of goals France would score in a rematch.
+      This distribution represents two sources of uncertainty: we don't know the actual value of <c>lam</c>, and even if we did, we would not know the number of goals in the next game.
     </p>
 
     <p>
-      These distributions represent two sources of uncertainty: we don't know the actual value of <m>\lambda</m>, and even if we did, we would not know the number of goals in the next game.
-    </p>
-
-    <p>
-      We can use these distributions to compute the probability that France wins, loses, or ties the rematch:
+      We can use these distributions to compute the probability that France wins, loses, or ties the rematch.
     </p>
 
     <program language="python">
@@ -426,7 +466,11 @@ tie = Pmf.prob_eq(pred_france, pred_croatia)
 
     <p>
       Assuming that France wins half of the ties, their chance of winning the rematch is about 65%.
-      This is a bit lower than their probability of superiority, which is 75%. And that makes sense: even if they are the better team, they might lose the game.
+    </p>
+
+    <p>
+      This is a bit lower than their probability of superiority, which is 75%.  And that makes sense, because we are less certain about the outcome of a single game than we are about the goal-scoring rates.
+      Even if France is the better team, they might lose the game.
     </p>
   </section>
 
@@ -434,7 +478,7 @@ tie = Pmf.prob_eq(pred_france, pred_croatia)
     <title>The Exponential Distribution</title>
 
     <p>
-      As an exercise at the end of this chapter, you'll have a chance to work on  this variation on the World Cup Problem:
+      As an exercise at the end of this chapter, you'll have a chance to work on the following variation on the World Cup Problem:
     </p>
 
     <blockquote>
@@ -446,42 +490,41 @@ tie = Pmf.prob_eq(pred_france, pred_croatia)
     </blockquote>
 
     <p>
-      In this version, notice that the data is not the number of goals in a fixed period of time but the time between goals.
+      In this version, notice that the data is not the number of goals in a fixed period of time, but the time between goals.
     </p>
 
     <p>
-      To compute the likelihood of data like this, we can use the theory of Poisson processes again.
-      In our model of a soccer game, we assume that each team has a goal-scoring rate, <m>\lambda</m>, in goals per game.
-      And we assume that <m>\lambda</m> is constant, so the chance of scoring a goal is the same at any moment of the game.
+      To compute the likelihood of data like this, we can take advantage of the theory of Poisson processes again.  If each team has a constant goal-scoring rate, we expect the time between goals to follow an <url href="https://en.wikipedia.org/wiki/Exponential_distribution">exponential distribution</url>.
     </p>
 
     <p>
-      Under these assumptions, the time between goals follows an exponential distribution (see <url href="https://en.wikipedia.org/wiki/Exponential_distribution">https://en.wikipedia.org/wiki/Exponential_distribution</url>).
       If the goal-scoring rate is <m>\lambda</m>, the probability of seeing an interval between goals of <m>t</m> is proportional to the PDF of the exponential distribution:
     </p>
 
     <me>
-      f(t; \lambda) = \lambda \exp(-\lambda t)
+      \lambda \exp(-\lambda t)
     </me>
 
     <p>
-      Because <m>t</m> is a continuous quantity, the value of this expression is not a probability; it is a probability density.
-      However, it is proportional to the probability of the data, so we can use it as a likelihood in a Bayesian update.
+      Because <m>t</m> is a continuous quantity, the value of this expression is not a probability; it is a probability density.  However, it is proportional to the probability of the data, so we can use it as a likelihood in a Bayesian update.
     </p>
 
     <p>
-      The following function computes this PDF:
+      SciPy provides <c>expon</c>, which creates an object that represents an exponential distribution.
+      However, it does not take <c>lam</c> as a parameter in the way you might expect, which makes it awkward to work with.
+      Since the PDF of the exponential distribution is so easy to evaluate, I'll use my own function.
     </p>
 
     <program language="python">
       <input>
 def expo_pdf(t, lam):
+    """Compute the PDF of the exponential distribution."""
     return lam * np.exp(-lam * t)
       </input>
     </program>
 
     <p>
-      To see what exponential distributions look like, let's assume again that <m>\lambda</m> is 1.4; we can compute the distribution of <m>t</m> like this:
+      To see what the exponential distribution looks like, let's assume again that <c>lam</c> is 1.4; we can compute the distribution of <m>t</m> like this:
     </p>
 
     <program language="python">
@@ -493,14 +536,14 @@ pmf_time = Pmf(ps, qs)
 pmf_time.normalize()
       </input>
     </program>
-<pre>
-25.616650745459093
-</pre>
+
+    <p>
+      And here's what it looks like.
+    </p>
 
     <p>
       <!-- Figure fig07-05: An exponential distribution with lambda = 1.4. -->
-      Figure shows the result.
-      It is counterintuitive, but true, that the most likely time to score a goal is immediately.  After that, the probability of each possible interval is a little lower.
+      It is counterintuitive, but true, that the most likely time to score a goal is immediately.  After that, the probability of each successive interval is a little lower.
     </p>
 
     <p>
@@ -512,16 +555,24 @@ pmf_time.normalize()
     <title>Summary</title>
 
     <p>
-      In this chapter we used Poisson processes to model goal scoring in soccer and other sports.
-      We used the Poisson distribution to compute the likelihood of scoring a given number of goals in a fixed period of time, and the exponential distribution to compute the likelihood of intervals between goals.
+      This chapter introduces three new distributions, so it can be hard to keep them straight.
+      Let's review:
+    </p>
+
+    <ul>
+      <li><p>If a system satisfies the assumptions of a Poisson model, the number of events in a period of time follows a Poisson distribution, which is a discrete distribution with integer quantities from 0 to infinity.  In practice, we can usually ignore low-probability quantities above a finite limit.</p></li>
+      <li><p>Also under the Poisson model, the interval between events follows an exponential distribution, which is a continuous distribution with quantities from 0 to infinity.  Because it is continuous, it is described by a probability density function (PDF) rather than a probability mass function (PMF).  But when we use an exponential distribution to compute the likelihood of the data, we can treat densities as unnormalized probabilities.</p></li>
+      <li><p>The Poisson and exponential distributions are parameterized by an event rate, denoted <m>\lambda</m> or <c>lam</c>.</p></li>
+      <li><p>For the prior distribution of <m>\lambda</m>, I used a gamma distribution, which is a continuous distribution with quantities from 0 to infinity, but I approximated it with a discrete, bounded PMF.  The gamma distribution has one parameter, denoted <m>\alpha</m> or <c>alpha</c>, which is also its mean.</p></li>
+    </ul>
+
+    <p>
+      I chose the gamma distribution because the shape is consistent with our background knowledge about goal-scoring rates.
+      There are other distributions we could have used; however, we will see in <xref ref="ch-conjugate-priors"/> that the gamma distribution can be a particularly good choice.
     </p>
 
     <p>
-      We also used the gamma distribution to represent the prior distribution of goal-scoring rates, and computed posterior distributions using Bayesian updates.
-    </p>
-
-    <p>
-      Finally, we computed posterior predictive distributions to answer questions about future games, and used these distributions to compute probabilities of superiority and winning rematches.
+      But we have a few things to do before we get there, starting with these exercises.
     </p>
   </section>
 
@@ -540,7 +591,7 @@ pmf_time.normalize()
     <exercise xml:id="ex-poisson-germany-brazil">
       <statement>
         <p>
-          Finish off the exercise from the Exponential Distribution section:
+          Let's finish the exercise we started:
         </p>
 
         <blockquote>
@@ -550,6 +601,48 @@ pmf_time.normalize()
             What was the probability that they would score 5 more goals (as, in fact, they did)?
           </p>
         </blockquote>
+
+        <p>
+          Here are the steps I recommend:
+        </p>
+
+        <ol>
+          <li><p>Starting with the same gamma prior we used in the previous problem, compute the likelihood of scoring a goal after 11 minutes for each possible value of <c>lam</c>.  Don't forget to convert all times into games rather than minutes.</p></li>
+          <li><p>Compute the posterior distribution of <c>lam</c> for Germany after the first goal.</p></li>
+          <li><p>Compute the likelihood of scoring another goal after 12 more minutes and do another update.  Plot the prior, posterior after one goal, and posterior after two goals.</p></li>
+          <li><p>Compute the posterior predictive distribution of goals Germany might score during the remaining time in the game, <c>90-23</c> minutes.  Note: You will have to think about how to generate predicted goals for a fraction of a game.</p></li>
+          <li><p>Compute the probability of scoring 5 or more goals during the remaining time.</p></li>
+        </ol>
+      </statement>
+    </exercise>
+
+    <exercise xml:id="ex-poisson-france-scores-first">
+      <statement>
+        <p>
+          Returning to the first version of the World Cup Problem.  Suppose France and Croatia play a rematch.  What is the probability that France scores first?
+        </p>
+
+        <p>
+          Hint: Compute the posterior predictive distribution for the time until the first goal by making a mixture of exponential distributions.  You can use the following function to make a PMF that approximates an exponential distribution.
+        </p>
+
+        <program language="python">
+          <input>
+def make_expo_pmf(lam, high):
+    """Make a PMF of an exponential distribution.
+
+    lam: event rate
+    high: upper bound on the interval `t`
+
+    returns: Pmf of the interval between events
+    """
+    qs = np.linspace(0, high, 101)
+    ps = expo_pdf(qs, lam)
+    pmf = Pmf(ps, qs)
+    pmf.normalize()
+    return pmf
+          </input>
+        </program>
       </statement>
     </exercise>
 
@@ -562,136 +655,9 @@ pmf_time.normalize()
         <p>
           To choose a prior distribution, I got some statistics from <url href="http://www.nhl.com">http://www.nhl.com</url>, specifically the average goals per game for each team in the 2010-11 season.  The distribution is well modeled by a gamma distribution with mean 2.8.
         </p>
-      </statement>
-      <solution>
-        <p>Create a gamma prior distribution with mean 2.8:</p>
-        <program language="python">
-          <input>
-from scipy.stats import gamma
-
-alpha = 2.8
-qs = np.linspace(0, 15, 101)
-ps = gamma.pdf(qs, alpha)
-prior_hockey = Pmf(ps, qs)
-prior_hockey.normalize()
-          </input>
-        </program>
-        <p>Update the prior with Boston's goals:</p>
-        <program language="python">
-          <input>
-bruins = prior_hockey.copy()
-for data in [0, 2, 8, 4]:
-    update_poisson(bruins, data)
-    
-bruins.mean()
-          </input>
-        </program>
-        <p>Update the prior with Vancouver's goals:</p>
-        <program language="python">
-          <input>
-canucks = prior_hockey.copy()
-for data in [1, 3, 1, 0]:
-    update_poisson(canucks, data)
-    
-canucks.mean()
-          </input>
-        </program>
-        <p>Create posterior predictive distributions:</p>
-        <program language="python">
-          <input>
-goals = np.arange(15)
-pmf_seq = [make_poisson_pmf(lam, goals) for lam in bruins.qs]
-
-pred_bruins = make_mixture(bruins, pmf_seq)
-pred_canucks = make_mixture(canucks, pmf_seq)
-          </input>
-        </program>
-        <p>Compute the probability that Boston wins the next game:</p>
-        <program language="python">
-          <input>
-win = Pmf.prob_gt(pred_bruins, pred_canucks)
-lose = Pmf.prob_lt(pred_bruins, pred_canucks)
-tie = Pmf.prob_eq(pred_bruins, pred_canucks)
-
-# Assuming the Bruins win half of the ties
-p = win + tie/2
-p
-          </input>
-        </program>
-        <p>Compute their chance of winning the series (winning k=2 or k=3 of the remaining n=3 games):</p>
-        <program language="python">
-          <input>
-from scipy.stats import binom
-
-n = 3
-a = binom.pmf([2,3], n, p)
-a.sum()
-          </input>
-        </program>
-      </solution>
-    </exercise>
-
-    <exercise xml:id="ex-poisson-bus-wait">
-      <statement>
-        <p>
-          If buses arrive at a bus stop every 20 minutes, and you arrive at the bus stop at a random time, your wait time until the bus arrives is uniformly distributed from 0 to 20 minutes.
-        </p>
 
         <p>
-          But in reality, there is variability in the time between buses.  Suppose you are waiting for a bus, and you know the historical distribution of time between buses.  Compute your distribution of wait times.
-        </p>
-
-        <p>
-          Hint: Suppose that the time between buses is either 5 or 10 minutes with equal probability.  What is the probability that you arrive during one of the 10 minute intervals?
-        </p>
-
-        <p>
-          I solve a version of this problem in the next chapter.
-        </p>
-      </statement>
-    </exercise>
-
-    <exercise xml:id="ex-poisson-bus-passengers">
-      <statement>
-        <p>
-          Suppose that passengers arriving at the bus stop are well-modeled by a Poisson process with parameter <m>\lambda</m>.  If you arrive at the stop and find 3 people waiting, what is your posterior distribution for the time since the last bus arrived.
-        </p>
-
-        <p>
-          I solve a version of this problem in the next chapter.
-        </p>
-      </statement>
-    </exercise>
-
-    <exercise xml:id="ex-poisson-insect-traps">
-      <statement>
-        <p>
-          Suppose that you are an ecologist sampling the insect population in a new environment.  You deploy 100 traps in a test area and come back the next day to check on them.  You find that 37 traps have been triggered, trapping an insect inside.  Once a trap triggers, it cannot trap another insect until it has been reset.
-        </p>
-
-        <p>
-          If you reset the traps and come back in two days, how many traps do you expect to find triggered?  Compute a posterior predictive distribution for the number of traps.
-        </p>
-      </statement>
-    </exercise>
-
-    <exercise xml:id="ex-poisson-light-bulbs">
-      <statement>
-        <p>
-          Suppose you are the manager of an apartment building with 100 light bulbs in common areas.  It is your responsibility to replace light bulbs when they break.
-        </p>
-
-        <p>
-          On January 1, all 100 bulbs are working.  When you inspect them on February 1, you find 3 light bulbs out.  If you come back on April 1, how many light bulbs do you expect to find broken?
-        </p>
-
-        <p>
-          In the previous exercise, you could reasonably assume that an event is equally likely at any time.  For light bulbs, the likelihood of failure depends on the age of the bulb.  Specifically, old bulbs have an increasing failure rate due to evaporation of the filament.
-        </p>
-
-        <p>
-          This problem is more open-ended than some; you will have to make modeling decisions.  You might want to read about the Weibull distribution (<url href="http://en.wikipedia.org/wiki/Weibull_distribution">http://en.wikipedia.org/wiki/Weibull_distribution</url>).
-          Or you might want to look around for information about light bulb survival curves.
+          In what ways do you think the outcome of these games might violate the assumptions of the Poisson model?  How would these violations affect your predictions?
         </p>
       </statement>
     </exercise>
