@@ -48,12 +48,12 @@ First we'll use the binomial distribution to see where that 7% came from; then w
       If we add up the total number of heads, there are three possible results: 0, 1, or 2.  The probabilities of 0 and 2 are 25%, and the probability of 1 is 50%.
     </p>
     <p>
-      More generally, suppose the probability of heads is $p$ and we spin the coin $n$ times.  The probability that we get a total of $k$ heads is given by the <url href="https://en.wikipedia.org/wiki/Binomial_distribution">binomial distribution</url>:
+      More generally, suppose the probability of heads is <m>p</m> and we spin the coin <m>n</m> times.  The probability that we get a total of <m>k</m> heads is given by the <url href="https://en.wikipedia.org/wiki/Binomial_distribution">binomial distribution</url>:
     </p>
-    <p>$$\binom{n}{k} p^k (1-p)^{n-k}$$</p>
+    <p><me>\binom{n}{k} p^k (1-p)^{n-k}</me></p>
     <p>
-      for any value of $k$ from 0 to $n$, including both.
-The term $\binom{n}{k}$ is the <url href="https://en.wikipedia.org/wiki/Binomial_coefficient">binomial coefficient</url>, usually pronounced "n choose k".
+      for any value of <m>k</m> from 0 to <m>n</m>, including both.
+The term <m>\binom{n}{k}</m> is the <url href="https://en.wikipedia.org/wiki/Binomial_coefficient">binomial coefficient</url>, usually pronounced "n choose k".
     </p>
     <p>
       We could evaluate this expression ourselves, but we can also use the SciPy function <c>binom.pmf</c>.
@@ -513,9 +513,9 @@ For each hypothetical value of <c>x</c>, we have to compute the probability of g
     </p>
     <p>
       Well, we know how to do that; this is the question the binomial distribution answers.
-If the probability of heads is $p$, the probability of $k$ heads in $n$ spins is:
+If the probability of heads is <m>p</m>, the probability of <m>k</m> heads in <m>n</m> spins is:
     </p>
-    <p>$$\binom{n}{k} p^k (1-p)^{n-k}$$</p>
+    <p><me>\binom{n}{k} p^k (1-p)^{n-k}</me></p>
     <p>
       And we can use SciPy to compute it.
 The following function takes a <c>Pmf</c> that represents a prior distribution and a tuple of integers that represent the data:
@@ -938,8 +938,8 @@ That is, does it increase or decrease your estimate of <c>x</c> for the Alien Bl
     </p>
 
     <p>
-      Hint: If the probability of hitting each target is $x$, the probability of hitting one target in both tests
-is $\left[2x(1-x)\right]^2$.
+      Hint: If the probability of hitting each target is <m>x</m>, the probability of hitting one target in both tests
+is <m>\left[2x(1-x)\right]^2</m>.
     </p>
 
     <program language="python">
