@@ -86,6 +86,70 @@ To demonstrate, I'll use data from the <url href="http://gss.norc.org/">General 
     gss.head()
       </input>
     </program>
+<table xml:id="tbl-gss-sample">
+  <title>Summary of selected GSS observations.</title>
+  <tabular>
+    <row>
+      <cell>caseid</cell>
+      <cell>year</cell>
+      <cell>age</cell>
+      <cell>sex</cell>
+      <cell>polviews</cell>
+      <cell>partyid</cell>
+      <cell>indus10</cell>
+    </row>
+
+    <row>
+      <cell>1</cell>
+      <cell>1974</cell>
+      <cell>21.0</cell>
+      <cell>1</cell>
+      <cell>4.0</cell>
+      <cell>2.0</cell>
+      <cell>4970.0</cell>
+    </row>
+
+    <row>
+      <cell>2</cell>
+      <cell>1974</cell>
+      <cell>41.0</cell>
+      <cell>1</cell>
+      <cell>5.0</cell>
+      <cell>0.0</cell>
+      <cell>9160.0</cell>
+    </row>
+
+    <row>
+      <cell>5</cell>
+      <cell>1974</cell>
+      <cell>58.0</cell>
+      <cell>2</cell>
+      <cell>6.0</cell>
+      <cell>1.0</cell>
+      <cell>2670.0</cell>
+    </row>
+
+    <row>
+      <cell>6</cell>
+      <cell>1974</cell>
+      <cell>30.0</cell>
+      <cell>1</cell>
+      <cell>5.0</cell>
+      <cell>4.0</cell>
+      <cell>6870.0</cell>
+    </row>
+
+    <row>
+      <cell>7</cell>
+      <cell>1974</cell>
+      <cell>48.0</cell>
+      <cell>1</cell>
+      <cell>5.0</cell>
+      <cell>4.0</cell>
+      <cell>7860.0</cell>
+    </row>
+  </tabular>
+</table>
     <p>
       The <c>DataFrame</c> has one row for each person surveyed and one column for each variable I selected.
     </p>
@@ -118,6 +182,14 @@ To demonstrate, I'll use data from the <url href="http://gss.norc.org/">General 
     banker.head()
       </input>
     </program>
+<pre>
+0    False
+1    False
+2    False
+3     True
+4    False
+Name: indus10, dtype: bool
+</pre>
     <p>
       The result is a Pandas <c>Series</c> that contains the Boolean values <c>True</c> and <c>False</c>.
     </p>
@@ -129,6 +201,9 @@ To demonstrate, I'll use data from the <url href="http://gss.norc.org/">General 
     banker.sum()
       </input>
     </program>
+<pre>
+728
+</pre>
     <p>
       In this dataset, there are 728 bankers.
     </p>
@@ -140,6 +215,9 @@ To demonstrate, I'll use data from the <url href="http://gss.norc.org/">General 
     banker.mean()
       </input>
     </program>
+<pre>
+0.014769730168391155
+</pre>
     <p>
       About 1.5% of the respondents work in banking, so if we choose a random person from the dataset, the probability they are a banker is about 1.5%.
     </p>
@@ -166,8 +244,11 @@ To demonstrate, I'll use data from the <url href="http://gss.norc.org/">General 
     prob(banker)
       </input>
     </program>
+<pre>
+0.014769730168391155
+</pre>
     <p>
-      The values of the column <c>sex</c> are encoded like this:
+      Now let’s look at another variable in this dataset. The values of the column <c>sex</c> are encoded like this:
     </p>
     <pre>
 1    Male
@@ -189,6 +270,9 @@ To demonstrate, I'll use data from the <url href="http://gss.norc.org/">General 
     prob(female)
       </input>
     </program>
+<pre>
+0.5378575776019476
+</pre>
     <p>
       The fraction of women in this dataset is higher than in the adult U.S. population because <url href="https://gss.norc.org/faq">the GSS does not include people living in institutions</url> like prisons and military housing, and those populations are more likely to be male.
     </p>
@@ -228,6 +312,9 @@ To demonstrate, I'll use data from the <url href="http://gss.norc.org/">General 
     prob(liberal)
       </input>
     </program>
+<pre>
+0.27374721038750255
+</pre>
     <p>
       If we choose a random person in this dataset, the probability they are liberal is about 27%.
     </p>
@@ -260,6 +347,9 @@ To demonstrate, I'll use data from the <url href="http://gss.norc.org/">General 
     prob(democrat)
       </input>
     </program>
+<pre>
+0.3662609048488537
+</pre>
   </section>
 
   <section xml:id="sec-conjunction">
@@ -280,6 +370,9 @@ For example, we have already computed the probability that a respondent is a ban
     prob(banker)
       </input>
     </program>
+<pre>
+0.014769730168391155
+</pre>
     <p>
       And the probability that they are a Democrat:
     </p>
@@ -288,6 +381,9 @@ For example, we have already computed the probability that a respondent is a ban
     prob(democrat)
       </input>
     </program>
+<pre>
+0.3662609048488537
+</pre>
     <p>
       Now we can compute the probability that a respondent is a banker <em>and</em> a Democrat:
     </p>
@@ -296,6 +392,9 @@ For example, we have already computed the probability that a respondent is a ban
     prob(banker &amp; democrat)
       </input>
     </program>
+<pre>
+0.004686548995739501
+</pre>
     <p>
       As we should expect, <c>prob(banker &amp; democrat)</c> is less than <c>prob(banker)</c>, because not all bankers are Democrats.
     </p>
@@ -307,6 +406,9 @@ For example, we have already computed the probability that a respondent is a ban
     prob(democrat &amp; banker)
       </input>
     </program>
+<pre>
+0.004686548995739501
+</pre>
     <p>
       As expected, they are the same.
     </p>
@@ -348,6 +450,9 @@ For example, we have already computed the probability that a respondent is a ban
       <input>
     prob(selected)
       </input>
+<pre>
+0.5206403320240125
+</pre>
     </program>
     <p>
       A little more than half of liberals are Democrats.  If that result is lower than you expected, keep in mind:
@@ -371,6 +476,9 @@ We can interpret that to mean, &quot;Of all respondents who are bankers, what fr
     prob(selected)
       </input>
     </program>
+<pre>
+0.7706043956043956
+</pre>
     <p>
       About 77% of the bankers in this dataset are female.
     </p>
@@ -393,6 +501,9 @@ I'll define <c>conditional</c> to take two Boolean series, <c>proposition</c> an
     conditional(liberal, given=female)
       </input>
     </program>
+<pre>
+0.27581004111500884
+</pre>
     <p>
       About 28% of female respondents are liberal.
     </p>
@@ -418,6 +529,9 @@ I'll define <c>conditional</c> to take two Boolean series, <c>proposition</c> an
     conditional(female, given=banker)
       </input>
     </program>
+<pre>
+0.7706043956043956
+</pre>
     <p>
       The result shows that the majority of bankers are female.  That is not the same as the probability that a respondent is a banker, given that they are female:
     </p>
@@ -426,6 +540,9 @@ I'll define <c>conditional</c> to take two Boolean series, <c>proposition</c> an
     conditional(banker, given=female)
       </input>
     </program>
+<pre>
+0.02116102749801969
+</pre>
     <p>
       Only about 2% of female respondents are bankers.
     </p>
@@ -445,6 +562,9 @@ I'll define <c>conditional</c> to take two Boolean series, <c>proposition</c> an
     conditional(female, given=liberal &amp; democrat)
       </input>
     </program>
+<pre>
+0.576085409252669
+</pre>
     <p>
       About 57% of liberal Democrats are female.
     </p>
@@ -456,6 +576,9 @@ I'll define <c>conditional</c> to take two Boolean series, <c>proposition</c> an
     conditional(liberal &amp; female, given=banker)
       </input>
     </program>
+<pre>
+0.17307692307692307
+</pre>
     <p>
       About 17% of bankers are liberal women.
     </p>
@@ -480,9 +603,9 @@ I'll define <c>conditional</c> to take two Boolean series, <c>proposition</c> an
         I'll write these theorems using mathematical notation for probability:
       </p>
       <ul>
-        <li>$P(A)$ is the probability of proposition $A$.</li>
-        <li>$P(A~\mathrm{and}~B)$ is the probability of the conjunction of $A$ and $B$, that is, the probability that both are true.</li>
-        <li>$P(A | B)$ is the conditional probability of $A$ given that $B$ is true.  The vertical line between $A$ and $B$ is pronounced &quot;given&quot;.</li>
+        <li><m>P(A)</m> is the probability of proposition <m>A</m>.</li>
+        <li><m>P(A~\mathrm{and}~B)</m> is the probability of the conjunction of <m>A</m> and <m>B</m>, that is, the probability that both are true.</li>
+        <li><m>P(A | B)</m> is the conditional probability of <m>A</m> given that <m>B</m> is true.  The vertical line between <m>A</m> and <m>B</m> is pronounced &quot;given&quot;.</li>
       </ul>
       <p>
         With that, we are ready for Theorem 1.
@@ -507,6 +630,9 @@ I'll define <c>conditional</c> to take two Boolean series, <c>proposition</c> an
       female[banker].mean()
         </input>
       </program>
+<pre>
+0.7706043956043956
+</pre>
       <p>
         Or we can use the <c>conditional</c> function, which does the same thing:
       </p>
@@ -515,6 +641,9 @@ I'll define <c>conditional</c> to take two Boolean series, <c>proposition</c> an
       conditional(female, given=banker)
         </input>
       </program>
+<pre>
+0.7706043956043956
+</pre>
       <p>
         But there is another way to compute this conditional probability, by computing the ratio of two probabilities:
       </p>
@@ -533,11 +662,14 @@ Here's how we compute this ratio.
       prob(female &amp; banker) / prob(banker)
         </input>
       </program>
+<pre>
+0.7706043956043956
+</pre>
       <p>
         The result is the same.  This example demonstrates a general rule that relates conditional probability and conjunction.  Here's what it looks like in math notation:
       </p>
       <p>
-        $$P(A|B) = \frac{P(A~\mathrm{and}~B)}{P(B)}$$
+        <me>P(A|B) = \frac{P(A~\mathrm{and}~B)}{P(B)}</me>
       </p>
       <p>
         And that's Theorem 1.
@@ -548,10 +680,10 @@ Here's how we compute this ratio.
       <title>Theorem 2</title>
 
       <p>
-        If we start with Theorem 1 and multiply both sides by $P(B)$, we get Theorem 2.
+        If we start with Theorem 1 and multiply both sides by <m>P(B)</m>, we get Theorem 2.
       </p>
       <p>
-        $$P(A~\mathrm{and}~B) = P(B) ~ P(A|B)$$
+        <me>P(A~\mathrm{and}~B) = P(B) ~ P(A|B)</me>
       </p>
       <p>
         This formula suggests a second way to compute a conjunction: instead of using the <c>&amp;</c> operator, we can compute the product of two probabilities.
@@ -564,6 +696,9 @@ Here's how we compute this ratio.
       prob(liberal &amp; democrat)
         </input>
       </program>
+<pre>
+0.1425238385067965
+</pre>
       <p>
         And here's the result using Theorem 2:
       </p>
@@ -572,6 +707,9 @@ Here's how we compute this ratio.
       prob(democrat) * conditional(liberal, democrat)
         </input>
       </program>
+<pre>
+0.1425238385067965
+</pre>
       <p>
         They are the same.
       </p>
@@ -584,28 +722,28 @@ Here's how we compute this ratio.
         We have established that conjunction is commutative.  In math notation, that means:
       </p>
       <p>
-        $$P(A~\mathrm{and}~B) = P(B~\mathrm{and}~A)$$
+        <me>P(A~\mathrm{and}~B) = P(B~\mathrm{and}~A)</me>
       </p>
       <p>
         If we apply Theorem 2 to both sides, we have
       </p>
       <p>
-        $$P(B) P(A|B) = P(A) P(B|A)$$
+        <me>P(B) P(A|B) = P(A) P(B|A)</me>
       </p>
       <p>
-        Here's one way to interpret that: if you want to check $A$ and $B$, you can do it in either order:
+        Here's one way to interpret that: if you want to check <m>A</m> and <m>B</m>, you can do it in either order:
       </p>
       <p>
-        1. You can check $B$ first, then $A$ conditioned on $B$, or
+        1. You can check <m>B</m> first, then <m>A</m> conditioned on <m>B</m>, or
       </p>
       <p>
-        2. You can check $A$ first, then $B$ conditioned on $A$.
+        2. You can check <m>A</m> first, then <m>B</m> conditioned on <m>A</m>.
       </p>
       <p>
-        If we divide through by $P(B)$, we get Theorem 3:
+        If we divide through by <m>P(B)</m>, we get Theorem 3:
       </p>
       <p>
-        $$P(A|B) = \frac{P(A) P(B|A)}{P(B)}$$
+        <me>P(A|B) = \frac{P(A) P(B|A)}{P(B)}</me>
       </p>
       <p>
         And that, my friends, is Bayes's Theorem.
@@ -618,6 +756,9 @@ Here's how we compute this ratio.
       conditional(liberal, given=banker)
         </input>
       </program>
+<pre>
+0.2239010989010989
+</pre>
       <p>
         Now using Bayes's Theorem:
       </p>
@@ -626,6 +767,9 @@ Here's how we compute this ratio.
       prob(liberal) * conditional(banker, liberal) / prob(banker)
         </input>
       </program>
+<pre>
+0.2239010989010989
+</pre>
       <p>
         They are the same.
       </p>
@@ -641,11 +785,11 @@ Here's how we compute this ratio.
 Here's one form of the law, expressed in mathematical notation:
     </p>
     <p>
-      $$P(A) = P(B_1 \mathrm{and} A) + P(B_2 \mathrm{and} A)$$
+      <me>P(A) = P(B_1 \mathrm{and} A) + P(B_2 \mathrm{and} A)</me>
     </p>
     <p>
-      In words, the total probability of $A$ is the sum of two possibilities: either $B_1$ and $A$ are true or $B_2$ and $A$ are true.
-      But this law applies only if $B_1$ and $B_2$ are:
+      In words, the total probability of <m>A</m> is the sum of two possibilities: either <m>B_1</m> and <m>A</m> are true or <m>B_2</m> and <m>A</m> are true.
+      But this law applies only if <m>B_1</m> and <m>B_2</m> are:
     </p>
     <ul>
       <li>Mutually exclusive, which means that only one of them can be true, and</li>
@@ -660,6 +804,9 @@ We can compute it directly like this:
     prob(banker)
       </input>
     </program>
+<pre>
+0.014769730168391155
+</pre>
     <p>
       So let's confirm that we get the same thing if we compute male and female bankers separately.
     </p>
@@ -683,6 +830,9 @@ Here's the complementary <c>Series</c> for male respondents.
     prob(male &amp; banker) + prob(female &amp; banker)
       </input>
     </program>
+<pre>
+0.014769730168391155
+</pre>
     <p>
       Because <c>male</c> and <c>female</c> are mutually exclusive and collectively exhaustive (MECE), we get the same result we got by computing the probability of <c>banker</c> directly.
     </p>
@@ -690,7 +840,7 @@ Here's the complementary <c>Series</c> for male respondents.
       Applying Theorem 2, we can also write the law of total probability like this:
     </p>
     <p>
-      $$P(A) = P(B_1) P(A|B_1) + P(B_2) P(A|B_2)$$
+      <me>P(A) = P(B_1) P(A|B_1) + P(B_2) P(A|B_2)</me>
     </p>
     <p>
       And we can test it with the same example:
@@ -701,14 +851,17 @@ Here's the complementary <c>Series</c> for male respondents.
     prob(female) * conditional(banker, given=female))
       </input>
     </program>
+<pre>
+0.014769730168391155
+</pre>
     <p>
       When there are more than two conditions, it is more concise to write the law of total probability as a summation:
     </p>
     <p>
-      $$P(A) = \sum_i P(B_i) P(A|B_i)$$
+      <me>P(A) = \sum_i P(B_i) P(A|B_i)</me>
     </p>
     <p>
-      Again, this holds as long as the conditions, $B_i$ are mutually exclusive and collectively exhaustive.
+      Again, this holds as long as the conditions, <m>B_i</m> are mutually exclusive and collectively exhaustive.
 As an example, let's consider <c>polviews</c>, which has seven different values.
     </p>
     <program language="python">
@@ -717,6 +870,17 @@ As an example, let's consider <c>polviews</c>, which has seven different values.
     B.value_counts().sort_index()
       </input>
     </program>
+<pre>
+polviews
+1.0     1442
+2.0     5808
+3.0     6243
+4.0    18943
+5.0     7940
+6.0     7319
+7.0     1595
+Name: count, dtype: int64
+</pre>
     <p>
       On this scale, <c>4.0</c> represents &quot;Moderate&quot;.
 So we can compute the probability of a moderate banker like this:
@@ -727,6 +891,9 @@ So we can compute the probability of a moderate banker like this:
     prob(B==i) * conditional(banker, B==i)
       </input>
     </program>
+<pre>
+0.005822682085615744
+</pre>
     <p>
       And we can use <c>sum</c> and a <url href="https://www.johndcook.com/blog/2020/01/15/generator-expression/">generator expression</url> to compute the summation.
     </p>
@@ -736,6 +903,9 @@ So we can compute the probability of a moderate banker like this:
         for i in range(1, 8))
       </input>
     </program>
+<pre>
+0.014769730168391157
+</pre>
     <p>
       The result is the same.
     </p>
@@ -754,25 +924,25 @@ So we can compute the probability of a moderate banker like this:
       <em>Theorem 1</em> gives us a way to compute a conditional probability using a conjunction:
     </p>
     <p>
-      $$P(A|B) = \frac{P(A~\mathrm{and}~B)}{P(B)}$$
+      <me>P(A|B) = \frac{P(A~\mathrm{and}~B)}{P(B)}</me>
     </p>
     <p>
       <em>Theorem 2</em> gives us a way to compute a conjunction using a conditional probability:
     </p>
     <p>
-      $$P(A~\mathrm{and}~B) = P(B) P(A|B)$$
+      <me>P(A~\mathrm{and}~B) = P(B) P(A|B)</me>
     </p>
     <p>
-      <em>Theorem 3</em>, also known as Bayes's Theorem, gives us a way to get from $P(A|B)$ to $P(B|A)$, or the other way around:
+      <em>Theorem 3</em>, also known as Bayes's Theorem, gives us a way to get from <m>P(A|B)</m> to <m>P(B|A)</m>, or the other way around:
     </p>
     <p>
-      $$P(A|B) = \frac{P(A) P(B|A)}{P(B)}$$
+      <me>P(A|B) = \frac{P(A) P(B|A)}{P(B)}</me>
     </p>
     <p>
       <em>The Law of Total Probability</em> provides a way to compute probabilities by adding up the pieces:
     </p>
     <p>
-      $$P(A) = \sum_i P(B_i) P(A|B_i)$$
+      <me>P(A) = \sum_i P(B_i) P(A|B_i)</me>
     </p>
     <p>
       At this point you might ask, &quot;So what?&quot;  If we have all of the data, we can compute any probability we want, any conjunction, or any conditional probability, just by counting.  We don't have to use these formulas.
@@ -805,11 +975,18 @@ In the next chapter, we'll see how.
 conditional(liberal, given=democrat)
       </input>
     </program>
+<pre>
+0.3891320002215698
+</pre>
+
     <program language="python">
       <input>
 conditional(democrat, given=liberal)
       </input>
     </program>
+<pre>
+0.5206403320240125
+</pre>
   </solution>
     </exercise>
     <exercise xml:id="ex-104">
@@ -826,10 +1003,10 @@ conditional(democrat, given=liberal)
           To answer this question, compute
         </p>
         <p>
-          * The probability that Linda is a banker, given that she is female,
+          1. The probability that Linda is a banker, given that she is female,
         </p>
         <p>
-          * The probability that Linda is a banker and a liberal Democrat, given that she is female.
+          2. The probability that Linda is a banker and a liberal Democrat, given that she is female.
         </p>
       </statement>
   <solution>
@@ -838,11 +1015,17 @@ conditional(democrat, given=liberal)
 conditional(banker, given=female)
       </input>
     </program>
+<pre>
+0.02116102749801969
+</pre>
     <program language="python">
       <input>
 conditional(banker &amp; liberal &amp; democrat, given=female)
       </input>
     </program>
+<pre>
+0.0023009316887329786
+</pre>
   </solution>
     </exercise>
     <exercise xml:id="ex-107">
@@ -862,39 +1045,29 @@ Rather than use the specific ages 25 and 35, let's define <c>young</c> and <c>ol
     <p>For the young liberal questions:</p>
     <program language="python">
       <input>
-prob(young &amp; liberal)
+    young = (gss['age'] &lt; 30)
+    prob(young)
       </input>
     </program>
-    <program language="python">
-      <input>
-conditional(liberal, given=young)
-      </input>
-    </program>
+<pre>
+0.19435991073240008
+</pre>
     <p>For the old conservative questions:</p>
     <program language="python">
       <input>
 prob(old &amp; conservative)
       </input>
-    </program>
-    <program language="python">
-      <input>
-conditional(old, given=conservative)
-      </input>
-    </program>
-</solution>
-    </exercise>
-    <program language="python">
-      <input>
-    young = (gss['age'] &lt; 30)
-    prob(young)
-      </input>
-    </program>
-    <program language="python">
+<program language="python">
       <input>
     old = (gss['age'] &gt;= 65)
     prob(old)
       </input>
     </program>
+<pre>
+0.17328058429701765
+</pre>
+</solution>
+    </exercise>
     <p>
       For these thresholds, I chose round numbers near the 20th and 80th percentiles.  Depending on your age, you may or may not agree with these definitions of &quot;young&quot; and &quot;old&quot;.
     </p>
@@ -907,6 +1080,9 @@ conditional(old, given=conservative)
     prob(conservative)
       </input>
     </program>
+<pre>
+0.3419354838709677
+</pre>
     <p>
       Use <c>prob</c> and <c>conditional</c> to compute the following probabilities.
     </p>
@@ -922,6 +1098,55 @@ conditional(old, given=conservative)
     <p>
       For the conditional probabilities, be careful about the order of the arguments. If your answer to the last question is greater than 30%, you have it backwards!
     </p>
+
+  <solution>
+    <program language="python">
+      <input>
+# Solution
+prob(young & liberal)
+      </input>
+    </program>
+<pre>
+0.06579427875836884
+</pre>
+</solution>
+
+  <solution>
+    <program language="python">
+      <input>
+# Solution
+conditional(liberal, given=young)
+      </input>
+    </program>
+<pre>
+0.338517745302714
+</pre>
+</solution>
+
+  <solution>
+    <program language="python">
+      <input>
+# Solution
+prob(old & conservative)
+      </input>
+    </program>
+<pre>
+0.06701156421180766
+</pre>
+</solution>
+
+  <solution>
+    <program language="python">
+      <input>
+# Solution
+conditional(old, given=conservative)
+      </input>
+    </program>
+<pre>
+0.19597721609113564
+</pre>
+</solution>
+
     <p>
       <em>Think Bayes</em>, Second Edition
     </p>
