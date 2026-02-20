@@ -46,6 +46,13 @@
     df = pd.read_csv('drp_scores.csv', skiprows=21, delimiter='\t')
     df.head(3)
       </input>
+    
+      <output>
+      Treatment  Response
+0   Treated        24
+1   Treated        43
+2   Treated        58
+      </output>
     </program>
     <p>
       The <c>Treatment</c> column indicates whether each student was in the treated or control group. The <c>Response</c> is their score on the test.
@@ -79,6 +86,7 @@
              title='Distributions of test scores')
       </input>
     </program>
+    <image source="images/ch13_inference_84cea515.png" width="80%"/>
     <p>
       There is overlap between the distributions, but it looks like the scores are higher in the treated group. The distribution of scores is not exactly normal for either group, but it is close enough that the normal model is a reasonable choice.
     </p>
@@ -157,6 +165,10 @@
     data = responses['Control']
     data.shape
       </input>
+    
+      <output>
+      (23,)
+      </output>
     </program>
     <p>
       In the next section we'll compute the likelihood of this data for each pair of parameters in the prior distribution.
@@ -176,6 +188,10 @@
     
     mu_mesh.shape
       </input>
+    
+      <output>
+      (101, 101, 23)
+      </output>
     </program>
     <p>
       Now we can use <c>norm.pdf</c> to compute the probability density of each score for each hypothetical pair of parameters.
@@ -187,6 +203,10 @@
     densities = norm(mu_mesh, sigma_mesh).pdf(data_mesh)
     densities.shape
       </input>
+    
+      <output>
+      (101, 101, 23)
+      </output>
     </program>
     <p>
       The result is a 3-D array.  To compute likelihoods, I'll multiply these densities along <c>axis=2</c>, which is the axis of the data:
@@ -196,6 +216,10 @@
     likelihood = densities.prod(axis=2)
     likelihood.shape
       </input>
+    
+      <output>
+      (101, 101)
+      </output>
     </program>
     <p>
       The result is a 2-D array that contains the likelihood of the entire dataset for each hypothetical pair of parameters.
@@ -211,6 +235,10 @@
     normalize(posterior)
     posterior.shape
       </input>
+    
+      <output>
+      (101, 101)
+      </output>
     </program>
     <p>
       The result is a <c>DataFrame</c> that represents the joint posterior distribution.
@@ -268,6 +296,7 @@
              title='Joint posterior distributions of mu and sigma')
       </input>
     </program>
+    <image source="images/ch13_inference_de1ad889.png" width="80%"/>
     <p>
       Along the $x$-axis, it looks like the mean score for the treated group is higher. Along the $y$-axis, it looks like the standard deviation for the treated group is lower.
     </p>
@@ -303,6 +332,7 @@
              title='Posterior distributions of mu')
       </input>
     </program>
+    <image source="images/ch13_inference_fc310720.png" width="80%"/>
     <p>
       In both cases the posterior probabilities at the ends of the range are near zero, which means that the bounds we chose for the prior distribution are wide enough.
     </p>
@@ -313,6 +343,10 @@
       <input>
     Pmf.prob_gt(pmf_mean_treated, pmf_mean_control)
       </input>
+    
+      <output>
+      0.980479025187326
+      </output>
     </program>
     <p>
       There is a 98% chance that the mean in the treated group is higher.
@@ -337,6 +371,10 @@
       <input>
     len(pmf_mean_treated), len(pmf_mean_control), len(pmf_diff)
       </input>
+    
+      <output>
+      (101, 101, 879)
+      </output>
     </program>
     <p>
       In the worst case, the size of the result can be the product of the sizes of the originals.
@@ -353,6 +391,7 @@
              title='Posterior distribution of difference in mu')
       </input>
     </program>
+    <image source="images/ch13_inference_818ef31b.png" width="80%"/>
     <p>
       There are two ways to work around that limitation.  One is to plot the CDF, which smooths out the noise:
     </p>
@@ -370,6 +409,7 @@
              title='Posterior distribution of difference in mu')
       </input>
     </program>
+    <image source="images/ch13_inference_9b033f3b.png" width="80%"/>
     <p>
       The other option is to use kernel density estimation (KDE) to make a smooth approximation of the PDF on an equally-spaced grid, which is what this function does:
     </p>
@@ -410,6 +450,7 @@
              title='Posterior distribution of difference in mu')
       </input>
     </program>
+    <image source="images/ch13_inference_64130368.png" width="80%"/>
     <p>
       The mean of this distribution is almost 10 points on a test where the mean is around 45, so the effect of the treatment seems to be substantial.
     </p>
@@ -417,6 +458,10 @@
       <input>
     pmf_diff.mean()
       </input>
+    
+      <output>
+      9.954413088940848
+      </output>
     </program>
     <p>
       We can use <c>credible_interval</c> to compute a 90% credible interval.
@@ -425,6 +470,10 @@
       <input>
     pmf_diff.credible_interval(0.9)
       </input>
+    
+      <output>
+      array([ 2.4, 17.4])
+      </output>
     </program>
     <p>
       Based on this interval, we are pretty sure the treatment improves test scores by 2 to 17 points.
@@ -495,6 +544,10 @@
     like1 = dist_m.pdf(m)
     like1
       </input>
+    
+      <output>
+      0.10137915138497372
+      </output>
     </program>
     <p>
       Now let's compute the likelihood of the observed value of <c>s</c>, which is 18. First, we compute the transformed value <c>t</c>:
@@ -504,6 +557,10 @@
     t = n * s**2 / sigma**2
     t
       </input>
+    
+      <output>
+      22.422145328719722
+      </output>
     </program>
     <p>
       Then we create a <c>chi2</c> object to represent the distribution of <c>t</c>:
@@ -523,6 +580,10 @@
     like2 = dist_s.pdf(t)
     like2
       </input>
+    
+      <output>
+      0.04736427909437004
+      </output>
     </program>
     <p>
       Finally, because <c>m</c> and <c>s</c> are independent, their joint likelihood is the product of their likelihoods:
@@ -532,6 +593,10 @@
     like = like1 * like2
     like
       </input>
+    
+      <output>
+      0.004801750420548287
+      </output>
     </program>
     <p>
       Now we can compute the likelihood of the data for any values of $\mu$ and $\sigma$, which we'll use in the next section to do the update.
@@ -553,6 +618,11 @@
         
     summary
       </input>
+    
+      <output>
+      {'Control': (23, 41.52173913043478, 17.148733229699484),
+ 'Treated': (21, 51.476190476190474, 11.00735684721381)}
+      </output>
     </program>
     <p>
       The result is a dictionary that maps from group name to a tuple that contains the sample size, <c>n</c>, the sample mean, <c>m</c>, and the sample standard deviation <c>s</c>, for each group.
@@ -573,6 +643,10 @@
     mus, sigmas = np.meshgrid(prior.columns, prior.index)
     mus.shape
       </input>
+    
+      <output>
+      (101, 101)
+      </output>
     </program>
     <p>
       Now we can compute the likelihood of seeing the sample mean, <c>m</c>, for each pair of parameters.
@@ -582,6 +656,10 @@
     like1 = norm(mus, sigmas/np.sqrt(n)).pdf(m)
     like1.shape
       </input>
+    
+      <output>
+      (101, 101)
+      </output>
     </program>
     <p>
       And we can compute the likelihood of the sample standard deviation, <c>s</c>, for each pair of parameters.
@@ -592,6 +670,10 @@
     like2 = chi2(n-1).pdf(ts)
     like2.shape
       </input>
+    
+      <output>
+      (101, 101)
+      </output>
     </program>
     <p>
       Finally, we can do the update with both likelihoods:
@@ -601,6 +683,10 @@
     posterior_control2 = prior * like1 * like2
     normalize(posterior_control2)
       </input>
+    
+      <output>
+      0.00030965351017402847
+      </output>
     </program>
     <p>
       To compute the posterior distribution for the treatment group, I'll put the previous steps in a function:
@@ -646,6 +732,7 @@
              title='Joint posterior distributions of mu and sigma')
       </input>
     </program>
+    <image source="images/ch13_inference_17bd93ed.png" width="80%"/>
     <p>
       Visually, these posterior joint distributions are similar to the ones we computed using the entire dataset, not just the summary statistics. But they are not exactly the same, as we can see by comparing the marginal distributions.
     </p>
@@ -680,6 +767,7 @@
              title='Posterior distributions of mu')
       </input>
     </program>
+    <image source="images/ch13_inference_1f79def6.png" width="80%"/>
     <p>
       The posterior distributions based on summary statistics are similar to the posteriors we computed using the entire dataset, but in both cases they are shorter and a little wider.
     </p>
@@ -728,6 +816,10 @@
     samples = dist.rvs((1000, n))
     samples.shape
       </input>
+    
+      <output>
+      (1000, 20)
+      </output>
     </program>
     <p>
       The result is an array with 1000 rows, each containing a sample or 20 simulated test scores.
@@ -740,6 +832,10 @@
     sample_means = samples.mean(axis=1)
     sample_means.shape
       </input>
+    
+      <output>
+      (1000,)
+      </output>
     </program>
     <p>
       Now, let's compare the distribution of these means to <c>dist_m</c>. I'll use <c>pmf_from_dist</c> to make a discrete approximation of <c>dist_m</c>:
@@ -801,6 +897,7 @@
              title='Distribution of the mean')
       </input>
     </program>
+    <image source="images/ch13_inference_d624b832.png" width="80%"/>
     <p>
       The theoretical distribution and the distribution of sample means are in accord.
     </p>
@@ -817,6 +914,10 @@
     sample_stds = samples.std(axis=1)
     sample_stds.shape
       </input>
+    
+      <output>
+      (1000,)
+      </output>
     </program>
     <p>
       Now we'll compute the transformed values, $t = n s^2 / \sigma^2$.
@@ -871,6 +972,7 @@
              title='Distribution of standard deviation')
       </input>
     </program>
+    <image source="images/ch13_inference_b665eb24.png" width="80%"/>
     <p>
       The distribution of transformed standard deviations agrees with the theoretical distribution.
     </p>
@@ -881,6 +983,10 @@
       <input>
     np.corrcoef(sample_means, sample_stds)[0][1]
       </input>
+    
+      <output>
+      0.017673583293253373
+      </output>
     </program>
     <p>
       Their correlation is near zero, which is consistent with their being independent.
@@ -902,6 +1008,7 @@
              title='Joint distribution of mu and sigma')
       </input>
     </program>
+    <image source="images/ch13_inference_461f1559.png" width="80%"/>
     <p>
       It looks like the axes of the ellipses are aligned with the axes, which indicates that the variables are independent.
     </p>
@@ -953,12 +1060,17 @@
              title='Posterior distributions of sigma')
       </input>
     </program>
+    <image source="images/ch13_inference_23c872a5.png" width="80%"/>
     <program language="python">
       <input>
     # Solution
     
     Pmf.prob_gt(pmf_std_control, pmf_std_treated)
       </input>
+    
+      <output>
+      0.9685103375300469
+      </output>
     </program>
     <program language="python">
       <input>
@@ -973,6 +1085,10 @@
     
     pmf_diff2.mean()
       </input>
+    
+      <output>
+      6.41717132817218
+      </output>
     </program>
     <program language="python">
       <input>
@@ -980,6 +1096,10 @@
     
     pmf_diff2.credible_interval(0.9)
       </input>
+    
+      <output>
+      array([ 1. , 12.5])
+      </output>
     </program>
     <program language="python">
       <input>
@@ -992,6 +1112,7 @@
              title='Posterior distributions of difference in sigma')
       </input>
     </program>
+    <image source="images/ch13_inference_0bf934e6.png" width="80%"/>
     <p>
       <em>Exercise:</em> An <url href="http://en.wikipedia.org/wiki/Effect_size">effect size</url> is a statistic intended to quantify the magnitude of a phenomenon. If the phenomenon is a difference in means between two groups, a common way to quantify it is Cohen's effect size, denoted $d$.
     </p>
@@ -1030,12 +1151,20 @@
     sample_treated = sample_joint(posterior_treated, 1000)
     sample_treated.shape
       </input>
+    
+      <output>
+      (1000,)
+      </output>
     </program>
     <program language="python">
       <input>
     sample_control = sample_joint(posterior_control, 1000)
     sample_control.shape
       </input>
+    
+      <output>
+      (1000,)
+      </output>
     </program>
     <p>
       The result is an array of tuples, where each tuple contains a possible pair of values for $\mu$ and $\sigma$. Now you can loop through the samples, compute the Cohen effect size for each, and estimate the distribution of effect sizes.
@@ -1064,6 +1193,10 @@
     
     cohen_effect(sample_treated[0], sample_control[0])
       </input>
+    
+      <output>
+      0.28051948051948006
+      </output>
     </program>
     <program language="python">
       <input>
@@ -1087,12 +1220,17 @@
              title='Posterior distributions of effect size')
       </input>
     </program>
+    <image source="images/ch13_inference_3bdc443f.png" width="80%"/>
     <program language="python">
       <input>
     # Solution
     
     cdf.mean()
       </input>
+    
+      <output>
+      0.6744533768739635
+      </output>
     </program>
     <program language="python">
       <input>
@@ -1100,6 +1238,10 @@
     
     cdf.credible_interval(0.9)
       </input>
+    
+      <output>
+      array([0.12857143, 1.2       ])
+      </output>
     </program>
     <p>
       <em>Exercise:</em> This exercise is inspired by <url href="https://www.reddit.com/r/statistics/comments/hcvl2j/q_reverse_empirical_distribution_rule_question/">a question that appeared on Reddit</url>.
@@ -1138,6 +1280,10 @@
     pgt90 = norm(81, hypos).sf(90)
     pgt90.shape
       </input>
+    
+      <output>
+      (101,)
+      </output>
     </program>
     <program language="python">
       <input>
@@ -1151,6 +1297,10 @@
     likelihood1 = binom(25, pgt90).pmf(5)
     likelihood1.shape
       </input>
+    
+      <output>
+      (101,)
+      </output>
     </program>
     <program language="python">
       <input>
@@ -1162,6 +1312,10 @@
     posterior = prior * likelihood1
     posterior.normalize()
       </input>
+    
+      <output>
+      5.299480018256258
+      </output>
     </program>
     <program language="python">
       <input>
@@ -1175,6 +1329,7 @@
              title='Posterior distribution of sigma')
       </input>
     </program>
+    <image source="images/ch13_inference_881abf69.png" width="80%"/>
     <program language="python">
       <input>
     # Solution
@@ -1203,6 +1358,7 @@
              title='Likelihood function')
       </input>
     </program>
+    <image source="images/ch13_inference_22a2acc8.png" width="80%"/>
     <program language="python">
       <input>
     # Solution
@@ -1214,6 +1370,10 @@
     posterior2 = prior * likelihood1 * likelihood2
     posterior2.normalize()
       </input>
+    
+      <output>
+      0.01425455531129565
+      </output>
     </program>
     <program language="python">
       <input>
@@ -1227,12 +1387,17 @@
              title='Posterior distribution of sigma')
       </input>
     </program>
+    <image source="images/ch13_inference_7644cc67.png" width="80%"/>
     <program language="python">
       <input>
     # Solution
     
     posterior.mean(), posterior2.mean()
       </input>
+    
+      <output>
+      (18.150261186811544, 10.189707962198526)
+      </output>
     </program>
     <program language="python">
       <input>
@@ -1240,6 +1405,10 @@
     
     posterior2.credible_interval(0.9)
       </input>
+    
+      <output>
+      array([ 7., 15.])
+      </output>
     </program>
     <p>
       <em>Exercise:</em> The <url href="http://en.wikipedia.org/wiki/Variability_hypothesis">Variability Hypothesis</url> is the observation that many physical traits are more variable among males than among females, in many species. 
@@ -1322,6 +1491,7 @@
              title='Joint distribution of mu and sigma')
       </input>
     </program>
+    <image source="images/ch13_inference_3d7dfb94.png" width="80%"/>
     <program language="python">
       <input>
     # Solution
@@ -1353,6 +1523,7 @@
     plot_contour(posterior_female, cmap='Oranges');
       </input>
     </program>
+    <image source="images/ch13_inference_3d231e38.png" width="80%"/>
     <program language="python">
       <input>
     # Solution
@@ -1368,6 +1539,7 @@
              title='Posterior distributions of CV')
       </input>
     </program>
+    <image source="images/ch13_inference_420bed8b.png" width="80%"/>
     <program language="python">
       <input>
     # Solution
@@ -1375,6 +1547,10 @@
     ratio_cv = Pmf.div_dist(pmf_cv_female, pmf_cv_male)
     ratio_cv.max_prob()
       </input>
+    
+      <output>
+      1.0233615721208176
+      </output>
     </program>
     <program language="python">
       <input>
@@ -1382,6 +1558,10 @@
     
     ratio_cv.credible_interval(0.9)
       </input>
+    
+      <output>
+      array([1.0193799 , 1.02734473])
+      </output>
     </program>
     <p>
       <em>Think Bayes</em>, Second Edition

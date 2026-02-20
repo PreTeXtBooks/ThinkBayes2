@@ -55,6 +55,10 @@ cumulative = pmf.cumsum()
       <input>
 cumulative[0.61]
       </input>
+    
+      <output>
+      0.9638303193984253
+      </output>
     </program>
 
     <p>
@@ -75,6 +79,10 @@ qs = cumulative.index
 interp = interp1d(ps, qs)
 interp(0.96)
       </input>
+    
+      <output>
+      array(0.60890171)
+      </output>
     </program>
 
     <p>
@@ -106,6 +114,10 @@ cdf = pmf.make_cdf()
       <input>
 cdf[0.61]
       </input>
+    
+      <output>
+      0.9638303193984253
+      </output>
     </program>
 
     <p>
@@ -118,6 +130,10 @@ cdf[0.61]
       <input>
 cdf(0.615)
       </input>
+    
+      <output>
+      array(0.96383032)
+      </output>
     </program>
 
     <p>
@@ -138,6 +154,10 @@ cdf.quantile(0.96)
       <input>
 cdf.credible_interval(0.9)
       </input>
+    
+      <output>
+      array([0.51, 0.61])
+      </output>
     </program>
 
     <p>

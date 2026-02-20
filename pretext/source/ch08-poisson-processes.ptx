@@ -331,6 +331,10 @@ def prob_gt(pmf1, pmf2):
       <input>
 prob_gt(france, croatia)
       </input>
+    
+      <output>
+      0.7499366290930155
+      </output>
     </program>
 
     <p>
@@ -341,6 +345,10 @@ prob_gt(france, croatia)
       <input>
 Pmf.prob_gt(france, croatia)
       </input>
+    
+      <output>
+      0.7499366290930174
+      </output>
     </program>
 
     <p>
@@ -486,6 +494,10 @@ ps = expo_pdf(qs, lam)
 pmf_time = Pmf(ps, qs)
 pmf_time.normalize()
       </input>
+    
+      <output>
+      25.616650745459093
+      </output>
     </program>
 
     <p>

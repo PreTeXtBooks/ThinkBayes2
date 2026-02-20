@@ -100,6 +100,7 @@ decorate(xlabel='Number of bears observed twice',
          title='Hypergeometric distribution of k (known population 100)')
       </input>
     </program>
+    <image source="images/ch15_mark_recapture_656ac0ea.png" width="80%"/>
     <p>
       The most likely value of <m>k</m> is 4, which is the value actually observed in the experiment.
       That suggests that <m>N=100</m> is a reasonable estimate of the population, given this data.
@@ -128,6 +129,10 @@ qs = np.arange(50, 501)
 prior_N = make_uniform(qs, name='N')
 prior_N.shape
       </input>
+    
+      <output>
+      (451,)
+      </output>
     </program>
     <p>
       So that's our prior.
@@ -153,6 +158,10 @@ likelihood = hypergeom(Ns, K, n).pmf(k)
 posterior_N = prior_N * likelihood
 posterior_N.normalize()
       </input>
+    
+      <output>
+      0.07755224277106798
+      </output>
     </program>
     <p>
       And here's what it looks like.
@@ -166,6 +175,7 @@ decorate(xlabel='Population of bears (N)',
          title='Posterior distribution of N')
       </input>
     </program>
+    <image source="images/ch15_mark_recapture_20efdb15.png" width="80%"/>
     <p>
       The most likely value is 109.
     </p>
@@ -173,6 +183,10 @@ decorate(xlabel='Population of bears (N)',
       <input>
 posterior_N.max_prob()
       </input>
+    
+      <output>
+      109
+      </output>
     </program>
     <p>
       But the distribution is skewed to the right, so the posterior mean is substantially higher.
@@ -181,6 +195,10 @@ posterior_N.max_prob()
       <input>
 posterior_N.mean()
       </input>
+    
+      <output>
+      173.79880627085805
+      </output>
     </program>
     <p>
       And the credible interval is quite wide.
@@ -189,6 +207,10 @@ posterior_N.mean()
       <input>
 posterior_N.credible_interval(0.9)
       </input>
+    
+      <output>
+      array([ 77., 363.])
+      </output>
     </program>
     <p>
       This solution is relatively simple, but it turns out we can do a little better if we model the unknown probability of observing a bear explicitly.
@@ -250,6 +272,10 @@ observed = k01 + k10 + k11
 k00 = N - observed
 k00
       </input>
+    
+      <output>
+      62
+      </output>
     </program>
     <p>
       For the update, it will be convenient to store the data as a list that represents the number of bears in each category.
@@ -259,6 +285,10 @@ k00
 x = [k00, k01, k10, k11]
 x
       </input>
+    
+      <output>
+      [62, 15, 19, 4]
+      </output>
     </program>
     <p>
       Now, if we know <c>p=0.2</c>, we can compute the probability a bear falls in each category.  For example, the probability of being observed in both rounds is <c>p*p</c>, and the probability of being unobserved in both rounds is <c>q*q</c> (where <c>q=1-p</c>).
@@ -270,6 +300,13 @@ q = 1-p
 y = [q*q, q*p, p*q, p*p]
 y
       </input>
+    
+      <output>
+      [0.6400000000000001,
+ 0.16000000000000003,
+ 0.16000000000000003,
+ 0.04000000000000001]
+      </output>
     </program>
     <p>
       Now the probability of the data is given by the <url href="https://en.wikipedia.org/wiki/Multinomial_distribution">multinomial distribution</url>:
@@ -291,6 +328,10 @@ from scipy.stats import multinomial
 likelihood = multinomial.pmf(x, N, y)
 likelihood
       </input>
+    
+      <output>
+      0.0016664011988507257
+      </output>
     </program>
     <p>
       That's the likelihood if we know <c>N</c> and <c>p</c>, but of course we don't.  So we'll choose prior distributions for <c>N</c> and <c>p</c>, and use the likelihoods to update it.
@@ -319,6 +360,10 @@ from utils import make_joint
 joint_prior = make_joint(prior_p, prior_N)
 joint_prior.shape
       </input>
+    
+      <output>
+      (451, 100)
+      </output>
     </program>
     <p>
       The result is a Pandas <c>DataFrame</c> with values of <c>N</c> down the rows and values of <c>p</c> across the columns.
@@ -332,21 +377,41 @@ from empiricaldist import Pmf
 joint_pmf = Pmf(joint_prior.stack())
 joint_pmf.head(3)
       </input>
+    
+      <output>
+      N   p   
+50  0.00    0.000022
+    0.01    0.000022
+    0.02    0.000022
+dtype: float64
+      </output>
     </program>
     <program language="python">
       <input>
 type(joint_pmf)
       </input>
+    
+      <output>
+      empiricaldist.empiricaldist.Pmf
+      </output>
     </program>
     <program language="python">
       <input>
 type(joint_pmf.index)
       </input>
+    
+      <output>
+      pandas.core.indexes.multi.MultiIndex
+      </output>
     </program>
     <program language="python">
       <input>
 joint_pmf.shape
       </input>
+    
+      <output>
+      (45100,)
+      </output>
     </program>
     <p>
       The result is a <c>Pmf</c> whose index is a <c>MultiIndex</c>.
@@ -395,6 +460,10 @@ for N, p in joint_pmf.index:
 posterior_pmf = joint_pmf * likelihood
 posterior_pmf.normalize()
       </input>
+    
+      <output>
+      2.9678796190279657e-05
+      </output>
     </program>
     <p>
       We'll use <c>plot_contour</c> again to visualize the joint posterior distribution.
@@ -420,6 +489,7 @@ plot_contour(joint_posterior)
 decorate(title='Joint posterior distribution of N and p')
       </input>
     </program>
+    <image source="images/ch15_mark_recapture_8a60f84f.png" width="80%"/>
     <p>
       The most likely values of <c>N</c> are near 100, as in the previous model. The most likely values of <c>p</c> are near 0.2.
     </p>
@@ -449,6 +519,7 @@ decorate(xlabel='Probability of observing a bear',
          title='Posterior marginal distribution of p')
       </input>
     </program>
+    <image source="images/ch15_mark_recapture_e47c9661.png" width="80%"/>
     <p>
       The most likely values are near 0.2.
     </p>
@@ -465,6 +536,7 @@ decorate(xlabel='Population of bears (N)',
          title='Posterior marginal distribution of N')
       </input>
     </program>
+    <image source="images/ch15_mark_recapture_f3583eb8.png" width="80%"/>
     <p>
       The results are qualitatively similar.  The posterior means and credible intervals are nearly the same.  The only visible difference is that the two-parameter model is a bit smoother.
     </p>
@@ -472,11 +544,19 @@ decorate(xlabel='Population of bears (N)',
       <input>
 print(posterior_N.mean(), posterior_N.credible_interval(0.9))
       </input>
+    
+      <output>
+      173.79880627085805 [ 77. 363.]
+      </output>
     </program>
     <program language="python">
       <input>
 print(posterior2_N.mean(), posterior2_N.credible_interval(0.9))
       </input>
+    
+      <output>
+      138.750521364726 [ 68. 277.]
+      </output>
     </program>
     <p>
       So for practical purposes, the simpler one-parameter model is sufficient.
@@ -756,6 +836,10 @@ decorate(xlabel='Number of users (thousands)',
       <input>
 posterior_N.mean()
       </input>
+    
+      <output>
+      173.79880627085805
+      </output>
     </program>
     <p>
       And here's the 90% credible interval.
@@ -764,6 +848,10 @@ posterior_N.mean()
       <input>
 posterior_N.credible_interval(0.9)
       </input>
+    
+      <output>
+      array([ 77., 363.])
+      </output>
     </program>
     <p>
       The posterior distribution is quite wide because we don't have much data.
@@ -842,6 +930,10 @@ def compute_probs(p0, p1):
 y = compute_probs(p0, p1)
 y
       </input>
+    
+      <output>
+      [0.68, 0.12, 0.17, 0.03]
+      </output>
     </program>
     <p>
       With these probabilities, there is a 68% chance that neither tester finds the bug and a 3% chance that both do.
@@ -856,6 +948,14 @@ qs = np.arange(32, 350, step=5)
 prior_N = make_uniform(qs, name='N')
 prior_N.head(3)
       </input>
+    
+      <output>
+      N
+32    0.015625
+37    0.015625
+42    0.015625
+dtype: float64
+      </output>
     </program>
     <p>
       I'll put the data in an array, with 0 as a place-keeper for the unknown value <c>k00</c>.
@@ -887,6 +987,10 @@ for N in prior_N.qs:
 posterior_N = prior_N * likelihood
 posterior_N.normalize()
       </input>
+    
+      <output>
+      0.07755224277106798
+      </output>
     </program>
     <p>
       And here's what it looks like.
@@ -905,6 +1009,10 @@ decorate(xlabel='Number of bugs (N)',
 print(posterior_N.mean(), 
       posterior_N.credible_interval(0.9))
       </input>
+    
+      <output>
+      173.79880627085805 [ 77. 363.]
+      </output>
     </program>
     <p>
       With the assumption that <c>p0</c> and <c>p1</c> are known to be <c>0.2</c> and <c>0.15</c>, the posterior mean is 102 with 90% credible interval (77, 127).
@@ -930,6 +1038,10 @@ prior_p1 = make_uniform(qs, name='p1')
 joint2 = make_joint(prior_p0, prior_N)
 joint2.shape
       </input>
+    
+      <output>
+      (64, 51)
+      </output>
     </program>
     <p>
       Now I'll stack them, as in the previous example, and put the result in a <c>Pmf</c>.
@@ -939,6 +1051,14 @@ joint2.shape
 joint2_pmf = Pmf(joint2.stack())
 joint2_pmf.head(3)
       </input>
+    
+      <output>
+      N   p0  
+32  0.00    0.000306
+    0.02    0.000306
+    0.04    0.000306
+dtype: float64
+      </output>
     </program>
     <p>
       We can use <c>make_joint</c> again to add in the third parameter.
@@ -948,6 +1068,10 @@ joint2_pmf.head(3)
 joint3 = make_joint(prior_p1, joint2_pmf)
 joint3.shape
       </input>
+    
+      <output>
+      (3264, 51)
+      </output>
     </program>
     <p>
       The result is a <c>DataFrame</c> with values of <c>N</c> and <c>p0</c> in a <c>MultiIndex</c> that goes down the rows and values of <c>p1</c> in an index that goes across the columns.
@@ -956,6 +1080,28 @@ joint3.shape
       <input>
 joint3.head(3)
       </input>
+    
+      <output>
+      p1           0.00      0.02      0.04      0.06      0.08      0.10      0.12  \
+N  p0                                                                           
+32 0.00  0.000006  0.000006  0.000006  0.000006  0.000006  0.000006  0.000006   
+   0.02  0.000006  0.000006  0.000006  0.000006  0.000006  0.000006  0.000006   
+   0.04  0.000006  0.000006  0.000006  0.000006  0.000006  0.000006  0.000006   
+
+p1           0.14      0.16      0.18  ...      0.82      0.84      0.86  \
+N  p0                                  ...                                 
+32 0.00  0.000006  0.000006  0.000006  ...  0.000006  0.000006  0.000006   
+   0.02  0.000006  0.000006  0.000006  ...  0.000006  0.000006  0.000006   
+   0.04  0.000006  0.000006  0.000006  ...  0.000006  0.000006  0.000006   
+
+p1           0.88      0.90      0.92      0.94      0.96      0.98      1.00  
+N  p0                                                                          
+32 0.00  0.000006  0.000006  0.000006  0.000006  0.000006  0.000006  0.000006  
+   0.02  0.000006  0.000006  0.000006  0.000006  0.000006  0.000006  0.000006  
+   0.04  0.000006  0.000006  0.000006  0.000006  0.000006  0.000006  0.000006  
+
+[3 rows x 51 columns]
+      </output>
     </program>
     <p>
       Now I'll apply <c>stack</c> again:
@@ -965,6 +1111,14 @@ joint3.head(3)
 joint3_pmf = Pmf(joint3.stack())
 joint3_pmf.head(3)
       </input>
+    
+      <output>
+      N   p0   p1  
+32  0.0  0.00    0.000006
+         0.02    0.000006
+         0.04    0.000006
+dtype: float64
+      </output>
     </program>
     <p>
       The result is a <c>Pmf</c> with a three-column <c>MultiIndex</c> containing all possible triplets of parameters.
@@ -976,6 +1130,10 @@ joint3_pmf.head(3)
       <input>
 joint3_pmf.shape
       </input>
+    
+      <output>
+      (166464,)
+      </output>
     </program>
     <p>
       That's still small enough to be practical, but it will take longer to compute the likelihoods than in the previous examples.
@@ -1003,6 +1161,10 @@ for N, p0, p1 in joint3_pmf.index:
 posterior_pmf = joint3_pmf * likelihood
 posterior_pmf.normalize()
       </input>
+    
+      <output>
+      8.941088283758206e-06
+      </output>
     </program>
     <p>
       Now, to extract the marginal distributions, we could unstack the joint posterior as we did in the previous section.
@@ -1026,10 +1188,15 @@ decorate(xlabel='Number of bugs (N)',
          title='Posterior marginal distributions of N')
       </input>
     </program>
+    <image source="images/ch15_mark_recapture_b95ef0e6.png" width="80%"/>
     <program language="python">
       <input>
 posterior_N.mean()
       </input>
+    
+      <output>
+      173.79880627085805
+      </output>
     </program>
     <p>
       The posterior mean is 105 bugs, which suggests that there are still many bugs the testers have not found.
@@ -1059,6 +1226,10 @@ posterior_p0.mean(), posterior_p0.credible_interval(0.9)
       <input>
 posterior_p1.mean(), posterior_p1.credible_interval(0.9)
       </input>
+    
+      <output>
+      (0.2297065971677734, array([0.1, 0.4]))
+      </output>
     </program>
     <p>
       Comparing the posterior distributions, the tester who found more bugs probably has a higher probability of finding bugs.  The posterior means are about 23% and 18%.  But the distributions overlap, so we should not be too sure.
@@ -1139,14 +1310,30 @@ qs = np.arange(200, 500, step=5)
 prior_N = make_uniform(qs, name='N')
 prior_N.head(3)
           </input>
-        </program>
+        
+      <output>
+      N
+200    0.016667
+205    0.016667
+210    0.016667
+dtype: float64
+      </output>
+    </program>
         <program language="python">
           <input>
 qs = np.linspace(0, 0.98, num=50)
 prior_p = make_uniform(qs, name='p')
 prior_p.head(3)
           </input>
-        </program>
+        
+      <output>
+      p
+0.00    0.02
+0.02    0.02
+0.04    0.02
+dtype: float64
+      </output>
+    </program>
       </statement>
     <solution>
       <program language="python">
@@ -1160,14 +1347,30 @@ qs = np.arange(200, 500, step=5)
 prior_N = make_uniform(qs, name='N')
 prior_N.head(3)
         </input>
-      </program>
+      
+      <output>
+      N
+200    0.016667
+205    0.016667
+210    0.016667
+dtype: float64
+      </output>
+    </program>
       <program language="python">
         <input>
 qs = np.linspace(0, 0.98, num=50)
 prior_p = make_uniform(qs, name='p')
 prior_p.head(3)
         </input>
-      </program>
+      
+      <output>
+      p
+0.00    0.02
+0.02    0.02
+0.04    0.02
+dtype: float64
+      </output>
+    </program>
       <program language="python">
         <input>
 
@@ -1307,7 +1510,19 @@ t = (1-p, p)
 df = cartesian_product(t, t, t)
 df
           </input>
-        </program>
+        
+      <output>
+      level_0  level_1  level_2
+0      0.8      0.8      0.8
+1      0.8      0.8      0.2
+2      0.8      0.2      0.8
+3      0.8      0.2      0.2
+4      0.2      0.8      0.8
+5      0.2      0.8      0.2
+6      0.2      0.2      0.8
+7      0.2      0.2      0.2
+      </output>
+    </program>
         <p>
           To compute the probability for each category, we take the product across the columns:
         </p>
@@ -1316,7 +1531,19 @@ df
 y = df.prod(axis=1)
 y
           </input>
-        </program>
+        
+      <output>
+      0    0.512
+1    0.128
+2    0.128
+3    0.032
+4    0.128
+5    0.032
+6    0.032
+7    0.008
+dtype: float64
+      </output>
+    </program>
         <p>
           Now you finish it off from there.
         </p>
@@ -1354,13 +1581,37 @@ t = (1-p, p)
 df = cartesian_product(t, t, t)
 df
         </input>
-      </program>
+      
+      <output>
+      level_0  level_1  level_2
+0      0.8      0.8      0.8
+1      0.8      0.8      0.2
+2      0.8      0.2      0.8
+3      0.8      0.2      0.2
+4      0.2      0.8      0.8
+5      0.2      0.8      0.2
+6      0.2      0.2      0.8
+7      0.2      0.2      0.2
+      </output>
+    </program>
       <program language="python">
         <input>
 y = df.prod(axis=1)
 y
         </input>
-      </program>
+      
+      <output>
+      0    0.512
+1    0.128
+2    0.128
+3    0.032
+4    0.128
+5    0.032
+6    0.032
+7    0.008
+dtype: float64
+      </output>
+    </program>
       <program language="python">
         <input>
 

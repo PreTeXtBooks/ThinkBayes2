@@ -70,6 +70,10 @@ k = 1
 
 binom.pmf(k, n, p)
       </input>
+    
+      <output>
+      0.5000000000000002
+      </output>
     </program>
 
     <p>
@@ -84,6 +88,10 @@ ks = np.arange(n+1)
 ps = binom.pmf(ks, n, p)
 ps
       </input>
+    
+      <output>
+      array([0.25, 0.5 , 0.25])
+      </output>
     </program>
 
     <p>
@@ -101,6 +109,13 @@ from empiricaldist import Pmf
 pmf_k = Pmf(ps, ks)
 pmf_k
       </input>
+    
+      <output>
+      0    0.25
+1    0.50
+2    0.25
+dtype: float64
+      </output>
     </program>
 
     <p>
@@ -138,6 +153,7 @@ decorate(xlabel='Number of heads (k)',
          title='Binomial distribution')
       </input>
     </program>
+    <image source="images/ch04_estimating_proportions_74dab07f.png" width="80%"/>
 
     <p>
       The most likely quantity in this distribution is 125:
@@ -147,6 +163,10 @@ decorate(xlabel='Number of heads (k)',
       <input>
 pmf_k.max_prob()
       </input>
+    
+      <output>
+      125
+      </output>
     </program>
 
     <p>
@@ -157,6 +177,10 @@ pmf_k.max_prob()
       <input>
 pmf_k[125]
       </input>
+    
+      <output>
+      0.050412213147309655
+      </output>
     </program>
 
     <p>
@@ -167,6 +191,10 @@ pmf_k[125]
       <input>
 pmf_k[140]
       </input>
+    
+      <output>
+      0.008357181724918188
+      </output>
     </program>
 
     <p>
@@ -194,6 +222,10 @@ def prob_ge(pmf, threshold):
       <input>
 prob_ge(pmf_k, 140)
       </input>
+    
+      <output>
+      0.03321057562002166
+      </output>
     </program>
 
     <p>
@@ -204,6 +236,10 @@ prob_ge(pmf_k, 140)
       <input>
 pmf_k.prob_ge(140)
       </input>
+    
+      <output>
+      0.03321057562002166
+      </output>
     </program>
 
     <p>
@@ -245,6 +281,10 @@ decorate(xlabel='Number of heads (k)',
       <input>
 pmf_k.prob_le(110)
       </input>
+    
+      <output>
+      0.033210575620021665
+      </output>
     </program>
 
     <p>
@@ -380,6 +420,7 @@ posterior.plot(label='140 heads out of 250', color='C4')
 decorate_euro(title='Posterior distribution of x')
       </input>
     </program>
+    <image source="images/ch04_estimating_proportions_4c5170f6.png" width="80%"/>
 
     <p>
       This figure shows the posterior distribution of <c>x</c>, which is the proportion of heads for the coin we observed.
@@ -396,6 +437,10 @@ It indicates that values less than 0.4 and greater than 0.7 are unlikely; values
       <input>
 posterior.max_prob()
       </input>
+    
+      <output>
+      0.56
+      </output>
     </program>
 
   </section>
@@ -413,6 +458,10 @@ posterior.max_prob()
 uniform = Pmf(1, hypos, name='uniform')
 uniform.normalize()
       </input>
+    
+      <output>
+      101
+      </output>
     </program>
 
     <p>
@@ -439,6 +488,10 @@ a = np.append(ramp_up, ramp_down)
 triangle = Pmf(a, hypos, name='triangle')
 triangle.normalize()
       </input>
+    
+      <output>
+      2500
+      </output>
     </program>
 
     <p>
@@ -456,6 +509,7 @@ triangle.plot()
 decorate_euro(title='Uniform and triangle prior distributions')
       </input>
     </program>
+    <image source="images/ch04_estimating_proportions_7383a632.png" width="80%"/>
 
     <p>
       Now we can update both priors with the same data:
@@ -479,6 +533,7 @@ triangle.plot()
 decorate_euro(title='Posterior distributions')
       </input>
     </program>
+    <image source="images/ch04_estimating_proportions_26f9ef9a.png" width="80%"/>
 
     <p>
       The differences between the posterior distributions are barely visible, and so small they would hardly matter in practice.
@@ -556,6 +611,10 @@ update_binomial(uniform2, data)
       <input>
 np.allclose(uniform, uniform2)
       </input>
+    
+      <output>
+      True
+      </output>
     </program>
 
     <p>
@@ -711,6 +770,10 @@ for data in dataset:
 
 prior.normalize()
       </input>
+    
+      <output>
+      1.3596964206970507e-23
+      </output>
     </program>
 
     <p>
@@ -724,6 +787,7 @@ decorate(xlabel='Probability of getting a hit',
          ylabel='PMF')
       </input>
     </program>
+    <image source="images/ch04_estimating_proportions_ed333b3f.png" width="80%"/>
 
     <p>
       This distribution indicates that most players have a batting average near 250, with only a few players below 175 or above 350.  I'm not sure how accurately this prior reflects the distribution of batting averages in Major League Baseball, but it is good enough for this exercise.
@@ -743,6 +807,10 @@ for data in 'YYY':
 
 posterior.normalize()
       </input>
+    
+      <output>
+      0.017944179687707326
+      </output>
     </program>
 
     <program language="python">
@@ -755,6 +823,7 @@ decorate(xlabel='Probability of getting a hit',
          ylabel='PMF')
       </input>
     </program>
+    <image source="images/ch04_estimating_proportions_f9d603fb.png" width="80%"/>
 
     <program language="python">
       <input>
@@ -762,6 +831,10 @@ decorate(xlabel='Probability of getting a hit',
 
 prior.max_prob()
       </input>
+    
+      <output>
+      0.25
+      </output>
     </program>
 
     <program language="python">
@@ -770,6 +843,10 @@ prior.max_prob()
 
 posterior.max_prob()
       </input>
+    
+      <output>
+      0.271
+      </output>
     </program>
 
     <p>
@@ -835,6 +912,10 @@ for data in dataset:
 
 posterior.normalize()
       </input>
+    
+      <output>
+      3.6945139133967024e-21
+      </output>
     </program>
 
     <program language="python">
@@ -846,6 +927,7 @@ decorate(xlabel='Proportion of cheaters',
          ylabel='PMF')
       </input>
     </program>
+    <image source="images/ch04_estimating_proportions_7606e2f4.png" width="80%"/>
 
     <program language="python">
       <input>
@@ -853,6 +935,10 @@ decorate(xlabel='Proportion of cheaters',
 
 posterior.idxmax()
       </input>
+    
+      <output>
+      0.6
+      </output>
     </program>
 
     <p>
@@ -914,6 +1000,7 @@ decorate(xlabel='Proportion of heads',
          ylabel='PMF')
       </input>
     </program>
+    <image source="images/ch04_estimating_proportions_7968597a.png" width="80%"/>
 
     <program language="python">
       <input>
@@ -921,6 +1008,10 @@ decorate(xlabel='Proportion of heads',
 
 posterior00.idxmax(), posterior02.idxmax(), posterior04.idxmax()
       </input>
+    
+      <output>
+      (0.56, 0.6, 0.8)
+      </output>
     </program>
 
     <p>
@@ -992,6 +1083,7 @@ decorate(xlabel='Probability of hitting the target',
          title='Likelihood of getting the same result')
       </input>
     </program>
+    <image source="images/ch04_estimating_proportions_d62a0c14.png" width="80%"/>
 
     <program language="python">
       <input>
@@ -1000,6 +1092,10 @@ decorate(xlabel='Probability of hitting the target',
 posterior = prior * likelihood
 posterior.normalize()
       </input>
+    
+      <output>
+      49.129627998379995
+      </output>
     </program>
 
     <program language="python">
@@ -1014,6 +1110,7 @@ decorate(xlabel='Probability of hitting the target',
          ylim=[0, 0.015])
       </input>
     </program>
+    <image source="images/ch04_estimating_proportions_4fbf21ee.png" width="80%"/>
 
     <program language="python">
       <input>
