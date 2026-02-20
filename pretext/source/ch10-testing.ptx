@@ -1341,7 +1341,7 @@ def choose(i, belief):
     """
     return difficulties[i]
 </solution>
-<solution
+<solution>
 # I suspect that the optimal strategy is to choose
 # a question so that the test-taker has a 50% chance
 # of getting it right.
