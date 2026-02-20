@@ -82,11 +82,10 @@ it will occur to the probability that it will not.
   <input>
   odds(0.75)
   </input>
-
-      <output>
-      3.0
-      </output>
     </program>
+<pre>
+3.0
+</pre>
 <p>
   You can write odds in decimal form, but it is also common to
 write them as a ratio of integers.
@@ -101,11 +100,10 @@ For example, if my horse has a 10% chance of winning, the odds in favor are <m>1
   <input>
   odds(0.1)
   </input>
-
-      <output>
-      0.11111111111111112
-      </output>
     </program>
+<pre>
+0.11111111111111112
+</pre>
 <p>
   But in that case it would be more common I to say that the odds against are <m>9:1</m>.
 </p>
@@ -113,11 +111,10 @@ For example, if my horse has a 10% chance of winning, the odds in favor are <m>1
   <input>
   odds(0.9)
   </input>
-
-      <output>
-      9.000000000000002
-      </output>
     </program>
+<pre>
+9.000000000000002
+</pre>
 <p>
   Given the odds in favor, in decimal form, you can convert to probability like this:
 </p>
@@ -134,11 +131,10 @@ For example, if my horse has a 10% chance of winning, the odds in favor are <m>1
   <input>
   prob(3/2)
   </input>
-
-      <output>
-      0.6
-      </output>
     </program>
+<pre>
+0.6
+</pre>
 <p>
   Or if you represent odds with a numerator and denominator, you can convert to probability like this:
 </p>
@@ -152,11 +148,10 @@ For example, if my horse has a 10% chance of winning, the odds in favor are <m>1
   <input>
   prob2(3, 2)
   </input>
-
-      <output>
-      0.6
-      </output>
     </program>
+<pre>
+0.6
+</pre>
 <p>
   Probabilities and odds are different representations of the
 same information; given either one, you can compute the other.
@@ -198,21 +193,19 @@ Bayes's Rule is convenient for computing a Bayesian update on paper or in your h
   post_odds = prior_odds * likelihood_ratio
   post_odds
   </input>
-
-      <output>
-      1.5
-      </output>
     </program>
+<pre>
+1.5
+</pre>
 <program language="python">
   <input>
   post_prob = prob(post_odds)
   post_prob
   </input>
-
-      <output>
-      0.6
-      </output>
     </program>
+<pre>
+0.6
+</pre>
 <p>
   If we draw another cookie and it's chocolate, we can do another update:
 </p>
@@ -222,11 +215,10 @@ Bayes's Rule is convenient for computing a Bayesian update on paper or in your h
   post_odds *= likelihood_ratio
   post_odds
   </input>
-
-      <output>
-      0.75
-      </output>
     </program>
+<pre>
+0.75
+</pre>
 <p>
   And convert back to probability.
 </p>
@@ -235,11 +227,10 @@ Bayes's Rule is convenient for computing a Bayesian update on paper or in your h
   post_prob = prob(post_odds)
   post_prob
   </input>
-
-      <output>
-      0.6
-      </output>
     </program>
+<pre>
+0.6
+</pre>
   </section>
 
   <section xml:id="sec-ch06-olivers-blood">
@@ -299,10 +290,10 @@ If we choose two random people from the population, what is the chance of findin
 Well, there are two ways it might happen:
 </p>
 <ul>
-  <li>The first person might have ‘O’ and the second ‘AB’,</li>
+  <li><p>The first person might have ‘O’ and the second ‘AB’,</p></li>
 </ul>
 <ul>
-  <li>Or the first person might have ‘AB’ and the second ‘O’.</li>
+  <li><p>Or the first person might have ‘AB’ and the second ‘O’.</p></li>
 </ul>
 <p>
   The probability of either combination is <m>(0.6) (0.01)</m>, which is 0.6%, so the total probability is twice that, or 1.2%.
@@ -319,11 +310,10 @@ So the data are a little more likely if Oliver is <em>not</em> one of the people
   likelihood_ratio = like1 / like2
   likelihood_ratio
   </input>
-
-      <output>
-      0.8333333333333334
-      </output>
     </program>
+<pre>
+0.8333333333333334
+</pre>
 <p>
   Since the likelihood ratio is less than 1, the blood tests are evidence <em>against</em> the hypothesis that Oliver left blood at the scence.
 </p>
@@ -335,11 +325,10 @@ So the data are a little more likely if Oliver is <em>not</em> one of the people
   post_odds = 1 * like1 / like2
   prob(post_odds)
   </input>
-
-      <output>
-      0.45454545454545453
-      </output>
     </program>
+<pre>
+0.45454545454545453
+</pre>
 <p>
   So this evidence doesn't "move the needle" very much.
 </p>
@@ -526,13 +515,13 @@ You can call it as a method, like this:
   The following figure shows what these three distributions look like:
 </p>
 <ul>
-  <li>The distribution of a single die is uniform from 1 to 6.</li>
+  <li><p>The distribution of a single die is uniform from 1 to 6.</p></li>
 </ul>
 <ul>
-  <li>The sum of two dice has a triangle distribution between 2 and 12.</li>
+  <li><p>The sum of two dice has a triangle distribution between 2 and 12.</p></li>
 </ul>
 <ul>
-  <li>The sum of three dice has a bell-shaped distribution between 3</li>
+  <li><p>The sum of three dice has a bell-shaped distribution between 3 and 18.</p></li>
 </ul>
 <program language="python">
   <input>
@@ -578,10 +567,10 @@ So here's the question: based on this data, how many of the subjects are sensiti
   We can use Bayes's Theorem to answer this question, but first we have to make some modeling decisions. I'll assume:
 </p>
 <ul>
-  <li>People who are sensitive to gluten have a 95% chance of correctly</li>
+  <li><p>People who are sensitive to gluten have a 95% chance of correctly identifying gluten flour under the challenge conditions, and</p></li>
 </ul>
 <ul>
-  <li>People who are not sensitive have a 40% chance of identifying the</li>
+  <li><p>People who are not sensitive have a 40% chance of identifying the gluten flour by chance (and a 60% chance of either choosing the other flour or failing to distinguish).</p></li>
 </ul>
 <p>
   These particular values are arbitrary, but the results are not sensitive to these choices.
@@ -691,9 +680,9 @@ For each value, it computes the distribution of the total number of correct iden
   <input>
   table.head(3)
   </input>
-
-      <output>
-      0             1             2             3             4   \
+    </program>
+<pre>
+0             1             2             3             4   \
 0  1.719071e-08  1.432559e-09  1.193799e-10  9.948326e-12  8.290272e-13   
 1  4.011165e-07  5.968996e-08  7.162795e-09  7.792856e-10  8.013930e-11   
 2  4.545987e-06  9.741401e-07  1.709122e-07  2.506426e-08  3.269131e-09   
@@ -714,8 +703,7 @@ For each value, it computes the distribution of the total number of correct iden
 2  1.022555e-36  9.066202e-38  8.023344e-39  7.088005e-40  6.251357e-41  
 
 [3 rows x 36 columns]
-      </output>
-    </program>
+</pre>
 <p>
   The following figure shows selected columns from the <c>DataFrame</c>, corresponding to different hypothetical values of <c>num_sensitive</c>:
 </p>
@@ -762,11 +750,10 @@ And that's exactly the likelihood we need to do a Bayesian update.
   posterior1 = prior * likelihood1
   posterior1.normalize()
   </input>
-
-      <output>
-      0.4754741648615131
-      </output>
     </program>
+<pre>
+0.4754741648615131
+</pre>
 <p>
   For comparison, I also compute the posterior for another possible outcome, 20 correct identifications.
 </p>
@@ -776,11 +763,10 @@ And that's exactly the likelihood we need to do a Bayesian update.
   posterior2 = prior * likelihood2
   posterior2.normalize()
   </input>
-
-      <output>
-      1.7818649765887378
-      </output>
     </program>
+<pre>
+1.7818649765887378
+</pre>
 <p>
   The following figure shows posterior distributions of <c>num_sensitive</c> based on the actual data, 12 correct identifications, and the other possible outcome, 20 correct identifications.
 </p>
@@ -803,20 +789,18 @@ If there had been 20 correct identifications, the most likely conclusion would b
   <input>
   posterior1.max_prob()
   </input>
-
-      <output>
-      0
-      </output>
     </program>
+<pre>
+0
+</pre>
 <program language="python">
   <input>
   posterior2.max_prob()
   </input>
-
-      <output>
-      11
-      </output>
     </program>
+<pre>
+11
+</pre>
   </section>
 
   <section xml:id="sec-ch06-summary">
@@ -857,10 +841,10 @@ But first you might want to work on these exercises.
 The question contains two pieces of information we can use to update this prior.
       </p>
       <ul>
-        <li>First, Elvis's twin was also male, which is more likely if they were identical twins, with a likelihood ratio of 2.</li>
+        <li><p>First, Elvis's twin was also male, which is more likely if they were identical twins, with a likelihood ratio of 2.</p></li>
       </ul>
       <ul>
-        <li>Also, Elvis's twin died at birth, which is more likely if they were identical twins, with a likelihood ratio of 1.25.</li>
+        <li><p>Also, Elvis's twin died at birth, which is more likely if they were identical twins, with a likelihood ratio of 1.25.</p></li>
       </ul>
       <p>
         If you are curious about where those numbers come from, I wrote <url href="https://www.allendowney.com/blog/2020/01/28/the-elvis-problem-revisited">a blog post about it</url>.

@@ -29,11 +29,10 @@ import pandas as pd
 df = pd.read_csv('penguins_raw.csv').dropna(subset=['Body Mass (g)'])
 df.shape
       </input>
-    
-      <output>
-      (342, 17)
-      </output>
     </program>
+<pre>
+(342, 17)
+</pre>
 
     <p>
       The dataset contains one row for each penguin and one column for each variable.
@@ -43,9 +42,9 @@ df.shape
       <input>
 df.head()
       </input>
-    
-      <output>
-      studyName  Sample Number                              Species  Region  \
+    </program>
+<pre>
+studyName  Sample Number                              Species  Region  \
 0   PAL0708              1  Adelie Penguin (Pygoscelis adeliae)  Anvers   
 1   PAL0708              2  Adelie Penguin (Pygoscelis adeliae)  Anvers   
 2   PAL0708              3  Adelie Penguin (Pygoscelis adeliae)  Anvers   
@@ -79,8 +78,7 @@ df.head()
 2                             NaN  
 4                             NaN  
 5                             NaN
-      </output>
-    </program>
+</pre>
 
     <p>
       Three species of penguins are represented in the dataset:  Adélie, Chinstrap and Gentoo.
@@ -90,10 +88,10 @@ df.head()
       The measurements we'll use are:
     </p>
     <ul>
-      <li>Body Mass in grams (g).</li>
-      <li>Flipper Length in millimeters (mm).</li>
-      <li>Culmen Length in millimeters.</li>
-      <li>Culmen Depth in millimeters.</li>
+      <li><p>Body Mass in grams (g).</p></li>
+      <li><p>Flipper Length in millimeters (mm).</p></li>
+      <li><p>Culmen Length in millimeters.</p></li>
+      <li><p>Culmen Depth in millimeters.</p></li>
     </ul>
     <p>
       If you are not familiar with the word "culmen", it refers to the <url href="https://en.wikipedia.org/wiki/Bird_measurement#Culmen">top margin of the beak</url>.
@@ -263,11 +261,10 @@ def make_norm_map(df, colname, by='Species2'):
 flipper_map = make_norm_map(df, 'Flipper Length (mm)')
 flipper_map.keys()
       </input>
-    
-      <output>
-      dict_keys(['Adelie', 'Chinstrap', 'Gentoo'])
-      </output>
     </program>
+<pre>
+dict_keys(['Adelie', 'Chinstrap', 'Gentoo'])
+</pre>
 
     <p>
       Now suppose we measure a penguin and find that its flipper is 193 mm.  What is the probability of that measurement under each hypothesis?
@@ -281,11 +278,10 @@ flipper_map.keys()
 data = 193
 flipper_map['Adelie'].pdf(data)
       </input>
-    
-      <output>
-      0.054732511875530694
-      </output>
     </program>
+<pre>
+0.054732511875530694
+</pre>
 
     <p>
       The result is a probability density, so we can't interpret it as a probability.  But it is proportional to the likelihood of the data, so we can use it to update the prior.
@@ -300,11 +296,10 @@ hypos = flipper_map.keys()
 likelihood = [flipper_map[hypo].pdf(data) for hypo in hypos]
 likelihood
       </input>
-    
-      <output>
-      [0.054732511875530694, 0.05172135615888162, 5.8660453661990634e-05]
-      </output>
     </program>
+<pre>
+[0.054732511875530694, 0.05172135615888162, 5.8660453661990634e-05]
+</pre>
 
     <p>
       Now we're ready to do the update.
@@ -326,14 +321,13 @@ from empiricaldist import Pmf
 prior = Pmf(1/3, hypos)
 prior
       </input>
-    
-      <output>
-      Adelie       0.333333
+    </program>
+<pre>
+Adelie       0.333333
 Chinstrap    0.333333
 Gentoo       0.333333
 dtype: float64
-      </output>
-    </program>
+</pre>
 
     <p>
       Now we can do the update in the usual way.
@@ -345,14 +339,13 @@ posterior = prior * likelihood
 posterior.normalize()
 posterior
       </input>
-    
-      <output>
-      Adelie       0.513860
+    </program>
+<pre>
+Adelie       0.513860
 Chinstrap    0.485589
 Gentoo       0.000551
 dtype: float64
-      </output>
-    </program>
+</pre>
 
     <p>
       A penguin with a 193 mm flipper is unlikely to be a Gentoo, but might be either an Adélie or Chinstrap (assuming that the three species were equally likely before the measurement).
@@ -388,14 +381,13 @@ def update_penguin(prior, data, norm_map):
 posterior1 = update_penguin(prior, 193, flipper_map)
 posterior1
       </input>
-    
-      <output>
-      Adelie       0.513860
+    </program>
+<pre>
+Adelie       0.513860
 Chinstrap    0.485589
 Gentoo       0.000551
 dtype: float64
-      </output>
-    </program>
+</pre>
 
     <p>
       As we saw in the CDFs, flipper length does not distinguish strongly between Adélie and Chinstrap penguins.
@@ -425,14 +417,13 @@ culmen_map = make_norm_map(df, 'Culmen Length (mm)')
 posterior2 = update_penguin(prior, 48, culmen_map)
 posterior2
       </input>
-    
-      <output>
-      Adelie       0.001557
+    </program>
+<pre>
+Adelie       0.001557
 Chinstrap    0.474658
 Gentoo       0.523785
 dtype: float64
-      </output>
-    </program>
+</pre>
 
     <p>
       A penguin with culmen length 48 mm is about equally likely to be a Chinstrap or Gentoo.
@@ -498,14 +489,13 @@ data_seq = 193, 48
 posterior = update_naive(prior, data_seq, norm_maps)
 posterior
       </input>
-    
-      <output>
-      Adelie       0.003455
+    </program>
+<pre>
+Adelie       0.003455
 Chinstrap    0.995299
 Gentoo       0.001246
 dtype: float64
-      </output>
-    </program>
+</pre>
 
     <p>
       It is almost certain to be a Chinstrap.
@@ -515,11 +505,10 @@ dtype: float64
       <input>
 posterior.max_prob()
       </input>
-    
-      <output>
-      'Chinstrap'
-      </output>
     </program>
+<pre>
+'Chinstrap'
+</pre>
 
     <p>
       We can loop through the dataset and classify each penguin with these two features.
@@ -549,33 +538,30 @@ for i, row in df.iterrows():
       <input>
 len(df)
       </input>
-    
-      <output>
-      342
-      </output>
     </program>
+<pre>
+342
+</pre>
 
     <program language="python">
       <input>
 valid = df['Classification'].notna()
 valid.sum()
       </input>
-    
-      <output>
-      342
-      </output>
     </program>
+<pre>
+342
+</pre>
 
     <program language="python">
       <input>
 same = df['Species2'] == df['Classification']
 same.sum()
       </input>
-    
-      <output>
-      324
-      </output>
     </program>
+<pre>
+324
+</pre>
 
     <p>
       There are 344 penguins in the dataset, but two of them are missing measurements, so we have 342 valid cases.
@@ -588,11 +574,10 @@ same.sum()
       <input>
 same.sum() / valid.sum()
       </input>
-    
-      <output>
-      0.9473684210526315
-      </output>
     </program>
+<pre>
+0.9473684210526315
+</pre>
 
     <p>
       The following function encapsulates these steps.
@@ -751,13 +736,12 @@ features = df[[var1, var2]]
 mean = features.mean()
 mean
       </input>
-    
-      <output>
-      Flipper Length (mm)    200.915205
+    </program>
+<pre>
+Flipper Length (mm)    200.915205
 Culmen Length (mm)      43.921930
 dtype: float64
-      </output>
-    </program>
+</pre>
 
     <p>
       We can also compute the covariance matrix:
@@ -768,13 +752,12 @@ dtype: float64
 cov = features.cov()
 cov
       </input>
-    
-      <output>
-      Flipper Length (mm)  Culmen Length (mm)
+    </program>
+<pre>
+Flipper Length (mm)  Culmen Length (mm)
 Flipper Length (mm)           197.731792           50.375765
 Culmen Length (mm)             50.375765           29.807054
-      </output>
-    </program>
+</pre>
 
     <p>
       The result is a <c>DataFrame</c> with one row and one column for each feature.  The elements on the diagonal are the variances; the elements off the diagonal are covariances.
@@ -869,11 +852,10 @@ pmf2 = make_pmf_norm(norm2)
 X, Y = np.meshgrid(pmf1.qs, pmf2.qs)
 X.shape
       </input>
-    
-      <output>
-      (101, 101)
-      </output>
     </program>
+<pre>
+(101, 101)
+</pre>
 
     <p>
       The mesh is represented by two arrays: the first contains the quantities from <c>pmf1</c> along the <c>x</c> axis; the second contains the quantities from <c>pmf2</c> along the <c>y</c> axis.
@@ -887,11 +869,10 @@ X.shape
 pos = np.dstack((X, Y))
 pos.shape
       </input>
-    
-      <output>
-      (101, 101, 2)
-      </output>
     </program>
+<pre>
+(101, 101, 2)
+</pre>
 
     <p>
       The result is a 3-D array that you can think of as a 2-D array of pairs.  When we pass this array to <c>multinorm.pdf</c>, it evaluates the probability density function of the distribution for each pair of values.
@@ -902,11 +883,10 @@ pos.shape
 densities = multinorm.pdf(pos)
 densities.shape
       </input>
-    
-      <output>
-      (101, 101)
-      </output>
     </program>
+<pre>
+(101, 101)
+</pre>
 
     <p>
       The result is an array of probability densities.  If we put them in a <c>DataFrame</c> and normalize them, the result is a discrete approximation of the joint distribution of the two features.
@@ -919,11 +899,10 @@ from utils import normalize
 joint = pd.DataFrame(densities, columns=pmf1.qs, index=pmf2.qs)
 normalize(joint)
       </input>
-    
-      <output>
-      15.87134363991382
-      </output>
     </program>
+<pre>
+15.87134363991382
+</pre>
 
     <p>
       Here's what the result looks like.
@@ -1019,14 +998,13 @@ def update_penguin(prior, data, norm_map):
 data = 193, 48
 update_penguin(prior, data, multinorm_map)
       </input>
-    
-      <output>
-      Adelie       0.002740
+    </program>
+<pre>
+Adelie       0.002740
 Chinstrap    0.997257
 Gentoo       0.000003
 dtype: float64
-      </output>
-    </program>
+</pre>
 
     <p>
       A penguin with those measurements is almost certainly a Chinstrap.
@@ -1057,11 +1035,10 @@ for i, row in df.iterrows():
       <input>
 accuracy(df)
       </input>
-    
-      <output>
-      0.9532163742690059
-      </output>
     </program>
+<pre>
+0.9532163742690059
+</pre>
 
     <p>
       It turns out to be only a little better: the accuracy is 95.3%, compared to 94.7% for the naive Bayesian classifier.
@@ -1163,11 +1140,10 @@ for i, row in df.iterrows():
 
 accuracy(df)
       </input>
-    
-      <output>
-      0.9678362573099415
-      </output>
     </program>
+<pre>
+0.9678362573099415
+</pre>
 
     <p>
       <em>Exercise:</em>  One of the reasons the penguin dataset was collected was to quantify sexual dimorphism in different penguin species, that is, physical differences between male and female penguins.  One way to quantify dimorphism is to use measurements to classify penguins by sex.  If a species is more dimorphic, we expect to be able to classify them more accurately.
@@ -1191,25 +1167,23 @@ subset = df[gentoo].copy()
       <input>
 subset['Sex'].value_counts()
       </input>
-    
-      <output>
-      Sex
+    </program>
+<pre>
+Sex
 MALE      61
 FEMALE    58
 Name: count, dtype: int64
-      </output>
-    </program>
+</pre>
 
     <program language="python">
       <input>
 valid = df['Sex'] != '.'
 valid.sum()
       </input>
-    
-      <output>
-      342
-      </output>
     </program>
+<pre>
+342
+</pre>
 
     <program language="python">
       <input>
@@ -1294,13 +1268,12 @@ hypos = culmen_map.keys()
 prior = Pmf(1/2, hypos)
 prior
       </input>
-    
-      <output>
-      FEMALE    0.5
+    </program>
+<pre>
+FEMALE    0.5
 MALE      0.5
 dtype: float64
-      </output>
-    </program>
+</pre>
 
     <program language="python">
       <input>
@@ -1345,11 +1318,10 @@ def accuracy_sex(df):
 
 accuracy_sex(subset)
       </input>
-    
-      <output>
-      0.9186991869918699
-      </output>
     </program>
+<pre>
+0.9186991869918699
+</pre>
 
     <program language="python">
       <input>
@@ -1396,11 +1368,10 @@ adelie = df['Species2']=='Adelie'
 subset = df[adelie].copy()
 classify_by_sex(subset)
       </input>
-    
-      <output>
-      0.8807947019867549
-      </output>
     </program>
+<pre>
+0.8807947019867549
+</pre>
 
     <program language="python">
       <input>
@@ -1412,11 +1383,10 @@ chinstrap = df['Species2']=='Chinstrap'
 subset = df[chinstrap].copy()
 classify_by_sex(subset)
       </input>
-    
-      <output>
-      0.9264705882352942
-      </output>
     </program>
+<pre>
+0.9264705882352942
+</pre>
 
     <program language="python">
       <input>

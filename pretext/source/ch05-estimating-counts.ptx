@@ -30,8 +30,8 @@
       Based on this observation, we know the railroad has 60 or more locomotives.  But how many more?  To apply Bayesian reasoning, we can break this problem into two steps:
     </p>
     <ul>
-      <li>What did we know about <m>N</m> before we saw the data?</li>
-      <li>For any given value of <m>N</m>, what is the likelihood of seeing the data (a locomotive with number 60)?</li>
+      <li><p>What did we know about <m>N</m> before we saw the data?</p></li>
+      <li><p>For any given value of <m>N</m>, what is the likelihood of seeing the data (a locomotive with number 60)?</p></li>
     </ul>
     <p>
       The answer to the first question is the prior.  The answer to the second is the likelihood.
@@ -110,11 +110,10 @@ decorate(xlabel='Number of trains',
       <input>
 posterior.max_prob()
       </input>
-    
-      <output>
-      60
-      </output>
     </program>
+<pre>
+60
+</pre>
     <p>
       That might not seem like a very good guess; after all, what are the chances that you just happened to see the train with the highest number?
       Nevertheless, if you want to maximize the chance of getting the answer exactly right, you should guess 60.
@@ -134,11 +133,10 @@ posterior.max_prob()
       <input>
 np.sum(posterior.ps * posterior.qs)
       </input>
-    
-      <output>
-      333.41989326370776
-      </output>
     </program>
+<pre>
+333.41989326370776
+</pre>
     <p>
       Or we can use the method provided by <c>Pmf</c>:
     </p>
@@ -146,11 +144,10 @@ np.sum(posterior.ps * posterior.qs)
       <input>
 posterior.mean()
       </input>
-    
-      <output>
-      333.41989326370776
-      </output>
     </program>
+<pre>
+333.41989326370776
+</pre>
     <p>
       The mean of the posterior is 333, so that might be a good guess if you want to minimize error.
       If you played this guessing game over and over, using the mean of the posterior as your estimate would minimize the <url href="http://en.wikipedia.org/wiki/Minimum_mean_square_error">mean squared error</url> over the long run.
@@ -183,15 +180,14 @@ for high in [500, 1000, 2000]:
     
 df
       </input>
-    
-      <output>
-      Posterior mean
+    </program>
+<pre>
+Posterior mean
 Upper bound                
 500              207.079228
 1000             333.419893
 2000             552.179017
-      </output>
-    </program>
+</pre>
     <p>
       As we vary the upper bound, the posterior mean changes substantially.
       So that's bad.
@@ -200,8 +196,8 @@ Upper bound
       When the posterior is sensitive to the prior, there are two ways to proceed:
     </p>
     <ul>
-      <li>Get more data.</li>
-      <li>Get more background information and choose a better prior.</li>
+      <li><p>Get more data.</p></li>
+      <li><p>Get more background information and choose a better prior.</p></li>
     </ul>
     <p>
       With more data, posterior distributions based on different priors tend to converge.
@@ -226,15 +222,14 @@ for high in [500, 1000, 2000]:
     
 df
       </input>
-    
-      <output>
-      Posterior mean
+    </program>
+<pre>
+Posterior mean
 Upper bound                
 500              151.849588
 1000             164.305586
 2000             171.338181
-      </output>
-    </program>
+</pre>
     <p>
       The differences are smaller, but apparently three trains are not enough for the posteriors to converge.
     </p>
@@ -274,11 +269,10 @@ ps = hypos**(-alpha)
 power = Pmf(ps, hypos, name='power law')
 power.normalize()
       </input>
-    
-      <output>
-      8.178368103610282
-      </output>
     </program>
+<pre>
+8.178368103610282
+</pre>
     <p>
       For comparison, here's the uniform prior again.
     </p>
@@ -288,11 +282,10 @@ hypos = np.arange(1, 1001)
 uniform = Pmf(1, hypos, name='uniform')
 uniform.normalize()
       </input>
-    
-      <output>
-      1000
-      </output>
     </program>
+<pre>
+1000
+</pre>
     <p>
       Here's what a power law prior looks like, compared to the uniform prior:
     </p>
@@ -356,15 +349,14 @@ for high in [500, 1000, 2000]:
     
 df
       </input>
-    
-      <output>
-      Posterior mean
+    </program>
+<pre>
+Posterior mean
 Upper bound                
 500              130.708470
 1000             133.275231
 2000             133.997463
-      </output>
-    </program>
+</pre>
     <p>
       Now the differences are much smaller.  In fact, with an arbitrarily large upper bound, the mean converges on 134.
     </p>
@@ -396,11 +388,10 @@ Upper bound
       <input>
 power.prob_le(100)
       </input>
-    
-      <output>
-      0.2937469222495771
-      </output>
     </program>
+<pre>
+0.2937469222495771
+</pre>
     <p>
       With a power law prior and a dataset of three trains, the result is about 29%.
       So 100 trains is the 29th percentile.
@@ -440,11 +431,10 @@ def quantile(pmf, prob):
       <input>
 quantile(power, 0.5)
       </input>
-    
-      <output>
-      113
-      </output>
     </program>
+<pre>
+113
+</pre>
     <p>
       The result, 113 trains, is the median of the posterior distribution.
     </p>
@@ -456,17 +446,16 @@ quantile(power, 0.5)
       <input>
 power.quantile([0.05, 0.95])
       </input>
-    
-      <output>
-      array([ 91., 243.])
-      </output>
     </program>
+<pre>
+array([ 91., 243.])
+</pre>
     <p>
       The result is the interval from 91 to 243 trains, which implies:
     </p>
     <ul>
-      <li>The probability is 5% that the number of trains is less than or equal to 91.</li>
-      <li>The probability is 5% that the number of trains is greater than 243.</li>
+      <li><p>The probability is 5% that the number of trains is less than or equal to 91.</p></li>
+      <li><p>The probability is 5% that the number of trains is greater than 243.</p></li>
     </ul>
     <p>
       Therefore the probability is 90% that the number of trains falls between 91 and 243 (excluding 91 and including 243).
@@ -479,11 +468,10 @@ power.quantile([0.05, 0.95])
       <input>
 power.credible_interval(0.9)
       </input>
-    
-      <output>
-      array([ 91., 243.])
-      </output>
     </program>
+<pre>
+array([ 91., 243.])
+</pre>
   </section>
 
   <section xml:id="sec-german-tank-problem">
@@ -564,9 +552,9 @@ power.credible_interval(0.9)
           It would take too long to count, so you try an experiment:
         </p>
         <ul>
-          <li>You ask how many people were born on May 11 and two people raise their hands.</li>
-          <li>You ask how many were born on May 23 and 1 person raises their hand.</li>
-          <li>Finally, you ask how many were born on August 1, and no one raises their hand.</li>
+          <li><p>You ask how many people were born on May 11 and two people raise their hands.</p></li>
+          <li><p>You ask how many were born on May 23 and 1 person raises their hand.</p></li>
+          <li><p>Finally, you ask how many were born on August 1, and no one raises their hand.</p></li>
         </ul>
         <p>
           How many people are in the audience?  What is the probability that there are more than 1200 people?
@@ -614,11 +602,10 @@ decorate(xlabel='Number of people in the audience',
 
 posterior.mean()
         </input>
-      
-      <output>
-      333.41989326370776
-      </output>
     </program>
+<pre>
+333.41989326370776
+</pre>
       <program language="python">
         <input>
 
@@ -643,8 +630,8 @@ posterior.prob_gt(1200)
           To answer this question, we have to think about the prior distribution and the likelihood of the data:
         </p>
         <ul>
-          <li>I have sometimes seen four rabbits at the same time, so I know there are at least that many.  I would be surprised if there were more than 10.  So, at least as a starting place, I think a uniform prior from 4 to 10 is reasonable.</li>
-          <li>To keep things simple, let's assume that all rabbits who visit my garden are equally likely to be caught by the camera trap in a given day.  Let's also assume it is guaranteed that the camera trap gets a picture every day.</li>
+          <li><p>I have sometimes seen four rabbits at the same time, so I know there are at least that many.  I would be surprised if there were more than 10.  So, at least as a starting place, I think a uniform prior from 4 to 10 is reasonable.</p></li>
+          <li><p>To keep things simple, let's assume that all rabbits who visit my garden are equally likely to be caught by the camera trap in a given day.  Let's also assume it is guaranteed that the camera trap gets a picture every day.</p></li>
         </ul>
       </statement>
     <solution>

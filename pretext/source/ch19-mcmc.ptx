@@ -92,11 +92,10 @@
       posterior = prior_pmf * likelihood
       posterior.normalize()
       </input>
-    
-      <output>
-      0.05015532557804499
-      </output>
     </program>
+<pre>
+0.05015532557804499
+</pre>
     <p>
       Soon we will solve the same problem with PyMC3, but first it will be useful to introduce something new: the prior predictive distribution.
     </p>
@@ -172,12 +171,12 @@
     </p>
     <p>
       <ul>
-        <li>First we draw a goal-scoring rate from the prior distribution,</li>
+        <li><p>First we draw a goal-scoring rate from the prior distribution,</p></li>
       </ul>
     </p>
     <p>
       <ul>
-        <li>Then we draw a number of goals from a Poisson distribution.</li>
+        <li><p>Then we draw a number of goals from a Poisson distribution.</p></li>
       </ul>
     </p>
     <p>
@@ -203,12 +202,12 @@
     </p>
     <p>
       <ul>
-        <li>The first line creates the prior, which is a gamma distribution with the given parameters.</li>
+        <li><p>The first line creates the prior, which is a gamma distribution with the given parameters.</p></li>
       </ul>
     </p>
     <p>
       <ul>
-        <li>The second line creates the prior predictive, which is a Poisson distribution with the parameter <c>lam</c>.</li>
+        <li><p>The second line creates the prior predictive, which is a Poisson distribution with the parameter <c>lam</c>.</p></li>
       </ul>
     </p>
     <p>
@@ -221,11 +220,10 @@
       <input>
       pm.model_to_graphviz(model)
       </input>
-    
-      <output>
-      &lt;graphviz.dot.Digraph at 0x7f7d100f8d00&gt;
-      </output>
     </program>
+<pre>
+&lt;graphviz.dot.Digraph at 0x7f7d100f8d00&gt;
+</pre>
     <p>
       In this visualization, the ovals show that <c>lam</c> is drawn from a gamma distribution and <c>goals</c> is drawn from a Poisson distribution. The arrow shows that the values of <c>lam</c> are used as parameters for the distribution of <c>goals</c>.
     </p>
@@ -254,11 +252,10 @@
       sample_prior_pymc = trace['lam']
       sample_prior_pymc.shape
       </input>
-    
-      <output>
-      (1000,)
-      </output>
     </program>
+<pre>
+(1000,)
+</pre>
     <p>
       The following figure compares the CDF of this sample to the CDF of the sample we generated using the <c>gamma</c> object from SciPy.
     </p>
@@ -299,11 +296,10 @@
       sample_prior_pred_pymc = trace['goals']
       sample_prior_pred_pymc.shape
       </input>
-    
-      <output>
-      (1000,)
-      </output>
     </program>
+<pre>
+(1000,)
+</pre>
     <p>
       And we can compare it to the sample we generated using the <c>poisson</c> object from SciPy.
     </p>
@@ -374,30 +370,29 @@
       with model2:
           trace2 = pm.sample(500, **options)
       </input>
-    
-      <output>
-      Auto-assigning NUTS sampler...
+    </program>
+<pre>
+Auto-assigning NUTS sampler...
 Initializing NUTS using jitter+adapt_diag...
 Multiprocess sampling (2 chains in 2 jobs)
 NUTS: [lam]
-      </output>
-    </program>
+</pre>
     <p>
       Although the specification of these models is similar, the sampling process is very different. I won't go into the details of how PyMC3 works, but here are a few things you should be aware of:
     </p>
     <p>
       <ul>
-        <li>Depending on the model, PyMC3 uses one of several MCMC methods; in this example, it uses the <url href="https://en.wikipedia.org/wiki/Hamiltonian_Monte_Carlo#No_U-Turn_Sampler">No U-Turn Sampler</url> (NUTS), which is one of the most efficient and reliable methods we have.</li>
+        <li><p>Depending on the model, PyMC3 uses one of several MCMC methods; in this example, it uses the <url href="https://en.wikipedia.org/wiki/Hamiltonian_Monte_Carlo#No_U-Turn_Sampler">No U-Turn Sampler</url> (NUTS), which is one of the most efficient and reliable methods we have.</p></li>
       </ul>
     </p>
     <p>
       <ul>
-        <li>When the sampler starts, the first values it generates are usually not a representative sample from the posterior distribution, so these values are discarded.  This process is called "tuning".</li>
+        <li><p>When the sampler starts, the first values it generates are usually not a representative sample from the posterior distribution, so these values are discarded.  This process is called "tuning".</p></li>
       </ul>
     </p>
     <p>
       <ul>
-        <li>Instead of using a single Markov chain, PyMC3 uses multiple chains.  Then we can compare results from multiple chains to make sure they are consistent.</li>
+        <li><p>Instead of using a single Markov chain, PyMC3 uses multiple chains.  Then we can compare results from multiple chains to make sure they are consistent.</p></li>
       </ul>
     </p>
     <p>
@@ -412,11 +407,10 @@ NUTS: [lam]
       <input>
       sample_post_pymc.shape
       </input>
-    
-      <output>
-      (1000,)
-      </output>
     </program>
+<pre>
+(1000,)
+</pre>
     <p>
       And we can compare the CDF of this sample to the posterior we computed by grid approximation:
     </p>
@@ -450,11 +444,10 @@ NUTS: [lam]
       with model2:
           post_pred = pm.sample_posterior_predictive(trace2)
       </input>
-    
-      <output>
-      &lt;IPython.core.display.HTML object&gt;
-      </output>
     </program>
+<pre>
+&lt;IPython.core.display.HTML object&gt;
+</pre>
     <p>
       The result is a dictionary that contains a sample of <c>goals</c>.
     </p>
@@ -467,11 +460,10 @@ NUTS: [lam]
       <input>
       sample_post_pred_pymc.shape
       </input>
-    
-      <output>
-      (1000,)
-      </output>
     </program>
+<pre>
+(1000,)
+</pre>
     <p>
       I'll also generate a sample from the posterior distribution we computed by grid approximation.
     </p>
@@ -524,32 +516,32 @@ NUTS: [lam]
     </p>
     <p>
       <ul>
-        <li>Income as represented by per capita GDP</li>
+        <li><p>Income as represented by per capita GDP</p></li>
       </ul>
     </p>
     <p>
       <ul>
-        <li>Social support</li>
+        <li><p>Social support</p></li>
       </ul>
     </p>
     <p>
       <ul>
-        <li>Healthy life expectancy at birth</li>
+        <li><p>Healthy life expectancy at birth</p></li>
       </ul>
     </p>
     <p>
       <ul>
-        <li>Freedom to make life choices</li>
+        <li><p>Freedom to make life choices</p></li>
       </ul>
     </p>
     <p>
       <ul>
-        <li>Generosity</li>
+        <li><p>Generosity</p></li>
       </ul>
     </p>
     <p>
       <ul>
-        <li>Perceptions of corruption</li>
+        <li><p>Perceptions of corruption</p></li>
       </ul>
     </p>
     <p>
@@ -589,9 +581,9 @@ NUTS: [lam]
       <input>
       df.head(3)
       </input>
-    
-      <output>
-      Country name Regional indicator  Ladder score  \
+    </program>
+<pre>
+Country name Regional indicator  Ladder score  \
 0      Finland     Western Europe        7.8087   
 1      Denmark     Western Europe        7.6456   
 2  Switzerland     Western Europe        7.5599   
@@ -630,17 +622,15 @@ NUTS: [lam]
 0                                 0.477857             2.762835  
 1                                 0.495260             2.432741  
 2                                 0.407946             2.350267
-      </output>
-    </program>
+</pre>
     <program language="python">
       <input>
       df.shape
       </input>
-    
-      <output>
-      (153, 20)
-      </output>
     </program>
+<pre>
+(153, 20)
+</pre>
     <p>
       The <c>DataFrame</c> has one row for each of 153 countries and one column for each of 20 variables.
     </p>
@@ -704,12 +694,11 @@ NUTS: [lam]
                    index=['Slope', 'Intercept'],
                    columns=[''])
       </input>
-    
-      <output>
-      Slope      0.717738
-Intercept -1.198646
-      </output>
     </program>
+<pre>
+Slope      0.717738
+Intercept -1.198646
+</pre>
     <p>
       The estimated slope is about 0.72, which suggests that an increase of one unit in log-GDP, which is a factor of <m>e \approx 2.7</m> in GDP, is associated with an increase of 0.72 units on the happiness ladder.
     </p>
@@ -755,12 +744,12 @@ Intercept -1.198646
     </p>
     <p>
       <ul>
-        <li>The values of the predictive variable, <c>x_data</c>, are used to compute <c>y_est</c>.</li>
+        <li><p>The values of the predictive variable, <c>x_data</c>, are used to compute <c>y_est</c>.</p></li>
       </ul>
     </p>
     <p>
       <ul>
-        <li>The values of the dependent variable, <c>y_data</c>, are provided as the observed values of <c>y</c>.</li>
+        <li><p>The values of the dependent variable, <c>y_data</c>, are provided as the observed values of <c>y</c>.</p></li>
       </ul>
     </p>
     <p>
@@ -771,14 +760,13 @@ Intercept -1.198646
       with model3:
           trace3 = pm.sample(500, **options)
       </input>
-    
-      <output>
-      Auto-assigning NUTS sampler...
+    </program>
+<pre>
+Auto-assigning NUTS sampler...
 Initializing NUTS using jitter+adapt_diag...
 Multiprocess sampling (2 chains in 2 jobs)
 NUTS: [sigma, b, a]
-      </output>
-    </program>
+</pre>
     <p>
       When you run the sampler, you might get warning messages about "divergences" and the "acceptance probability". You can ignore them for now.
     </p>
@@ -789,11 +777,10 @@ NUTS: [sigma, b, a]
       <input>
       trace3
       </input>
-    
-      <output>
-      &lt;MultiTrace: 2 chains, 500 iterations, 6 variables&gt;
-      </output>
     </program>
+<pre>
+&lt;MultiTrace: 2 chains, 500 iterations, 6 variables&gt;
+</pre>
     <p>
       ArviZ provides <c>plot_posterior</c>, which we can use to plot the posterior distributions of the parameters. Here are the posterior distributions of slope, <c>a</c>, and intercept, <c>b</c>.
     </p>
@@ -817,23 +804,21 @@ NUTS: [sigma, b, a]
       print('Sample mean:', trace3['a'].mean())
       print('Regression slope:', result.slope)
       </input>
-    
-      <output>
-      Sample mean: 0.715698157714354
-Regression slope: 0.717738495630452
-      </output>
     </program>
+<pre>
+Sample mean: 0.715698157714354
+Regression slope: 0.717738495630452
+</pre>
     <program language="python">
       <input>
       print('Sample mean:', trace3['b'].mean())
       print('Regression intercept:', result.intercept)
       </input>
-    
-      <output>
-      Sample mean: -1.174412246262264
-Regression intercept: -1.1986460618088843
-      </output>
     </program>
+<pre>
+Sample mean: -1.174412246262264
+Regression intercept: -1.1986460618088843
+</pre>
     <p>
       Finally, we can check the marginal posterior distribution of <c>sigma</c>
     </p>
@@ -859,20 +844,18 @@ Regression intercept: -1.1986460618088843
       <input>
       20 ** 8 / 1e9
       </input>
-    
-      <output>
-      25.6
-      </output>
     </program>
+<pre>
+25.6
+</pre>
     <program language="python">
       <input>
       153 * 20 ** 8 / 1e12
       </input>
-    
-      <output>
-      3.9168
-      </output>
     </program>
+<pre>
+3.9168
+</pre>
   </section>
 
   <section xml:id="sec-ch19-multiple-regression">
@@ -898,9 +881,9 @@ Regression intercept: -1.1986460618088843
       <input>
       subset.head(3)
       </input>
-    
-      <output>
-      Ladder score  Logged GDP per capita  Social support  \
+    </program>
+<pre>
+Ladder score  Logged GDP per capita  Social support  \
 0        7.8087              10.639267        0.954330   
 1        7.6456              10.774001        0.955991   
 2        7.5599              10.979933        0.942847   
@@ -914,8 +897,7 @@ Regression intercept: -1.1986460618088843
 0                   0.195445  
 1                   0.168489  
 2                   0.303728
-      </output>
-    </program>
+</pre>
     <p>
       The predictive variables have different units: log-GDP is in log-dollars, life expectancy is in years, and the other variables are on arbitrary scales. To make these factors comparable, I'll standardize the data so that each variable has mean 0 and standard deviation 1.
     </p>
@@ -977,14 +959,13 @@ Regression intercept: -1.1986460618088843
       with model4:
           trace4 = pm.sample(500, **options)
       </input>
-    
-      <output>
-      Auto-assigning NUTS sampler...
+    </program>
+<pre>
+Auto-assigning NUTS sampler...
 Initializing NUTS using jitter+adapt_diag...
 Multiprocess sampling (2 chains in 2 jobs)
 NUTS: [sigma, b6, b5, b4, b3, b2, b1, b0]
-      </output>
-    </program>
+</pre>
     <p>
       Because we standardized the data, we expect the intercept to be 0, and in fact the posterior mean of <c>b0</c> is close to 0.
     </p>
@@ -992,11 +973,10 @@ NUTS: [sigma, b6, b5, b4, b3, b2, b1, b0]
       <input>
       trace4['b0'].mean()
       </input>
-    
-      <output>
-      -0.0009400028402880869
-      </output>
     </program>
+<pre>
+-0.0009400028402880869
+</pre>
     <p>
       We can also check the posterior mean of <c>sigma</c>:
     </p>
@@ -1004,11 +984,10 @@ NUTS: [sigma, b6, b5, b4, b3, b2, b1, b0]
       <input>
       trace4['sigma'].mean()
       </input>
-    
-      <output>
-      0.5157546237813752
-      </output>
     </program>
+<pre>
+0.5157546237813752
+</pre>
     <p>
       From <c>trace4</c> we can extract samples from the posterior distributions of the parameters and compute their means.
     </p>
@@ -1045,17 +1024,16 @@ NUTS: [sigma, b6, b5, b4, b3, b2, b1, b0]
       table['94% CI'] = cis
       table
       </input>
-    
-      <output>
-      Posterior mean           94% CI
+    </program>
+<pre>
+Posterior mean           94% CI
 Logged GDP per capita                  0.244    [0.085, 0.41]
 Social support                         0.225   [0.081, 0.377]
 Healthy life expectancy                0.225   [0.081, 0.377]
 Freedom to make life choices           0.187   [0.087, 0.289]
 Generosity                             0.054   [-0.039, 0.14]
 Perceptions of corruption             -0.100  [-0.197, 0.002]
-      </output>
-    </program>
+</pre>
     <p>
       It looks like GDP has the strongest association with happiness (or satisfaction), followed by social support, life expectancy, and freedom.
     </p>
@@ -1087,12 +1065,12 @@ Perceptions of corruption             -0.100  [-0.197, 0.002]
     </p>
     <p>
       <ul>
-        <li>MCMC algorithms are fiddly.  The same model might behave well with some priors and less well with others.  And the sampling process often produces warnings about tuning steps, divergences, "r-hat statistics", acceptance rates, and effective samples.  It takes some expertise to diagnose and correct these issues.</li>
+        <li><p>MCMC algorithms are fiddly.  The same model might behave well with some priors and less well with others.  And the sampling process often produces warnings about tuning steps, divergences, "r-hat statistics", acceptance rates, and effective samples.  It takes some expertise to diagnose and correct these issues.</p></li>
       </ul>
     </p>
     <p>
       <ul>
-        <li>I find it easier to develop models incrementally using grid algorithms, checking intermediate results along the way.  With PyMC3, it is not as easy to be confident that you have specified a model correctly.</li>
+        <li><p>I find it easier to develop models incrementally using grid algorithms, checking intermediate results along the way.  With PyMC3, it is not as easy to be confident that you have specified a model correctly.</p></li>
       </ul>
     </p>
     <p>
@@ -1269,16 +1247,15 @@ with pm.Model() as model7:
           df = pd.read_csv('drp_scores.csv', skiprows=21, delimiter='\t')
           df.head()
           </input>
-        
-      <output>
-      Treatment  Response
+    </program>
+<pre>
+Treatment  Response
 0   Treated        24
 1   Treated        43
 2   Treated        58
 3   Treated        71
 4   Treated        43
-      </output>
-    </program>
+</pre>
         <p>
           I'll use <c>groupby</c> to separate the treated group from the control group.
         </p>
@@ -1323,16 +1300,15 @@ import pandas as pd
 df = pd.read_csv('drp_scores.csv', skiprows=21, delimiter='\t')
 df.head()
         </input>
-      
-      <output>
-      Treatment  Response
+    </program>
+<pre>
+Treatment  Response
 0   Treated        24
 1   Treated        43
 2   Treated        58
 3   Treated        71
 4   Treated        43
-      </output>
-    </program>
+</pre>
       <program language="python">
         <input>
 grouped = df.groupby('Treatment')
@@ -1398,22 +1374,22 @@ with model8:
         </p>
         <p>
           <ul>
-            <li>k11 is the number of bugs found by both testers,</li>
+            <li><p>k11 is the number of bugs found by both testers,</p></li>
           </ul>
         </p>
         <p>
           <ul>
-            <li>k10 is the number of bugs found by the first tester but not the second,</li>
+            <li><p>k10 is the number of bugs found by the first tester but not the second,</p></li>
           </ul>
         </p>
         <p>
           <ul>
-            <li>k01 is the number of bugs found by the second tester but not the first, and</li>
+            <li><p>k01 is the number of bugs found by the second tester but not the first, and</p></li>
           </ul>
         </p>
         <p>
           <ul>
-            <li>k00 is the unknown number of undiscovered bugs.</li>
+            <li><p>k00 is the unknown number of undiscovered bugs.</p></li>
           </ul>
         </p>
         <p>
@@ -1434,11 +1410,10 @@ with model8:
           num_seen = k01 + k10 + k11
           num_seen
           </input>
-        
-      <output>
-      32
-      </output>
     </program>
+<pre>
+32
+</pre>
         <program language="python">
           <input>
           # Solution goes here
@@ -1469,11 +1444,10 @@ k11 = 3
 num_seen = k01 + k10 + k11
 num_seen
         </input>
-      
-      <output>
-      32
-      </output>
     </program>
+<pre>
+32
+</pre>
       <program language="python">
         <input>
 

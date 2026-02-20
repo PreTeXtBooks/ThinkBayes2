@@ -62,13 +62,12 @@ coin['heads'] = 1/2
 coin['tails'] = 1/2
 coin
         </input>
-      
-      <output>
-      heads    0.5
+    </program>
+<pre>
+heads    0.5
 tails    0.5
 dtype: float64
-      </output>
-    </program>
+</pre>
 <table xml:id="tbl-coin-probs">
   <title>Probability distribution for a fair coin.</title>
   <tabular>
@@ -105,17 +104,16 @@ dtype: float64
 die = Pmf.from_seq([1,2,3,4,5,6])
 die
         </input>
-      
-      <output>
-      1    0.166667
+    </program>
+<pre>
+1    0.166667
 2    0.166667
 3    0.166667
 4    0.166667
 5    0.166667
 6    0.166667
 Name: , dtype: float64
-      </output>
-    </program>
+</pre>
 <table xml:id="tbl-die-throw">
   <title>Probability distribution for a fair 6-sided die.</title>
   <tabular>
@@ -161,15 +159,14 @@ Name: , dtype: float64
 letters = Pmf.from_seq(list('Mississippi'))
 letters
         </input>
-      
-      <output>
-      M    0.090909
+    </program>
+<pre>
+M    0.090909
 i    0.363636
 p    0.181818
 s    0.363636
 Name: , dtype: float64
-      </output>
-    </program>
+</pre>
 
 <table xml:id="tbl-mississippi">
   <tabular>
@@ -215,11 +212,10 @@ Name: , dtype: float64
         <input>
 letters['s']
         </input>
-      
-      <output>
-      0.36363636363636365
-      </output>
     </program>
+<pre>
+0.36363636363636365
+</pre>
     <p>
       In the word <q>Mississippi</q>, about 36% of the letters are <q>s</q>.
     </p>
@@ -233,11 +229,10 @@ letters['s']
         <input>
 letters('s')
         </input>
-      
-      <output>
-      0.36363636363636365
-      </output>
     </program>
+<pre>
+0.36363636363636365
+</pre>
     <p>
       If the quantity is in the distribution the results are the same.
       But if it is not in the distribution, the result is <c>0</c>, not an error.
@@ -248,11 +243,10 @@ letters('s')
         <input>
 letters('t')
         </input>
-      
-      <output>
-      0
-      </output>
     </program>
+<pre>
+0
+</pre>
     </listing>
     <p>
       With parentheses, you can also provide a sequence of quantities and get a sequence of probabilities.
@@ -262,11 +256,10 @@ letters('t')
         <input>
 die([1,4,7])
         </input>
-      
-      <output>
-      array([0.16666667, 0.16666667, 0.        ])
-      </output>
     </program>
+<pre>
+array([0.16666667, 0.16666667, 0.        ])
+</pre>
 
     <p>
       The quantities in a <c>Pmf</c> can be strings, numbers, or any other type that can be stored in the index of a Pandas <c>Series</c>.
@@ -289,8 +282,8 @@ die([1,4,7])
       </p>
       <p>
         <ul>
-          <li>Bowl 1 contains 30 vanilla cookies and 10 chocolate cookies.</li>
-          <li>Bowl 2 contains 20 vanilla cookies and 20 chocolate cookies.</li>
+          <li><p>Bowl 1 contains 30 vanilla cookies and 10 chocolate cookies.</p></li>
+          <li><p>Bowl 2 contains 20 vanilla cookies and 20 chocolate cookies.</p></li>
         </ul>
       </p>
       <p>
@@ -308,13 +301,12 @@ die([1,4,7])
 prior = Pmf.from_seq(['Bowl 1', 'Bowl 2'])
 prior
         </input>
-      
-      <output>
-      Bowl 1    0.5
+    </program>
+<pre>
+Bowl 1    0.5
 Bowl 2    0.5
 Name: , dtype: float64
-      </output>
-    </program>
+</pre>
 <table xml:id="tbl-bowl-probs-1">
   <tabular>
     <row>
@@ -416,11 +408,10 @@ posterior
         <input>
 posterior('Bowl 1')
         </input>
-      
-      <output>
-      0.6
-      </output>
     </program>
+<pre>
+0.6
+</pre>
     <p>
 And the answer is 0.6.
 </p>
@@ -432,13 +423,12 @@ posterior *= likelihood_vanilla
 posterior.normalize()
 posterior
 </input>
-      
-      <output>
-      Bowl 1    0.692308
+    </program>
+<pre>
+Bowl 1    0.692308
 Bowl 2    0.307692
 Name: , dtype: float64
-      </output>
-    </program>
+</pre>
 <table xml:id="tbl-bowl-probs-3">
   <tabular>
     <row>
@@ -477,13 +467,13 @@ And here's the update
 posterior *= likelihood_chocolate
 posterior.normalize()
 posterior
-</input>      
-      <output>
-      Bowl 1    0.529412
+</input>
+    </program>
+<pre>
+Bowl 1    0.529412
 Bowl 2    0.470588
 Name: , dtype: float64
-      </output>
-    </program>
+</pre>
 <table xml:id="tbl-bowl-probs-4">
   <tabular>
     <row>
@@ -516,9 +506,9 @@ Now the posterior probability for Bowl 1 is about 53%. After two vanilla cookies
 
     <p>
       <ul>
-        <li>Bowl 0 contains 0% vanilla cookies,</li>
-        <li>Bowl 1 contains 1% vanilla cookies,</li>
-        <li>Bowl 2 contains 2% vanilla cookies,</li>
+        <li><p>Bowl 0 contains 0% vanilla cookies,</p></li>
+        <li><p>Bowl 1 contains 1% vanilla cookies,</p></li>
+        <li><p>Bowl 2 contains 2% vanilla cookies,</p></li>
       </ul>
     </p>
 
@@ -528,8 +518,8 @@ Now the posterior probability for Bowl 1 is about 53%. After two vanilla cookies
 
     <p>
       <ul>
-        <li>Bowl 99 contains 99% vanilla cookies, and</li>
-        <li>Bowl 100 contains all vanilla cookies.</li>
+        <li><p>Bowl 99 contains 99% vanilla cookies, and</p></li>
+        <li><p>Bowl 100 contains all vanilla cookies.</p></li>
       </ul>
     </p>
 
@@ -881,8 +871,8 @@ prior
 
     <p>
       <ul>
-        <li><c>qs</c> contains the quantities in the distribution;</li>
-        <li><c>ps</c> contains the corresponding probabilities.</li>
+        <li><p><c>qs</c> contains the quantities in the distribution;</p></li>
+        <li><p><c>ps</c> contains the corresponding probabilities.</p></li>
       </ul>
     </p>
 

@@ -331,11 +331,10 @@ def prob_gt(pmf1, pmf2):
       <input>
 prob_gt(france, croatia)
       </input>
-    
-      <output>
-      0.7499366290930155
-      </output>
     </program>
+<pre>
+0.7499366290930155
+</pre>
 
     <p>
       <c>Pmf</c> provides a function that does the same thing, which we can call like this:
@@ -345,11 +344,10 @@ prob_gt(france, croatia)
       <input>
 Pmf.prob_gt(france, croatia)
       </input>
-    
-      <output>
-      0.7499366290930174
-      </output>
     </program>
+<pre>
+0.7499366290930174
+</pre>
 
     <p>
       The result is close to 75%.  So, on the basis of this game, we are reasonably confident that France is the better team.
@@ -494,11 +492,10 @@ ps = expo_pdf(qs, lam)
 pmf_time = Pmf(ps, qs)
 pmf_time.normalize()
       </input>
-    
-      <output>
-      25.616650745459093
-      </output>
     </program>
+<pre>
+25.616650745459093
+</pre>
 
     <p>
       <!-- Figure fig07-05: An exponential distribution with lambda = 1.4. -->

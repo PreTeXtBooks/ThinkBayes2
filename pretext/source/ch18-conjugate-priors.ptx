@@ -58,11 +58,10 @@ likelihood = poisson(lams).pmf(k)
 posterior = prior * likelihood
 posterior.normalize()
       </input>
-    
-      <output>
-      0.05015532557804499
-      </output>
     </program>
+<pre>
+0.05015532557804499
+</pre>
     <p>So far, this should be familiar.
 Now we'll solve the same problem using the conjugate prior.</p>
   </section>
@@ -95,11 +94,10 @@ beta = 1
 prior_gamma = make_gamma_dist(alpha, beta)
 prior_gamma.mean()
       </input>
-    
-      <output>
-      1.4
-      </output>
     </program>
+<pre>
+1.4
+</pre>
     <p>Now I claim without proof that we can do a Bayesian update with <c>k</c> goals just by making a gamma distribution with parameters <c>alpha+k</c> and <c>beta+1</c>.</p>
     <program language="python">
       <input>
@@ -152,11 +150,10 @@ decorate_rate('Posterior distribution')
       <input>
 np.allclose(posterior, posterior_conjugate)
       </input>
-    
-      <output>
-      True
-      </output>
     </program>
+<pre>
+True
+</pre>
   </section>
 
   <section xml:id="sec-ch18-what-actual">
@@ -207,11 +204,10 @@ likelihood = binom.pmf(k, n, xs)
 posterior = uniform * likelihood
 posterior.normalize()
       </input>
-    
-      <output>
-      0.003944617569326651
-      </output>
     </program>
+<pre>
+0.003944617569326651
+</pre>
     <p>We can solve this problem more efficiently using the conjugate prior of the binomial distribution, which is the beta distribution.</p>
     <p>The beta distribution is bounded between 0 and 1, so it works well for representing the distribution of a probability like <c>x</c>.
 It has two parameters, called <c>alpha</c> and <c>beta</c>, that determine the shape of the distribution.</p>
@@ -300,11 +296,10 @@ decorate_euro(title='Posterior distribution of x')
       <input>
 np.allclose(posterior, posterior_conjugate)
       </input>
-    
-      <output>
-      True
-      </output>
     </program>
+<pre>
+True
+</pre>
   </section>
 
   <section xml:id="sec-ch18-lions-tigers">
@@ -326,11 +321,10 @@ ps = 0.4, 0.3, 0.3
 
 multinomial.pmf(data, n, ps)
       </input>
-    
-      <output>
-      0.10368
-      </output>
     </program>
+<pre>
+0.10368
+</pre>
     <p>Now, we could choose a prior for the prevalences and do a Bayesian update using the multinomial distribution to compute the probability of the data.</p>
     <p>But there's an easier way, because the multinomial distribution has a conjugate prior: the Dirichlet distribution.</p>
   </section>
@@ -357,20 +351,18 @@ If we draw a random value from this distribution, like this:</p>
       <input>
 dist.rvs()
       </input>
-    
-      <output>
-      array([[0.00389931, 0.49015107, 0.50594962]])
-      </output>
     </program>
+<pre>
+array([[0.00389931, 0.49015107, 0.50594962]])
+</pre>
     <program language="python">
       <input>
 dist.rvs().sum()
       </input>
-    
-      <output>
-      1.0000000000000002
-      </output>
     </program>
+<pre>
+1.0000000000000002
+</pre>
     <p>The result is an array of three values. 
 They are bounded between 0 and 1, and they always add up to 1, so they can be interpreted as the probabilities of a set of outcomes that are mutually exclusive and collectively exhaustive.</p>
     <p>Let's see what the distributions of these values look like.  I'll draw 1000 random vectors from this distribution, like this:</p>
@@ -383,11 +375,10 @@ sample = dist.rvs(1000)
       <input>
 sample.shape
       </input>
-    
-      <output>
-      (1000, 3)
-      </output>
     </program>
+<pre>
+(1000, 3)
+</pre>
     <p>The result is an array with 1000 rows and three columns.  I'll compute the <c>Cdf</c> of the values in each column.</p>
     <program language="python">
       <input>
@@ -543,11 +534,10 @@ xs = uniform.qs
 triangle = Pmf(a, xs, name='triangle')
 triangle.normalize()
           </input>
-        
-      <output>
-      2500
-      </output>
     </program>
+<pre>
+2500
+</pre>
         <p>And here's the update.</p>
         <program language="python">
           <input>
@@ -557,11 +547,10 @@ likelihood = binom.pmf(k, n, xs)
 posterior = triangle * likelihood
 posterior.normalize()
           </input>
-        
-      <output>
-      0.007008842590059087
-      </output>
     </program>
+<pre>
+0.007008842590059087
+</pre>
         <p>To get you started, here's the beta distribution that we used as a uniform prior.</p>
         <program language="python">
           <input>
@@ -571,11 +560,10 @@ beta = 1
 prior_beta = make_beta(alpha, beta)
 prior_beta.mean()
           </input>
-        
-      <output>
-      0.5
-      </output>
     </program>
+<pre>
+0.5
+</pre>
         <p>And here's what it looks like compared to the triangle prior.</p>
         <program language="python">
           <input>
@@ -604,11 +592,10 @@ xs = uniform.qs
 triangle = Pmf(a, xs, name='triangle')
 triangle.normalize()
         </input>
-      
-      <output>
-      2500
-      </output>
     </program>
+<pre>
+2500
+</pre>
       <program language="python">
         <input>
 k, n = 140, 250
@@ -617,11 +604,10 @@ likelihood = binom.pmf(k, n, xs)
 posterior = triangle * likelihood
 posterior.normalize()
         </input>
-      
-      <output>
-      0.007008842590059087
-      </output>
     </program>
+<pre>
+0.007008842590059087
+</pre>
       <program language="python">
         <input>
 alpha = 1
@@ -630,11 +616,10 @@ beta = 1
 prior_beta = make_beta(alpha, beta)
 prior_beta.mean()
         </input>
-      
-      <output>
-      0.5
-      </output>
     </program>
+<pre>
+0.5
+</pre>
       <program language="python">
         <input>
 prior_pmf = pmf_from_dist(prior_beta, xs)
@@ -676,11 +661,10 @@ decorate(xlabel='Proportion of heads (x)',
 
 np.allclose(posterior, posterior_conjugate)
         </input>
-      
-      <output>
-      True
-      </output>
     </program>
+<pre>
+True
+</pre>
     </solution>
     </exercise>
 

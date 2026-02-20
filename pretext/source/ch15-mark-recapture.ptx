@@ -47,10 +47,10 @@
       I'll define
     </p>
     <ul>
-      <li><m>N</m>: actual population size, 100.</li>
-      <li><m>K</m>: number of bears identified in the first session, 23.</li>
-      <li><m>n</m>: number of bears observed in the second session, 19 in the example.</li>
-      <li><m>k</m>: number of bears in the second session that were previously identified, 4.</li>
+      <li><p><m>N</m>: actual population size, 100.</p></li>
+      <li><p><m>K</m>: number of bears identified in the first session, 23.</p></li>
+      <li><p><m>n</m>: number of bears observed in the second session, 19 in the example.</p></li>
+      <li><p><m>k</m>: number of bears in the second session that were previously identified, 4.</p></li>
     </ul>
     <p>
       For given values of <m>N</m>, <m>K</m>, and <m>n</m>, the probability of finding <m>k</m> previously-identified bears is given by the <url href="https://en.wikipedia.org/wiki/Hypergeometric_distribution">hypergeometric distribution</url>:
@@ -65,8 +65,8 @@
       To understand why, consider:
     </p>
     <ul>
-      <li>The denominator, <m>\binom{N}{n}</m>, is the number of subsets of <m>n</m> we could choose from a population of <m>N</m> bears.</li>
-      <li>The numerator is the number of subsets that contain <m>k</m> bears from the previously identified <m>K</m> and <m>n-k</m> from the previously unseen <m>N-K</m>.</li>
+      <li><p>The denominator, <m>\binom{N}{n}</m>, is the number of subsets of <m>n</m> we could choose from a population of <m>N</m> bears.</p></li>
+      <li><p>The numerator is the number of subsets that contain <m>k</m> bears from the previously identified <m>K</m> and <m>n-k</m> from the previously unseen <m>N-K</m>.</p></li>
     </ul>
     <p>
       SciPy provides <c>hypergeom</c>, which we can use to compute this probability for a range of values of <m>k</m>.
@@ -129,11 +129,10 @@ qs = np.arange(50, 501)
 prior_N = make_uniform(qs, name='N')
 prior_N.shape
       </input>
-    
-      <output>
-      (451,)
-      </output>
     </program>
+<pre>
+(451,)
+</pre>
     <p>
       So that's our prior.
     </p>
@@ -158,11 +157,10 @@ likelihood = hypergeom(Ns, K, n).pmf(k)
 posterior_N = prior_N * likelihood
 posterior_N.normalize()
       </input>
-    
-      <output>
-      0.07755224277106798
-      </output>
     </program>
+<pre>
+0.07755224277106798
+</pre>
     <p>
       And here's what it looks like.
     </p>
@@ -183,11 +181,10 @@ decorate(xlabel='Population of bears (N)',
       <input>
 posterior_N.max_prob()
       </input>
-    
-      <output>
-      109
-      </output>
     </program>
+<pre>
+109
+</pre>
     <p>
       But the distribution is skewed to the right, so the posterior mean is substantially higher.
     </p>
@@ -195,11 +192,10 @@ posterior_N.max_prob()
       <input>
 posterior_N.mean()
       </input>
-    
-      <output>
-      173.79880627085805
-      </output>
     </program>
+<pre>
+173.79880627085805
+</pre>
     <p>
       And the credible interval is quite wide.
     </p>
@@ -207,11 +203,10 @@ posterior_N.mean()
       <input>
 posterior_N.credible_interval(0.9)
       </input>
-    
-      <output>
-      array([ 77., 363.])
-      </output>
     </program>
+<pre>
+array([ 77., 363.])
+</pre>
     <p>
       This solution is relatively simple, but it turns out we can do a little better if we model the unknown probability of observing a bear explicitly.
     </p>
@@ -243,9 +238,9 @@ k = 4
       For this model, I'll express the data in a notation that will make it easier to generalize to more than two rounds:
     </p>
     <ul>
-      <li><c>k10</c> is the number of bears observed in the first round but not the second,</li>
-      <li><c>k01</c> is the number of bears observed in the second round but not the first, and</li>
-      <li><c>k11</c> is the number of bears observed in both rounds.</li>
+      <li><p><c>k10</c> is the number of bears observed in the first round but not the second,</p></li>
+      <li><p><c>k01</c> is the number of bears observed in the second round but not the first, and</p></li>
+      <li><p><c>k11</c> is the number of bears observed in both rounds.</p></li>
     </ul>
     <p>
       Here are their values.
@@ -272,11 +267,10 @@ observed = k01 + k10 + k11
 k00 = N - observed
 k00
       </input>
-    
-      <output>
-      62
-      </output>
     </program>
+<pre>
+62
+</pre>
     <p>
       For the update, it will be convenient to store the data as a list that represents the number of bears in each category.
     </p>
@@ -285,11 +279,10 @@ k00
 x = [k00, k01, k10, k11]
 x
       </input>
-    
-      <output>
-      [62, 15, 19, 4]
-      </output>
     </program>
+<pre>
+[62, 15, 19, 4]
+</pre>
     <p>
       Now, if we know <c>p=0.2</c>, we can compute the probability a bear falls in each category.  For example, the probability of being observed in both rounds is <c>p*p</c>, and the probability of being unobserved in both rounds is <c>q*q</c> (where <c>q=1-p</c>).
     </p>
@@ -300,14 +293,13 @@ q = 1-p
 y = [q*q, q*p, p*q, p*p]
 y
       </input>
-    
-      <output>
-      [0.6400000000000001,
+    </program>
+<pre>
+[0.6400000000000001,
  0.16000000000000003,
  0.16000000000000003,
  0.04000000000000001]
-      </output>
-    </program>
+</pre>
     <p>
       Now the probability of the data is given by the <url href="https://en.wikipedia.org/wiki/Multinomial_distribution">multinomial distribution</url>:
     </p>
@@ -328,11 +320,10 @@ from scipy.stats import multinomial
 likelihood = multinomial.pmf(x, N, y)
 likelihood
       </input>
-    
-      <output>
-      0.0016664011988507257
-      </output>
     </program>
+<pre>
+0.0016664011988507257
+</pre>
     <p>
       That's the likelihood if we know <c>N</c> and <c>p</c>, but of course we don't.  So we'll choose prior distributions for <c>N</c> and <c>p</c>, and use the likelihoods to update it.
     </p>
@@ -360,11 +351,10 @@ from utils import make_joint
 joint_prior = make_joint(prior_p, prior_N)
 joint_prior.shape
       </input>
-    
-      <output>
-      (451, 100)
-      </output>
     </program>
+<pre>
+(451, 100)
+</pre>
     <p>
       The result is a Pandas <c>DataFrame</c> with values of <c>N</c> down the rows and values of <c>p</c> across the columns.
       However, for this problem it will be convenient to represent the prior distribution as a 1-D <c>Series</c> rather than a 2-D <c>DataFrame</c>.
@@ -377,42 +367,38 @@ from empiricaldist import Pmf
 joint_pmf = Pmf(joint_prior.stack())
 joint_pmf.head(3)
       </input>
-    
-      <output>
-      N   p   
+    </program>
+<pre>
+N   p   
 50  0.00    0.000022
     0.01    0.000022
     0.02    0.000022
 dtype: float64
-      </output>
-    </program>
+</pre>
     <program language="python">
       <input>
 type(joint_pmf)
       </input>
-    
-      <output>
-      empiricaldist.empiricaldist.Pmf
-      </output>
     </program>
+<pre>
+empiricaldist.empiricaldist.Pmf
+</pre>
     <program language="python">
       <input>
 type(joint_pmf.index)
       </input>
-    
-      <output>
-      pandas.core.indexes.multi.MultiIndex
-      </output>
     </program>
+<pre>
+pandas.core.indexes.multi.MultiIndex
+</pre>
     <program language="python">
       <input>
 joint_pmf.shape
       </input>
-    
-      <output>
-      (45100,)
-      </output>
     </program>
+<pre>
+(45100,)
+</pre>
     <p>
       The result is a <c>Pmf</c> whose index is a <c>MultiIndex</c>.
       A <c>MultiIndex</c> can have more than one column; in this example, the first column contains values of <c>N</c> and the second column contains values of <c>p</c>.
@@ -460,11 +446,10 @@ for N, p in joint_pmf.index:
 posterior_pmf = joint_pmf * likelihood
 posterior_pmf.normalize()
       </input>
-    
-      <output>
-      2.9678796190279657e-05
-      </output>
     </program>
+<pre>
+2.9678796190279657e-05
+</pre>
     <p>
       We'll use <c>plot_contour</c> again to visualize the joint posterior distribution.
       But remember that the posterior distribution we just computed is represented as a <c>Pmf</c>, which is a <c>Series</c>, and <c>plot_contour</c> expects a <c>DataFrame</c>.
@@ -544,20 +529,18 @@ decorate(xlabel='Population of bears (N)',
       <input>
 print(posterior_N.mean(), posterior_N.credible_interval(0.9))
       </input>
-    
-      <output>
-      173.79880627085805 [ 77. 363.]
-      </output>
     </program>
+<pre>
+173.79880627085805 [ 77. 363.]
+</pre>
     <program language="python">
       <input>
 print(posterior2_N.mean(), posterior2_N.credible_interval(0.9))
       </input>
-    
-      <output>
-      138.750521364726 [ 68. 277.]
-      </output>
     </program>
+<pre>
+138.750521364726 [ 68. 277.]
+</pre>
     <p>
       So for practical purposes, the simpler one-parameter model is sufficient.
       But we'll use the two-parameter model again in the exercises.
@@ -836,11 +819,10 @@ decorate(xlabel='Number of users (thousands)',
       <input>
 posterior_N.mean()
       </input>
-    
-      <output>
-      173.79880627085805
-      </output>
     </program>
+<pre>
+173.79880627085805
+</pre>
     <p>
       And here's the 90% credible interval.
     </p>
@@ -848,11 +830,10 @@ posterior_N.mean()
       <input>
 posterior_N.credible_interval(0.9)
       </input>
-    
-      <output>
-      array([ 77., 363.])
-      </output>
     </program>
+<pre>
+array([ 77., 363.])
+</pre>
     <p>
       The posterior distribution is quite wide because we don't have much data.
     </p>
@@ -930,11 +911,10 @@ def compute_probs(p0, p1):
 y = compute_probs(p0, p1)
 y
       </input>
-    
-      <output>
-      [0.68, 0.12, 0.17, 0.03]
-      </output>
     </program>
+<pre>
+[0.68, 0.12, 0.17, 0.03]
+</pre>
     <p>
       With these probabilities, there is a 68% chance that neither tester finds the bug and a 3% chance that both do.
     </p>
@@ -948,15 +928,14 @@ qs = np.arange(32, 350, step=5)
 prior_N = make_uniform(qs, name='N')
 prior_N.head(3)
       </input>
-    
-      <output>
-      N
+    </program>
+<pre>
+N
 32    0.015625
 37    0.015625
 42    0.015625
 dtype: float64
-      </output>
-    </program>
+</pre>
     <p>
       I'll put the data in an array, with 0 as a place-keeper for the unknown value <c>k00</c>.
     </p>
@@ -987,11 +966,10 @@ for N in prior_N.qs:
 posterior_N = prior_N * likelihood
 posterior_N.normalize()
       </input>
-    
-      <output>
-      0.07755224277106798
-      </output>
     </program>
+<pre>
+0.07755224277106798
+</pre>
     <p>
       And here's what it looks like.
     </p>
@@ -1009,11 +987,10 @@ decorate(xlabel='Number of bugs (N)',
 print(posterior_N.mean(), 
       posterior_N.credible_interval(0.9))
       </input>
-    
-      <output>
-      173.79880627085805 [ 77. 363.]
-      </output>
     </program>
+<pre>
+173.79880627085805 [ 77. 363.]
+</pre>
     <p>
       With the assumption that <c>p0</c> and <c>p1</c> are known to be <c>0.2</c> and <c>0.15</c>, the posterior mean is 102 with 90% credible interval (77, 127).
       But this result is based on the assumption that we know the probabilities, and we don't.
@@ -1038,11 +1015,10 @@ prior_p1 = make_uniform(qs, name='p1')
 joint2 = make_joint(prior_p0, prior_N)
 joint2.shape
       </input>
-    
-      <output>
-      (64, 51)
-      </output>
     </program>
+<pre>
+(64, 51)
+</pre>
     <p>
       Now I'll stack them, as in the previous example, and put the result in a <c>Pmf</c>.
     </p>
@@ -1051,15 +1027,14 @@ joint2.shape
 joint2_pmf = Pmf(joint2.stack())
 joint2_pmf.head(3)
       </input>
-    
-      <output>
-      N   p0  
+    </program>
+<pre>
+N   p0  
 32  0.00    0.000306
     0.02    0.000306
     0.04    0.000306
 dtype: float64
-      </output>
-    </program>
+</pre>
     <p>
       We can use <c>make_joint</c> again to add in the third parameter.
     </p>
@@ -1068,11 +1043,10 @@ dtype: float64
 joint3 = make_joint(prior_p1, joint2_pmf)
 joint3.shape
       </input>
-    
-      <output>
-      (3264, 51)
-      </output>
     </program>
+<pre>
+(3264, 51)
+</pre>
     <p>
       The result is a <c>DataFrame</c> with values of <c>N</c> and <c>p0</c> in a <c>MultiIndex</c> that goes down the rows and values of <c>p1</c> in an index that goes across the columns.
     </p>
@@ -1080,9 +1054,9 @@ joint3.shape
       <input>
 joint3.head(3)
       </input>
-    
-      <output>
-      p1           0.00      0.02      0.04      0.06      0.08      0.10      0.12  \
+    </program>
+<pre>
+p1           0.00      0.02      0.04      0.06      0.08      0.10      0.12  \
 N  p0                                                                           
 32 0.00  0.000006  0.000006  0.000006  0.000006  0.000006  0.000006  0.000006   
    0.02  0.000006  0.000006  0.000006  0.000006  0.000006  0.000006  0.000006   
@@ -1101,8 +1075,7 @@ N  p0
    0.04  0.000006  0.000006  0.000006  0.000006  0.000006  0.000006  0.000006  
 
 [3 rows x 51 columns]
-      </output>
-    </program>
+</pre>
     <p>
       Now I'll apply <c>stack</c> again:
     </p>
@@ -1111,15 +1084,14 @@ N  p0
 joint3_pmf = Pmf(joint3.stack())
 joint3_pmf.head(3)
       </input>
-    
-      <output>
-      N   p0   p1  
+    </program>
+<pre>
+N   p0   p1  
 32  0.0  0.00    0.000006
          0.02    0.000006
          0.04    0.000006
 dtype: float64
-      </output>
-    </program>
+</pre>
     <p>
       The result is a <c>Pmf</c> with a three-column <c>MultiIndex</c> containing all possible triplets of parameters.
     </p>
@@ -1130,11 +1102,10 @@ dtype: float64
       <input>
 joint3_pmf.shape
       </input>
-    
-      <output>
-      (166464,)
-      </output>
     </program>
+<pre>
+(166464,)
+</pre>
     <p>
       That's still small enough to be practical, but it will take longer to compute the likelihoods than in the previous examples.
     </p>
@@ -1161,11 +1132,10 @@ for N, p0, p1 in joint3_pmf.index:
 posterior_pmf = joint3_pmf * likelihood
 posterior_pmf.normalize()
       </input>
-    
-      <output>
-      8.941088283758206e-06
-      </output>
     </program>
+<pre>
+8.941088283758206e-06
+</pre>
     <p>
       Now, to extract the marginal distributions, we could unstack the joint posterior as we did in the previous section.
       But <c>Pmf</c> provides a version of <c>marginal</c> that works with a <c>Pmf</c> rather than a <c>DataFrame</c>.
@@ -1193,11 +1163,10 @@ decorate(xlabel='Number of bugs (N)',
       <input>
 posterior_N.mean()
       </input>
-    
-      <output>
-      173.79880627085805
-      </output>
     </program>
+<pre>
+173.79880627085805
+</pre>
     <p>
       The posterior mean is 105 bugs, which suggests that there are still many bugs the testers have not found.
     </p>
@@ -1226,11 +1195,10 @@ posterior_p0.mean(), posterior_p0.credible_interval(0.9)
       <input>
 posterior_p1.mean(), posterior_p1.credible_interval(0.9)
       </input>
-    
-      <output>
-      (0.2297065971677734, array([0.1, 0.4]))
-      </output>
     </program>
+<pre>
+(0.2297065971677734, array([0.1, 0.4]))
+</pre>
     <p>
       Comparing the posterior distributions, the tester who found more bugs probably has a higher probability of finding bugs.  The posterior means are about 23% and 18%.  But the distributions overlap, so we should not be too sure.
     </p>
@@ -1254,8 +1222,8 @@ posterior_p1.mean(), posterior_p1.credible_interval(0.9)
       This chapter introduces two new probability distributions:
     </p>
     <ul>
-      <li>The hypergeometric distribution is a variation of the binomial distribution in which samples are drawn from the population without replacement.</li>
-      <li>The multinomial distribution is a generalization of the binomial distribution where there are more than two possible outcomes.</li>
+      <li><p>The hypergeometric distribution is a variation of the binomial distribution in which samples are drawn from the population without replacement.</p></li>
+      <li><p>The multinomial distribution is a generalization of the binomial distribution where there are more than two possible outcomes.</p></li>
     </ul>
     <p>
       Also in this chapter, we saw the first example of a model with three parameters.  We'll see more in subsequent chapters.
@@ -1277,9 +1245,9 @@ posterior_p1.mean(), posterior_p1.credible_interval(0.9)
           Three lists of cases were available:
         </p>
         <ol>
-          <li>135 cases identified using a serum test.</li>
-          <li>122 cases reported by local hospitals.</li>
-          <li>126 cases reported on questionnaires collected by epidemiologists.</li>
+          <li><p>135 cases identified using a serum test.</p></li>
+          <li><p>122 cases reported by local hospitals.</p></li>
+          <li><p>126 cases reported on questionnaires collected by epidemiologists.</p></li>
         </ol>
         <p>
           In this exercise, we'll use only the first two lists; in the next exercise we'll bring in the third list.
@@ -1310,30 +1278,28 @@ qs = np.arange(200, 500, step=5)
 prior_N = make_uniform(qs, name='N')
 prior_N.head(3)
           </input>
-        
-      <output>
-      N
+    </program>
+<pre>
+N
 200    0.016667
 205    0.016667
 210    0.016667
 dtype: float64
-      </output>
-    </program>
+</pre>
         <program language="python">
           <input>
 qs = np.linspace(0, 0.98, num=50)
 prior_p = make_uniform(qs, name='p')
 prior_p.head(3)
           </input>
-        
-      <output>
-      p
+    </program>
+<pre>
+p
 0.00    0.02
 0.02    0.02
 0.04    0.02
 dtype: float64
-      </output>
-    </program>
+</pre>
       </statement>
     <solution>
       <program language="python">
@@ -1347,30 +1313,28 @@ qs = np.arange(200, 500, step=5)
 prior_N = make_uniform(qs, name='N')
 prior_N.head(3)
         </input>
-      
-      <output>
-      N
+    </program>
+<pre>
+N
 200    0.016667
 205    0.016667
 210    0.016667
 dtype: float64
-      </output>
-    </program>
+</pre>
       <program language="python">
         <input>
 qs = np.linspace(0, 0.98, num=50)
 prior_p = make_uniform(qs, name='p')
 prior_p.head(3)
         </input>
-      
-      <output>
-      p
+    </program>
+<pre>
+p
 0.00    0.02
 0.02    0.02
 0.04    0.02
 dtype: float64
-      </output>
-    </program>
+</pre>
       <program language="python">
         <input>
 
@@ -1510,9 +1474,9 @@ t = (1-p, p)
 df = cartesian_product(t, t, t)
 df
           </input>
-        
-      <output>
-      level_0  level_1  level_2
+    </program>
+<pre>
+level_0  level_1  level_2
 0      0.8      0.8      0.8
 1      0.8      0.8      0.2
 2      0.8      0.2      0.8
@@ -1521,8 +1485,7 @@ df
 5      0.2      0.8      0.2
 6      0.2      0.2      0.8
 7      0.2      0.2      0.2
-      </output>
-    </program>
+</pre>
         <p>
           To compute the probability for each category, we take the product across the columns:
         </p>
@@ -1531,9 +1494,9 @@ df
 y = df.prod(axis=1)
 y
           </input>
-        
-      <output>
-      0    0.512
+    </program>
+<pre>
+0    0.512
 1    0.128
 2    0.128
 3    0.032
@@ -1542,8 +1505,7 @@ y
 6    0.032
 7    0.008
 dtype: float64
-      </output>
-    </program>
+</pre>
         <p>
           Now you finish it off from there.
         </p>
@@ -1581,9 +1543,9 @@ t = (1-p, p)
 df = cartesian_product(t, t, t)
 df
         </input>
-      
-      <output>
-      level_0  level_1  level_2
+    </program>
+<pre>
+level_0  level_1  level_2
 0      0.8      0.8      0.8
 1      0.8      0.8      0.2
 2      0.8      0.2      0.8
@@ -1592,16 +1554,15 @@ df
 5      0.2      0.8      0.2
 6      0.2      0.2      0.8
 7      0.2      0.2      0.2
-      </output>
-    </program>
+</pre>
       <program language="python">
         <input>
 y = df.prod(axis=1)
 y
         </input>
-      
-      <output>
-      0    0.512
+    </program>
+<pre>
+0    0.512
 1    0.128
 2    0.128
 3    0.032
@@ -1610,8 +1571,7 @@ y
 6    0.032
 7    0.008
 dtype: float64
-      </output>
-    </program>
+</pre>
       <program language="python">
         <input>
 
