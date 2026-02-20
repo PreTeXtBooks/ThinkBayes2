@@ -655,85 +655,87 @@ I'm going to leave this question hanging a little longer; we'll come back to it 
   <section xml:id="sec-ch04-exercises">
     <title>Exercises</title>
 
+    <exercise xml:id="ex-batting-average">
+      <statement>
+        <p>
+          In Major League Baseball, most players have a batting average between .200 and .330, which means that their probability of getting a hit is between 0.2 and 0.33.
+        </p>
+        <p>
+          Suppose a player appearing in their first game gets 3 hits out of 3 attempts.  What is the posterior distribution for their probability of getting a hit?
+        </p>
 
-    <p>
-      <em>Exercise:</em> In Major League Baseball, most players have a batting average between .200 and .330, which means that their probability of getting a hit is between 0.2 and 0.33.
-    </p>
-    <p>
-      Suppose a player appearing in their first game gets 3 hits out of 3 attempts.  What is the posterior distribution for their probability of getting a hit?
-    </p>
+        <p>
+          For this exercise, I'll construct the prior distribution by starting with a uniform distribution and updating it with imaginary data until it has a shape that reflects my background knowledge of batting averages.
+        </p>
+        <p>
+          Here's the uniform prior:
+        </p>
 
-    <p>
-      For this exercise, I'll construct the prior distribution by starting with a uniform distribution and updating it with imaginary data until it has a shape that reflects my background knowledge of batting averages.
-    </p>
-    <p>
-      Here's the uniform prior:
-    </p>
-
-    <program language="python">
-      <input>
+        <program language="python">
+          <input>
 hypos = np.linspace(0.1, 0.4, 101)
 prior = Pmf(1, hypos)
-      </input>
-    </program>
+          </input>
+        </program>
 
-    <p>
-      And here is a dictionary of likelihoods, with <c>Y</c> for getting a hit and <c>N</c> for not getting a hit.
-    </p>
+        <p>
+          And here is a dictionary of likelihoods, with <c>Y</c> for getting a hit and <c>N</c> for not getting a hit.
+        </p>
 
-    <program language="python">
-      <input>
+        <program language="python">
+          <input>
 likelihood = {
     'Y': hypos,
     'N': 1-hypos
 }
-      </input>
-    </program>
+          </input>
+        </program>
 
-    <p>
-      Here's a dataset that yields a reasonable prior distribution.
-    </p>
+        <p>
+          Here's a dataset that yields a reasonable prior distribution.
+        </p>
 
-    <program language="python">
-      <input>
+        <program language="python">
+          <input>
 dataset = 'Y' * 25 + 'N' * 75
-      </input>
-    </program>
+          </input>
+        </program>
 
-    <p>
-      And here's the update with the imaginary data.
-    </p>
+        <p>
+          And here's the update with the imaginary data.
+        </p>
 
-    <program language="python">
-      <input>
+        <program language="python">
+          <input>
 for data in dataset:
     prior *= likelihood[data]
 
 prior.normalize()
-      </input>
-    </program>
+          </input>
+        </program>
 
-    <p>
-      Finally, here's what the prior looks like.
-    </p>
+        <p>
+          Finally, here's what the prior looks like.
+        </p>
 
-    <program language="python">
-      <input>
+        <program language="python">
+          <input>
 prior.plot(label='prior')
 decorate(xlabel='Probability of getting a hit',
          ylabel='PMF')
-      </input>
-    </program>
+          </input>
+        </program>
 
-    <p>
-      This distribution indicates that most players have a batting average near 250, with only a few players below 175 or above 350.  I'm not sure how accurately this prior reflects the distribution of batting averages in Major League Baseball, but it is good enough for this exercise.
-    </p>
-    <p>
-      Now update this distribution with the data and plot the posterior.  What is the most likely quantity in the posterior distribution?
-    </p>
-
-    <program language="python">
-      <input>
+        <p>
+          This distribution indicates that most players have a batting average near 250, with only a few players below 175 or above 350.  I'm not sure how accurately this prior reflects the distribution of batting averages in Major League Baseball, but it is good enough for this exercise.
+        </p>
+        <p>
+          Now update this distribution with the data and plot the posterior.  What is the most likely quantity in the posterior distribution?
+        </p>
+      </statement>
+      <solution>
+        <program language="python">
+          <input>
 # Solution
 
 posterior = prior.copy()
@@ -742,61 +744,64 @@ for data in 'YYY':
     posterior *= likelihood[data]
 
 posterior.normalize()
-      </input>
-    </program>
+          </input>
+        </program>
 
-    <program language="python">
-      <input>
+        <program language="python">
+          <input>
 # Solution
 
 prior.plot(label='prior')
 posterior.plot(label='posterior ')
 decorate(xlabel='Probability of getting a hit',
          ylabel='PMF')
-      </input>
-    </program>
+          </input>
+        </program>
 
-    <program language="python">
-      <input>
+        <program language="python">
+          <input>
 # Solution
 
 prior.max_prob()
-      </input>
-    </program>
+          </input>
+        </program>
 
-    <program language="python">
-      <input>
+        <program language="python">
+          <input>
 # Solution
 
 posterior.max_prob()
-      </input>
-    </program>
+          </input>
+        </program>
+      </solution>
+    </exercise>
 
-    <p>
-      <em>Exercise:</em> Whenever you survey people about sensitive issues, you have to deal with <url href="https://en.wikipedia.org/wiki/Social_desirability_bias">social desirability bias</url>, which is the tendency of people to adjust their answers to show themselves in the most positive light.
+    <exercise xml:id="ex-randomized-response">
+      <statement>
+        <p>
+          Whenever you survey people about sensitive issues, you have to deal with <url href="https://en.wikipedia.org/wiki/Social_desirability_bias">social desirability bias</url>, which is the tendency of people to adjust their answers to show themselves in the most positive light.
 One way to improve the accuracy of the results is <url href="https://en.wikipedia.org/wiki/Randomized_response">randomized response</url>.
-    </p>
-    <p>
-      As an example, suppose you want to know how many people cheat on their taxes.
+        </p>
+        <p>
+          As an example, suppose you want to know how many people cheat on their taxes.
 If you ask them directly, it is likely that some of the cheaters will lie.
 You can get a more accurate estimate if you ask them indirectly, like this: Ask each person to flip a coin and, without revealing the outcome,
-    </p>
-    <ul>
-      <li>If they get heads, they report YES.</li>
-    </ul>
-    <ul>
-      <li>If they get tails, they honestly answer the question "Do you cheat on your taxes?"</li>
-    </ul>
-    <p>
-      If someone says YES, we don't know whether they actually cheat on their taxes; they might have flipped heads.
+        </p>
+        <ul>
+          <li>If they get heads, they report YES.</li>
+          <li>If they get tails, they honestly answer the question "Do you cheat on your taxes?"</li>
+        </ul>
+        <p>
+          If someone says YES, we don't know whether they actually cheat on their taxes; they might have flipped heads.
 Knowing this, people might be more willing to answer honestly.
-    </p>
-    <p>
-      Suppose you survey 100 people this way and get 80 YESes and 20 NOs.  Based on this data, what is the posterior distribution for the fraction of people who cheat on their taxes?  What is the most likely quantity in the posterior distribution?
-    </p>
-
-    <program language="python">
-      <input>
+        </p>
+        <p>
+          Suppose you survey 100 people this way and get 80 YESes and 20 NOs.  Based on this data, what is the posterior distribution for the fraction of people who cheat on their taxes?  What is the most likely quantity in the posterior distribution?
+        </p>
+      </statement>
+      <solution>
+        <program language="python">
+          <input>
 # Solution
 
 # I'll use a uniform distribution again, although there might
@@ -805,11 +810,11 @@ Knowing this, people might be more willing to answer honestly.
 
 hypos = np.linspace(0, 1, 101)
 prior = Pmf(1, hypos)
-      </input>
-    </program>
+          </input>
+        </program>
 
-    <program language="python">
-      <input>
+        <program language="python">
+          <input>
 # Solution
 
 # If the actual fraction of cheaters is `x`, the number of
@@ -819,11 +824,11 @@ likelihood = {
     'Y': 0.5 + hypos/2,
     'N': (1-hypos)/2
 }
-      </input>
-    </program>
+          </input>
+        </program>
 
-    <program language="python">
-      <input>
+        <program language="python">
+          <input>
 # Solution
 
 dataset = 'Y' * 80 + 'N' * 20
@@ -834,41 +839,46 @@ for data in dataset:
     posterior *= likelihood[data]
 
 posterior.normalize()
-      </input>
-    </program>
+          </input>
+        </program>
 
-    <program language="python">
-      <input>
+        <program language="python">
+          <input>
 # Solution
 
 posterior.plot(label='80 YES, 20 NO')
 decorate(xlabel='Proportion of cheaters',
          ylabel='PMF')
-      </input>
-    </program>
+          </input>
+        </program>
 
-    <program language="python">
-      <input>
+        <program language="python">
+          <input>
 # Solution
 
 posterior.idxmax()
-      </input>
-    </program>
+          </input>
+        </program>
+      </solution>
+    </exercise>
 
-    <p>
-      <em>Exercise:</em> Suppose you want to test whether a coin is fair, but you don't want to spin it hundreds of times.
+    <exercise xml:id="ex-unreliable-machine">
+      <statement>
+        <p>
+          Suppose you want to test whether a coin is fair, but you don't want to spin it hundreds of times.
 So you make a machine that spins the coin automatically and uses computer vision to determine the outcome.
-    </p>
-    <p>
-      However, you discover that the machine is not always accurate.  Specifically, suppose the probability is <c>y=0.2</c> that an actual heads is reported as tails, or actual tails reported as heads.
-    </p>
-    <p>
-      If we spin a coin 250 times and the machine reports 140 heads, what is the posterior distribution of <c>x</c>?
+        </p>
+        <p>
+          However, you discover that the machine is not always accurate.  Specifically, suppose the probability is <c>y=0.2</c> that an actual heads is reported as tails, or actual tails reported as heads.
+        </p>
+        <p>
+          If we spin a coin 250 times and the machine reports 140 heads, what is the posterior distribution of <c>x</c>?
 What happens as you vary the value of <c>y</c>?
-    </p>
-
-    <program language="python">
-      <input>
+        </p>
+      </statement>
+      <solution>
+        <program language="python">
+          <input>
 # Solution
 
 def update_unreliable(pmf, dataset, y):
@@ -881,11 +891,11 @@ def update_unreliable(pmf, dataset, y):
         pmf *= likelihood[data]
 
     pmf.normalize()
-      </input>
-    </program>
+          </input>
+        </program>
 
-    <program language="python">
-      <input>
+        <program language="python">
+          <input>
 # Solution
 
 hypos = np.linspace(0, 1, 101)
@@ -900,11 +910,11 @@ update_unreliable(posterior02, dataset, 0.2)
 
 posterior04 = prior.copy()
 update_unreliable(posterior04, dataset, 0.4)
-      </input>
-    </program>
+          </input>
+        </program>
 
-    <program language="python">
-      <input>
+        <program language="python">
+          <input>
 # Solution
 
 posterior00.plot(label='y = 0.0')
@@ -912,47 +922,52 @@ posterior02.plot(label='y = 0.2')
 posterior04.plot(label='y = 0.4')
 decorate(xlabel='Proportion of heads',
          ylabel='PMF')
-      </input>
-    </program>
+          </input>
+        </program>
 
-    <program language="python">
-      <input>
+        <program language="python">
+          <input>
 # Solution
 
 posterior00.idxmax(), posterior02.idxmax(), posterior04.idxmax()
-      </input>
-    </program>
+          </input>
+        </program>
+      </solution>
+    </exercise>
 
-    <p>
-      <em>Exercise:</em> In preparation for an alien invasion, the Earth Defense League (EDL) has been working on new missiles to shoot down space invaders.  Of course, some missile designs are better than others; let's assume that each design has some probability of hitting an alien ship, <c>x</c>.
-    </p>
-    <p>
-      Based on previous tests, the distribution of <c>x</c> in the population of designs is approximately uniform between 0.1 and 0.4.
-    </p>
-    <p>
-      Now suppose the new ultra-secret Alien Blaster 9000 is being tested.  In a press conference, an EDL general reports that the new design has been tested twice, taking two shots during each test.  The results of the test are confidential, so the general won't say how many targets were hit, but they report: "The same number of targets were hit in the two tests, so we have reason to think this new design is consistent."
-    </p>
-    <p>
-      Is this data good or bad? 
+    <exercise xml:id="ex-alien-blaster">
+      <statement>
+        <p>
+          In preparation for an alien invasion, the Earth Defense League (EDL) has been working on new missiles to shoot down space invaders.  Of course, some missile designs are better than others; let's assume that each design has some probability of hitting an alien ship, <c>x</c>.
+        </p>
+        <p>
+          Based on previous tests, the distribution of <c>x</c> in the population of designs is approximately uniform between 0.1 and 0.4.
+        </p>
+        <p>
+          Now suppose the new ultra-secret Alien Blaster 9000 is being tested.  In a press conference, an EDL general reports that the new design has been tested twice, taking two shots during each test.  The results of the test are confidential, so the general won't say how many targets were hit, but they report: "The same number of targets were hit in the two tests, so we have reason to think this new design is consistent."
+        </p>
+        <p>
+          Is this data good or bad? 
 That is, does it increase or decrease your estimate of <c>x</c> for the Alien Blaster 9000?
-    </p>
+        </p>
 
-    <p>
-      Hint: If the probability of hitting each target is <m>x</m>, the probability of hitting one target in both tests
+        <p>
+          Hint: If the probability of hitting each target is <m>x</m>, the probability of hitting one target in both tests
 is <m>\left[2x(1-x)\right]^2</m>.
-    </p>
-
-    <program language="python">
-      <input>
+        </p>
+      </statement>
+      <solution>
+        <program language="python">
+          <input>
 # Solution
 
 hypos = np.linspace(0.1, 0.4, 101)
 prior = Pmf(1, hypos)
-      </input>
-    </program>
+          </input>
+        </program>
 
-    <program language="python">
-      <input>
+        <program language="python">
+          <input>
 # Solution
 
 # Here's a specific version for n=2 shots per test
@@ -960,11 +975,11 @@ prior = Pmf(1, hypos)
 x = hypos
 likes = [(1-x)**4, (2*x*(1-x))**2, x**4]
 likelihood = np.sum(likes, axis=0)
-      </input>
-    </program>
+          </input>
+        </program>
 
-    <program language="python">
-      <input>
+        <program language="python">
+          <input>
 # Solution
 
 # Here's a more general version for any n shots per test
@@ -974,11 +989,11 @@ from scipy.stats import binom
 n = 2
 likes2 = [binom.pmf(k, n, x)**2 for k in range(n+1)]
 likelihood2 = np.sum(likes2, axis=0)
-      </input>
-    </program>
+          </input>
+        </program>
 
-    <program language="python">
-      <input>
+        <program language="python">
+          <input>
 # Solution
 
 # Here are the likelihoods, computed both ways
@@ -990,20 +1005,20 @@ plt.plot(x, likelihood2, label='general formula')
 decorate(xlabel='Probability of hitting the target',
          ylabel='Likelihood',
          title='Likelihood of getting the same result')
-      </input>
-    </program>
+          </input>
+        </program>
 
-    <program language="python">
-      <input>
+        <program language="python">
+          <input>
 # Solution
 
 posterior = prior * likelihood
 posterior.normalize()
-      </input>
-    </program>
+          </input>
+        </program>
 
-    <program language="python">
-      <input>
+        <program language="python">
+          <input>
 # Solution
 
 posterior.plot(label='Two tests, two shots, same outcome',
@@ -1012,11 +1027,11 @@ decorate(xlabel='Probability of hitting the target',
          ylabel='PMF',
          title='Posterior distribution',
          ylim=[0, 0.015])
-      </input>
-    </program>
+          </input>
+        </program>
 
-    <program language="python">
-      <input>
+        <program language="python">
+          <input>
 # Solution
 
 # Getting the same result in both tests is more likely for 
@@ -1026,8 +1041,10 @@ decorate(xlabel='Probability of hitting the target',
 # and the update gives more weight to extreme values.
 
 # So the dataset makes lower values of `x` more likely.
-      </input>
-    </program>
+          </input>
+        </program>
+      </solution>
+    </exercise>
 
     <p>
       <em>Think Bayes</em>, Second Edition
