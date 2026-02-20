@@ -931,9 +931,13 @@ posterior.max_prob()
       0.271
       </output>
     </program>
+      </solution>
+    </exercise>
 
-    <p>
-      <em>Exercise:</em> Whenever you survey people about sensitive issues, you have to deal with <url href="https://en.wikipedia.org/wiki/Social_desirability_bias">social desirability bias</url>, which is the tendency of people to adjust their answers to show themselves in the most positive light.
+    <exercise xml:id="ex-randomized-response">
+      <statement>
+        <p>
+          Whenever you survey people about sensitive issues, you have to deal with <url href="https://en.wikipedia.org/wiki/Social_desirability_bias">social desirability bias</url>, which is the tendency of people to adjust their answers to show themselves in the most positive light.
 One way to improve the accuracy of the results is <url href="https://en.wikipedia.org/wiki/Randomized_response">randomized response</url>.
         </p>
         <p>
