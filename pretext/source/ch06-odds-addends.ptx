@@ -345,19 +345,24 @@ rare event unexplained. If Oliver doesn’t account for the ‘O’ blood, we
 have two chances to find someone in the population with ‘AB’ blood. And
 that factor of two makes the difference.
 </p>
+<exercise xml:id="ex-ch06-inline-1">
+  <title>Exercise</title>
+  <statement>
 <p>
-  <em>Exercise:</em> Suppose that based on other evidence, you prior belief in Oliver's guilt is 90%.  How much would the blood evidence in this section change your beliefs?  What if you initially thought there was only a 10% chance of his guilt?
+  Suppose that based on other evidence, you prior belief in Oliver's guilt is 90%.  How much would the blood evidence in this section change your beliefs?  What if you initially thought there was only a 10% chance of his guilt?
 </p>
+  </statement>
+<solution>
 <program language="python">
   <input>
-  # Solution goes here
   </input>
 </program>
 <program language="python">
   <input>
-  # Solution goes here
   </input>
 </program>
+</solution>
+</exercise>
   </section>
 
   <section xml:id="sec-ch06-addends">

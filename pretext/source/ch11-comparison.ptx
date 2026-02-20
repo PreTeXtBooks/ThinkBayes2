@@ -841,17 +841,19 @@ decorate(xlabel='Height in cm',
   <section xml:id="sec-ch11-exercises">
     <title>Exercises</title>
 
+    <exercise xml:id="ex-ch11-1">
+      <title>Exercise 1</title>
+      <statement>
     <p>
-      <em>Exercise:</em> Based on the results of the previous example, compute the posterior conditional distribution for <c>A</c> given that <c>B</c> is 180 cm.
+      Based on the results of the previous example, compute the posterior conditional distribution for <c>A</c> given that <c>B</c> is 180 cm.
     </p>
     <p>
       Hint: Use <c>loc</c> to select a row from a <c>DataFrame</c>.
     </p>
-
+      </statement>
+    <solution>
     <program language="python">
       <input>
-# Solution
-
 # Select a row from the posterior and normalize it
 
 row_180 = posterior.loc[180]
@@ -865,8 +867,6 @@ cond_A.normalize()
 
     <program language="python">
       <input>
-# Solution
-
 # Here's what it looks like
 
 cond_A.plot(label='Posterior for A given B=180', color='C4')
@@ -876,18 +876,22 @@ decorate(xlabel='Height in cm',
       </input>
     </program>
     <image source="images/ch11_comparison_29f1767a.png" width="80%"/>
+    </solution>
+    </exercise>
 
+    <exercise xml:id="ex-ch11-2">
+      <title>Exercise 2</title>
+      <statement>
     <p>
-      <em>Exercise:</em> Suppose we have established that <c>A</c> is taller than <c>B</c>, but we don't know how tall <c>B</c> is. Now we choose a random woman, <c>C</c>, and find that she is shorter than <c>A</c> by at least 15 cm.  Compute posterior distributions for the heights of <c>A</c> and <c>C</c>.
+      Suppose we have established that <c>A</c> is taller than <c>B</c>, but we don't know how tall <c>B</c> is. Now we choose a random woman, <c>C</c>, and find that she is shorter than <c>A</c> by at least 15 cm.  Compute posterior distributions for the heights of <c>A</c> and <c>C</c>.
     </p>
     <p>
       The average height for women in the U.S. is 163 cm; the standard deviation is 7.3 cm.
     </p>
-
+      </statement>
+    <solution>
     <program language="python">
       <input>
-# Solution
-
 # Here's a prior distribution for the height of
 # a randomly chosen woman
 
@@ -907,8 +911,6 @@ prior_C.normalize()
 
     <program language="python">
       <input>
-# Solution
-
 # Here's the joint prior for A and C
 
 joint_AC = make_joint(marginal_A, prior_C)
@@ -921,8 +923,6 @@ joint_AC.shape
 
     <program language="python">
       <input>
-# Solution
-
 # To compute the likelihood of the data, we'll
 # use a meshgrid
 
@@ -936,8 +936,6 @@ likelihood_AC = pd.DataFrame(a, index=y, columns=x)
 
     <program language="python">
       <input>
-# Solution
-
 # Here's what the likelihood looks like
 
 plot_joint(likelihood_AC, cmap='Oranges')
@@ -949,8 +947,6 @@ decorate(ylabel='C height in cm',
 
     <program language="python">
       <input>
-# Solution
-
 # Here's the update
 
 posterior_AC = joint_AC * likelihood_AC
@@ -963,8 +959,6 @@ normalize(posterior_AC)
 
     <program language="python">
       <input>
-# Solution
-
 # And the joint posterior
 
 plot_joint(posterior_AC)
@@ -976,8 +970,6 @@ decorate(ylabel='C height in cm',
 
     <program language="python">
       <input>
-# Solution
-
 # Here are the marginal posterior distributions
 
 marginal_AC = marginal(posterior_AC, axis=0)
@@ -987,8 +979,6 @@ marginal_C = marginal(posterior_AC, axis=1)
 
     <program language="python">
       <input>
-# Solution
-
 # And here's what they look like
 
 prior_C.plot(style='--', label='Prior for C', color='C5')
@@ -1001,9 +991,14 @@ decorate(xlabel='Height in cm',
       </input>
     </program>
     <image source="images/ch11_comparison_7d944ced.png" width="80%"/>
+    </solution>
+    </exercise>
 
+    <exercise xml:id="ex-ch11-3">
+      <title>Exercise 3</title>
+      <statement>
     <p>
-      <em>Exercise:</em> <url href="https://en.wikipedia.org/wiki/Elo_rating_system">The Elo rating system</url> is a way to quantify the skill level of players for games like chess.
+      <url href="https://en.wikipedia.org/wiki/Elo_rating_system">The Elo rating system</url> is a way to quantify the skill level of players for games like chess.
     </p>
     <p>
       It is based on a model of the relationship between the ratings of players and the outcome of a game.  Specifically, if <m>R_A</m> is the rating of player <c>A</c> and <m>R_B</m> is the rating of player <c>B</c>, the probability that <c>A</c> beats <c>B</c> is given by the <url href="https://en.wikipedia.org/wiki/Logistic_function">logistic function</url>:
@@ -1056,11 +1051,10 @@ decorate(xlabel='Height in cm',
     <p>
       6. Compute the posterior means for <c>A</c> and <c>B</c>.  How much should their ratings change based on this outcome?
     </p>
-
+      </statement>
+    <solution>
     <program language="python">
       <input>
-# Solution
-
 # Here are the priors for A and B
 
 qs = np.arange(1300, 1900, 10)
@@ -1080,8 +1074,6 @@ prior_B_elo.normalize()
 
     <program language="python">
       <input>
-# Solution
-
 # Here's what the priors look like
 
 prior_A_elo.plot(style='--', label='Prior for A')
@@ -1096,8 +1088,6 @@ decorate(xlabel='Elo rating',
 
     <program language="python">
       <input>
-# Solution
-
 # Here is the joint prior distribution
 
 joint_elo = make_joint(prior_A_elo, prior_B_elo)
@@ -1110,8 +1100,6 @@ joint_elo.shape
 
     <program language="python">
       <input>
-# Solution
-
 # And here's what it looks like
 
 plot_joint(joint_elo)
@@ -1123,8 +1111,6 @@ decorate(xlabel='A rating',
 
     <program language="python">
       <input>
-# Solution
-
 # Here's a meshgrid we can use to compute differences in rank
 
 x = joint_elo.columns
@@ -1136,8 +1122,6 @@ diff = X - Y
 
     <program language="python">
       <input>
-# Solution
-
 # And here are the likelihoods
 
 a = 1 / (1 + 10**(-diff/400))
@@ -1152,8 +1136,6 @@ decorate(xlabel='A rating',
 
     <program language="python">
       <input>
-# Solution
-
 # Here's the update
 
 posterior_elo = joint_elo * likelihood_elo
@@ -1166,8 +1148,6 @@ normalize(posterior_elo)
 
     <program language="python">
       <input>
-# Solution
-
 # Here's what the joint posterior looks like
 
 plot_joint(posterior_elo)   
@@ -1179,8 +1159,6 @@ decorate(xlabel='A rating',
 
     <program language="python">
       <input>
-# Solution
-
 # Here are the marginal posterior distributions
 
 marginal_A_elo = marginal(posterior_elo, axis=0)
@@ -1190,8 +1168,6 @@ marginal_B_elo = marginal(posterior_elo, axis=1)
 
     <program language="python">
       <input>
-# Solution
-
 # Here's what they look like
 
 marginal_A_elo.plot(label='Posterior for A')
@@ -1206,8 +1182,6 @@ decorate(xlabel='Elo rating',
 
     <program language="python">
       <input>
-# Solution
-
 # Posterior means
 
 marginal_A_elo.mean(), marginal_B_elo.mean()
@@ -1219,8 +1193,6 @@ marginal_A_elo.mean(), marginal_B_elo.mean()
 
     <program language="python">
       <input>
-# Solution
-
 # Posterior standard deviation
 
 marginal_A_elo.std(), marginal_B_elo.std()
@@ -1229,6 +1201,8 @@ marginal_A_elo.std(), marginal_B_elo.std()
 <pre>
 (95.34063582447712, 95.61569535990881)
 </pre>
+    </solution>
+    </exercise>
 
     <p>
       <em>Think Bayes</em>, Second Edition

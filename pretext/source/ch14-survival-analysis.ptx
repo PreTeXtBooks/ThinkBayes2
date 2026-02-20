@@ -1017,8 +1017,11 @@ decorate(xlabel='Number of dead bulbs',
   <section xml:id="sec-ch14-exercises">
     <title>Exercises</title>
 
+    <exercise xml:id="ex-ch14-1">
+      <title>Exercise 1</title>
+      <statement>
     <p>
-      <em>Exercise:</em> Using data about the lifetimes of light bulbs, we computed the posterior distribution from the parameters of a Weibull distribution, <m>\lambda</m> and <m>k</m>, and the posterior predictive distribution for the number of dead bulbs, out of 100, after 1000 hours.
+      Using data about the lifetimes of light bulbs, we computed the posterior distribution from the parameters of a Weibull distribution, <m>\lambda</m> and <m>k</m>, and the posterior predictive distribution for the number of dead bulbs, out of 100, after 1000 hours.
     </p>
     <p>
       Now suppose you do the experiment:  You install 100 light bulbs, come back after 1000 hours, and find 20 dead light bulbs. Update the posterior distribution based on this data. How much does it change the posterior mean?
@@ -1035,10 +1038,10 @@ decorate(xlabel='Number of dead bulbs',
     <p>
       3. Use those likelihoods to update the posterior distribution.
     </p>
+      </statement>
+    <solution>
     <program language="python">
       <input>
-# Solution
-
 t = 1000
 
 lam_mesh, k_mesh = np.meshgrid(
@@ -1052,8 +1055,6 @@ prob_dead.shape
 </pre>
     <program language="python">
       <input>
-# Solution
-
 from scipy.stats import binom
 
 k = 20
@@ -1067,8 +1068,6 @@ likelihood.shape
 </pre>
     <program language="python">
       <input>
-# Solution
-
 posterior_bulb3 = posterior_bulb * likelihood
 normalize(posterior_bulb3)
 plot_contour(posterior_bulb3)
@@ -1078,8 +1077,6 @@ decorate(title='Joint posterior distribution with k=20')
     <image source="images/ch14_survival_analysis_2a33b7f2.png" width="80%"/>
     <program language="python">
       <input>
-# Solution
-
 # Since there were more dead bulbs than expected,
 # the posterior mean is a bit less after the update.
 
@@ -1089,8 +1086,14 @@ joint_weibull_mean(posterior_bulb3)
 <pre>
 1378.3949572816407
 </pre>
+    </solution>
+    </exercise>
+
+    <exercise xml:id="ex-ch14-2">
+      <title>Exercise 2</title>
+      <statement>
     <p>
-      <em>Exercise:</em> In this exercise, we'll use one month of data to estimate the parameters of a distribution that describes daily rainfall in Seattle. Then we'll compute the posterior predictive distribution for daily rainfall and use it to estimate the probability of a rare event, like more than 1.5 inches of rain in a day.
+      In this exercise, we'll use one month of data to estimate the parameters of a distribution that describes daily rainfall in Seattle. Then we'll compute the posterior predictive distribution for daily rainfall and use it to estimate the probability of a rare event, like more than 1.5 inches of rain in a day.
     </p>
     <p>
       According to hydrologists, the distribution of total daily rainfall (for days with rain) is well modeled by a two-parameter gamma distribution.
@@ -1210,10 +1213,10 @@ decorate(xlabel='Total rainfall (in)',
     <p>
       3. Compute the posterior predictive distribution of rainfall, and use it to estimate the probability of getting more than 1.5 inches of rain in one day.
     </p>
+      </statement>
+    <solution>
     <program language="python">
       <input>
-# Solution
-
 # I'll use the MLE parameters of the gamma distribution
 # to help me choose priors
 
@@ -1226,8 +1229,6 @@ k_est, theta_est
 </pre>
     <program language="python">
       <input>
-# Solution
-
 # I'll use uniform priors for the parameters.
 # I chose the upper bounds by trial and error.
 
@@ -1237,16 +1238,12 @@ prior_k = make_uniform(ks, name='k')
     </program>
     <program language="python">
       <input>
-# Solution
-
 thetas = np.linspace(0.01, 1.5, num=51)
 prior_theta = make_uniform(thetas, name='theta')
       </input>
     </program>
     <program language="python">
       <input>
-# Solution
-
 # Here's the joint prior
 
 prior = make_joint(prior_k, prior_theta)
@@ -1254,8 +1251,6 @@ prior = make_joint(prior_k, prior_theta)
     </program>
     <program language="python">
       <input>
-# Solution
-
 # I'll use a grid to compute the densities
 
 k_mesh, theta_mesh, data_mesh = np.meshgrid(
@@ -1264,8 +1259,6 @@ k_mesh, theta_mesh, data_mesh = np.meshgrid(
     </program>
     <program language="python">
       <input>
-# Solution
-
 # Here's the 3-D array of densities
 
 densities = gamma_dist(k_mesh, theta_mesh).pdf(data_mesh) 
@@ -1277,8 +1270,6 @@ densities.shape
 </pre>
     <program language="python">
       <input>
-# Solution
-
 # Which we reduce by multiplying along axis 2
 
 likelihood = densities.prod(axis=2)
@@ -1290,8 +1281,6 @@ likelihood.sum()
 </pre>
     <program language="python">
       <input>
-# Solution
-
 # Now we can do the update in the usual way
 
 posterior = prior * likelihood
@@ -1303,8 +1292,6 @@ normalize(posterior)
 </pre>
     <program language="python">
       <input>
-# Solution
-
 # And here's what the posterior looks like
 
 plot_contour(posterior)
@@ -1315,8 +1302,6 @@ decorate(title='Posterior distribution, parameters of a gamma distribution')
     <image source="images/ch14_survival_analysis_93797323.png" width="80%"/>
     <program language="python">
       <input>
-# Solution
-
 # I'll check the marginal distributions to make sure the
 # range of the priors is wide enough
 
@@ -1328,8 +1313,6 @@ posterior_theta = marginal(posterior, 1)
     </program>
     <program language="python">
       <input>
-# Solution
-
 # The marginal distribution for k is close to 0 at both ends
 
 posterior_k.plot(color='C4')
@@ -1341,8 +1324,6 @@ decorate(xlabel='k',
     <image source="images/ch14_survival_analysis_8550af5e.png" width="80%"/>
     <program language="python">
       <input>
-# Solution
-
 posterior_k.mean(), posterior_k.credible_interval(0.9)
       </input>
     </program>
@@ -1351,8 +1332,6 @@ posterior_k.mean(), posterior_k.credible_interval(0.9)
 </pre>
     <program language="python">
       <input>
-# Solution
-
 # Same with the marginal distribution of theta
 
 posterior_theta.plot(color='C2')
@@ -1364,8 +1343,6 @@ decorate(xlabel='theta',
     <image source="images/ch14_survival_analysis_86f4bd92.png" width="80%"/>
     <program language="python">
       <input>
-# Solution
-
 posterior_theta.mean(), posterior_theta.credible_interval(0.9)
       </input>
     </program>
@@ -1374,8 +1351,6 @@ posterior_theta.mean(), posterior_theta.credible_interval(0.9)
 </pre>
     <program language="python">
       <input>
-# Solution
-
 # To compute the posterior predictive distribution,
 # I'll stack the joint posterior to make a Series
 # with a MultiIndex
@@ -1395,8 +1370,6 @@ dtype: float64
 </pre>
     <program language="python">
       <input>
-# Solution
-
 # I'll extend the predictive distribution up to 2 inches
 
 low, high = 0.01, 2
@@ -1404,8 +1377,6 @@ low, high = 0.01, 2
     </program>
     <program language="python">
       <input>
-# Solution
-
 # Now we can iterate through `posterior_series`
 # and make a sequence of predictive Pmfs, one
 # for each possible pair of parameters
@@ -1422,8 +1393,6 @@ for (theta, k) in posterior_series.index:
     </program>
     <program language="python">
       <input>
-# Solution
-
 # And we can use `make_mixture` to make the posterior predictive
 # distribution
 
@@ -1432,8 +1401,6 @@ post_pred = make_mixture(posterior_series, pmf_seq)
     </program>
     <program language="python">
       <input>
-# Solution
-
 # Here's what it looks like.
 
 post_pred.make_cdf().plot(label='rainfall')
@@ -1445,8 +1412,6 @@ decorate(xlabel='Total rainfall (in)',
     <image source="images/ch14_survival_analysis_e4697dcd.png" width="80%"/>
     <program language="python">
       <input>
-# Solution 
-
 # The probability of more than 1.5 inches of rain is small
 
 cdf = post_pred.make_cdf()
@@ -1459,8 +1424,6 @@ p_gt
 </pre>
     <program language="python">
       <input>
-# Solution 
-
 # So it's easier to interpret as the number of rainy
 # days between events, on average
 
@@ -1470,6 +1433,9 @@ p_gt
 <pre>
 111.11066680577532
 </pre>
+    </solution>
+    </exercise>
+
     <p>
       <em>Think Bayes</em>, Second Edition
     </p>

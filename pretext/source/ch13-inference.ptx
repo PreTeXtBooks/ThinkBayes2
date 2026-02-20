@@ -1005,8 +1005,11 @@ array([ 2.4, 17.4])
   <section xml:id="sec-ch13-exercises">
     <title>Exercises</title>
 
+    <exercise xml:id="ex-ch13-1">
+      <title>Exercise 1</title>
+      <statement>
     <p>
-      <em>Exercise:</em> Looking again at the posterior joint distribution of <c>mu</c> and <c>sigma</c>, it seems like the standard deviation of the treated group might be lower; if so, that would suggest that the treatment is more effective for students with lower scores.
+      Looking again at the posterior joint distribution of <c>mu</c> and <c>sigma</c>, it seems like the standard deviation of the treated group might be lower; if so, that would suggest that the treatment is more effective for students with lower scores.
     </p>
     <p>
       But before we speculate too much, we should estimate the size of the difference and see whether it might actually be 0.
@@ -1017,18 +1020,16 @@ array([ 2.4, 17.4])
     <p>
       Compute the distribution of the difference in <c>sigma</c> between the two groups.  What is the mean of this difference?  What is the 90% credible interval?
     </p>
+      </statement>
+    <solution>
     <program language="python">
       <input>
-    # Solution
-    
     pmf_std_control = marginal(posterior_control, 1)
     pmf_std_treated = marginal(posterior_treated, 1)
       </input>
     </program>
     <program language="python">
       <input>
-    # Solution
-    
     pmf_std_control.plot(label='Control')
     pmf_std_treated.plot(label='Treated')
     
@@ -1040,8 +1041,6 @@ array([ 2.4, 17.4])
     <image source="images/ch13_inference_23c872a5.png" width="80%"/>
     <program language="python">
       <input>
-    # Solution
-    
     Pmf.prob_gt(pmf_std_control, pmf_std_treated)
       </input>
     </program>
@@ -1050,15 +1049,11 @@ array([ 2.4, 17.4])
 </pre>
     <program language="python">
       <input>
-    # Solution
-    
     pmf_diff2 = Pmf.sub_dist(pmf_std_control, pmf_std_treated)
       </input>
     </program>
     <program language="python">
       <input>
-    # Solution
-    
     pmf_diff2.mean()
       </input>
     </program>
@@ -1067,8 +1062,6 @@ array([ 2.4, 17.4])
 </pre>
     <program language="python">
       <input>
-    # Solution
-    
     pmf_diff2.credible_interval(0.9)
       </input>
     </program>
@@ -1077,8 +1070,6 @@ array([ 1. , 12.5])
 </pre>
     <program language="python">
       <input>
-    # Solution
-    
     kde_from_pmf(pmf_diff2).plot()
     
     decorate(xlabel='Difference in population standard deviation', 
@@ -1087,8 +1078,14 @@ array([ 1. , 12.5])
       </input>
     </program>
     <image source="images/ch13_inference_0bf934e6.png" width="80%"/>
+    </solution>
+    </exercise>
+
+    <exercise xml:id="ex-ch13-2">
+      <title>Exercise 2</title>
+      <statement>
     <p>
-      <em>Exercise:</em> An <url href="http://en.wikipedia.org/wiki/Effect_size">effect size</url> is a statistic intended to quantify the magnitude of a phenomenon. If the phenomenon is a difference in means between two groups, a common way to quantify it is Cohen's effect size, denoted <m>d</m>.
+      An <url href="http://en.wikipedia.org/wiki/Effect_size">effect size</url> is a statistic intended to quantify the magnitude of a phenomenon. If the phenomenon is a difference in means between two groups, a common way to quantify it is Cohen's effect size, denoted $d$.
     </p>
     <p>
       If the parameters for Group 1 are <m>(\mu_1, \sigma_1)</m>, and the parameters for Group 2 are <m>(\mu_2, \sigma_2)</m>, Cohen's effect size is
@@ -1139,10 +1136,10 @@ array([ 1. , 12.5])
     <p>
       The result is an array of tuples, where each tuple contains a possible pair of values for <m>\mu</m> and <m>\sigma</m>. Now you can loop through the samples, compute the Cohen effect size for each, and estimate the distribution of effect sizes.
     </p>
+      </statement>
+    <solution>
     <program language="python">
       <input>
-    # Solution
-    
     def cohen_effect(pair1, pair2):
         &quot;&quot;&quot;Compute Cohen's effect size for difference in means.
         
@@ -1159,8 +1156,6 @@ array([ 1. , 12.5])
     </program>
     <program language="python">
       <input>
-    # Solution
-    
     cohen_effect(sample_treated[0], sample_control[0])
       </input>
     </program>
@@ -1169,8 +1164,6 @@ array([ 1. , 12.5])
 </pre>
     <program language="python">
       <input>
-    # Solution
-    
     ds = []
     for pair1, pair2 in zip(sample_treated, sample_control):
         d = cohen_effect(pair1, pair2)
@@ -1179,8 +1172,6 @@ array([ 1. , 12.5])
     </program>
     <program language="python">
       <input>
-    # Solution
-    
     cdf = Cdf.from_seq(ds)
     cdf.plot()
     
@@ -1192,8 +1183,6 @@ array([ 1. , 12.5])
     <image source="images/ch13_inference_3bdc443f.png" width="80%"/>
     <program language="python">
       <input>
-    # Solution
-    
     cdf.mean()
       </input>
     </program>
@@ -1202,16 +1191,20 @@ array([ 1. , 12.5])
 </pre>
     <program language="python">
       <input>
-    # Solution
-    
     cdf.credible_interval(0.9)
       </input>
     </program>
 <pre>
 array([0.12857143, 1.2       ])
 </pre>
+    </solution>
+    </exercise>
+
+    <exercise xml:id="ex-ch13-3">
+      <title>Exercise 3</title>
+      <statement>
     <p>
-      <em>Exercise:</em> This exercise is inspired by <url href="https://www.reddit.com/r/statistics/comments/hcvl2j/q_reverse_empirical_distribution_rule_question/">a question that appeared on Reddit</url>.
+      This exercise is inspired by <url href="https://www.reddit.com/r/statistics/comments/hcvl2j/q_reverse_empirical_distribution_rule_question/">a question that appeared on Reddit</url>.
     </p>
     <p>
       An instructor announces the results of an exam like this, "The average score on this exam was 81.  Out of 25 students, 5 got more than 90, and I am happy to report that no one failed (got less than 60)."
@@ -1225,10 +1218,10 @@ array([0.12857143, 1.2       ])
     <p>
       Hint: To compute the probability of a score greater than 90, you can use <c>norm.sf</c>, which computes the survival function, also known as the complementary CDF, or <c>1 - cdf(x)</c>.
     </p>
+      </statement>
+    <solution>
     <program language="python">
       <input>
-    # Solution
-    
     # Based on trial and error, here's a range of
     # values for the prior
     
@@ -1237,8 +1230,6 @@ array([0.12857143, 1.2       ])
     </program>
     <program language="python">
       <input>
-    # Solution
-    
     # Here are the probabilities of a score greater than 90
     # for each hypothetical value of sigma.
     
@@ -1253,8 +1244,6 @@ array([0.12857143, 1.2       ])
 </pre>
     <program language="python">
       <input>
-    # Solution
-    
     # And here's the chance that 5 out of 25 people
     # get a score greater than 90
     
@@ -1269,8 +1258,6 @@ array([0.12857143, 1.2       ])
 </pre>
     <program language="python">
       <input>
-    # Solution
-    
     # Here's the first update
     
     prior = Pmf(1, hypos)
@@ -1283,8 +1270,6 @@ array([0.12857143, 1.2       ])
 </pre>
     <program language="python">
       <input>
-    # Solution
-    
     # Here's the first posterior.
     
     posterior.plot()
@@ -1296,8 +1281,6 @@ array([0.12857143, 1.2       ])
     <image source="images/ch13_inference_881abf69.png" width="80%"/>
     <program language="python">
       <input>
-    # Solution
-    
     # Here's the probability of a score greater than 60
     
     pgt60s = norm(81, hypos).sf(60)
@@ -1305,8 +1288,6 @@ array([0.12857143, 1.2       ])
     </program>
     <program language="python">
       <input>
-    # Solution
-    
     # And here's the probability that all 25 students exceed 60
     
     likelihood2 = pgt60s ** 25
@@ -1314,8 +1295,6 @@ array([0.12857143, 1.2       ])
     </program>
     <program language="python">
       <input>
-    # Solution
-    
     plt.plot(hypos, likelihood2)
     decorate(xlabel='Standard deviation (sigma)',
              ylabel='Likelihood',
@@ -1325,8 +1304,6 @@ array([0.12857143, 1.2       ])
     <image source="images/ch13_inference_22a2acc8.png" width="80%"/>
     <program language="python">
       <input>
-    # Solution
-    
     # Here's the posterior after both updates
     
     prior = Pmf(1, hypos)
@@ -1340,8 +1317,6 @@ array([0.12857143, 1.2       ])
 </pre>
     <program language="python">
       <input>
-    # Solution
-    
     posterior.plot(label='Posterior 1')
     posterior2.plot(label='Posterior 2')
     
@@ -1353,8 +1328,6 @@ array([0.12857143, 1.2       ])
     <image source="images/ch13_inference_7644cc67.png" width="80%"/>
     <program language="python">
       <input>
-    # Solution
-    
     posterior.mean(), posterior2.mean()
       </input>
     </program>
@@ -1363,16 +1336,20 @@ array([0.12857143, 1.2       ])
 </pre>
     <program language="python">
       <input>
-    # Solution
-    
     posterior2.credible_interval(0.9)
       </input>
     </program>
 <pre>
 array([ 7., 15.])
 </pre>
+    </solution>
+    </exercise>
+
+    <exercise xml:id="ex-ch13-4">
+      <title>Exercise 4</title>
+      <statement>
     <p>
-      <em>Exercise:</em> The <url href="http://en.wikipedia.org/wiki/Variability_hypothesis">Variability Hypothesis</url> is the observation that many physical traits are more variable among males than among females, in many species. 
+      The <url href="http://en.wikipedia.org/wiki/Variability_hypothesis">Variability Hypothesis</url> is the observation that many physical traits are more variable among males than among females, in many species. 
     </p>
     <p>
       It has been a subject of controversy since the early 1800s, which suggests an exercise we can use to practice the methods in this chapter.  Let's look at the distribution of heights for men and women in the U.S. and see who is more variable.
@@ -1417,10 +1394,10 @@ array([ 7., 15.])
         return kde_from_pmf(pmf_cv)
       </input>
     </program>
+      </statement>
+    <solution>
     <program language="python">
       <input>
-    # Solution
-    
     n = 154407
     mean = 178
     std = 8.27
@@ -1428,8 +1405,6 @@ array([ 7., 15.])
     </program>
     <program language="python">
       <input>
-    # Solution
-    
     qs = np.linspace(mean-0.1, mean+0.1, num=101)
     prior_mu = make_uniform(qs, name='mean')
     
@@ -1441,8 +1416,6 @@ array([ 7., 15.])
     </program>
     <program language="python">
       <input>
-    # Solution
-    
     data = n, mean, std
     posterior_male = update_norm_summary(prior, data)
     plot_contour(posterior_male, cmap='Blues')
@@ -1455,8 +1428,6 @@ array([ 7., 15.])
     <image source="images/ch13_inference_3d7dfb94.png" width="80%"/>
     <program language="python">
       <input>
-    # Solution
-    
     n = 254722
     mean = 163
     std = 7.75
@@ -1464,8 +1435,6 @@ array([ 7., 15.])
     </program>
     <program language="python">
       <input>
-    # Solution
-    
     qs = np.linspace(mean-0.1, mean+0.1, num=101)
     prior_mu = make_uniform(qs, name='mean')
     
@@ -1477,8 +1446,6 @@ array([ 7., 15.])
     </program>
     <program language="python">
       <input>
-    # Solution
-    
     data = n, mean, std
     posterior_female = update_norm_summary(prior, data)
     plot_contour(posterior_female, cmap='Oranges');
@@ -1487,8 +1454,6 @@ array([ 7., 15.])
     <image source="images/ch13_inference_3d231e38.png" width="80%"/>
     <program language="python">
       <input>
-    # Solution
-    
     pmf_cv_male = get_posterior_cv(posterior_male)
     kde_from_pmf(pmf_cv_male).plot()
     
@@ -1503,8 +1468,6 @@ array([ 7., 15.])
     <image source="images/ch13_inference_420bed8b.png" width="80%"/>
     <program language="python">
       <input>
-    # Solution
-    
     ratio_cv = Pmf.div_dist(pmf_cv_female, pmf_cv_male)
     ratio_cv.max_prob()
       </input>
@@ -1514,14 +1477,15 @@ array([ 7., 15.])
 </pre>
     <program language="python">
       <input>
-    # Solution
-    
     ratio_cv.credible_interval(0.9)
       </input>
     </program>
 <pre>
 array([1.0193799 , 1.02734473])
 </pre>
+    </solution>
+    </exercise>
+
     <p>
       <em>Think Bayes</em>, Second Edition
     </p>
