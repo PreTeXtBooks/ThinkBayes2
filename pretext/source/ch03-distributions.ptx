@@ -520,6 +520,9 @@ prior.normalize()
         </input>
       </program>
     </listing>
+<pre>
+101
+</pre>
 
     <p>
       As this example shows, we can initialize a <c>Pmf</c> with two parameters.
@@ -542,6 +545,26 @@ prior.head()
         </input>
       </program>
     </listing>
+<table xml:id="tbl-101-prior-head">
+  <tabular>
+    <row>
+      <cell></cell>
+      <cell>probs</cell>
+    </row>
+    <row>
+      <cell>0</cell>
+      <cell>0.009901</cell>
+    </row>
+    <row>
+      <cell>1</cell>
+      <cell>0.009901</cell>
+    </row>
+    <row>
+      <cell>2</cell>
+      <cell>0.009901</cell>
+    </row>
+  </tabular>
+</table>
 
     <p>
       The likelihood of the data is the fraction of vanilla cookies in each bowl, which we can calculate using <c>hypos</c>:
@@ -555,6 +578,9 @@ likelihood_vanilla[:5]
         </input>
       </program>
     </listing>
+<pre>
+array([0.  , 0.01, 0.02, 0.03, 0.04])
+</pre>
 
     <p>
       Now we can compute the posterior distribution in the usual way:
@@ -569,6 +595,26 @@ posterior1.head()
         </input>
       </program>
     </listing>
+<table xml:id="tbl-101-posterior1-head">
+  <tabular>
+    <row>
+      <cell></cell>
+      <cell>probs</cell>
+    </row>
+    <row>
+      <cell>0</cell>
+      <cell>0.000000</cell>
+    </row>
+    <row>
+      <cell>1</cell>
+      <cell>0.000198</cell>
+    </row>
+    <row>
+      <cell>2</cell>
+      <cell>0.000396</cell>
+    </row>
+  </tabular>
+</table>
 
     <p>
       The following figure shows the prior distribution and the posterior distribution after one vanilla cookie.
@@ -606,6 +652,9 @@ posterior2.normalize()
         </input>
       </program>
     </listing>
+<pre>
+0.67
+</pre>
 
     <p>
       And here's what the posterior distribution looks like.
@@ -641,6 +690,9 @@ posterior3.normalize()
         </input>
       </program>
     </listing>
+<pre>
+0.2462686567164179
+</pre>
 
     <p>
       And here's the posterior distribution.
@@ -681,6 +733,9 @@ posterior3.idxmax()
         </input>
       </program>
     </listing>
+<pre>
+67
+</pre>
 
     <p>
       Or <c>Pmf</c> provides a more memorable name for the same thing:
@@ -693,6 +748,9 @@ posterior3.max_prob()
         </input>
       </program>
     </listing>
+<pre>
+67
+</pre>
 
     <p>
       As you might suspect, this example isn't really about bowls; it's about estimating proportions.
@@ -749,6 +807,26 @@ prior
         </input>
       </program>
     </listing>
+<table xml:id="tbl-dice-prior">
+  <tabular>
+    <row>
+      <cell></cell>
+      <cell>probs</cell>
+    </row>
+    <row>
+      <cell>6</cell>
+      <cell>0.333333</cell>
+    </row>
+    <row>
+      <cell>8</cell>
+      <cell>0.333333</cell>
+    </row>
+    <row>
+      <cell>12</cell>
+      <cell>0.333333</cell>
+    </row>
+  </tabular>
+</table>
 
     <p>
       As in the previous example, the prior probability gets broadcast across the hypotheses.
@@ -769,6 +847,9 @@ prior.qs
         </input>
       </program>
     </listing>
+<pre>
+array([ 6,  8, 12])
+</pre>
 
     <listing xml:id="list-dice-ps">
       <program language="python">
@@ -777,6 +858,9 @@ prior.ps
         </input>
       </program>
     </listing>
+<pre>
+array([0.33333333, 0.33333333, 0.33333333])
+</pre>
 
     <p>
       Now we're ready to do the update.
@@ -804,6 +888,26 @@ posterior
         </input>
       </program>
     </listing>
+<table xml:id="tbl-dice-posterior1">
+  <tabular>
+    <row>
+      <cell></cell>
+      <cell>probs</cell>
+    </row>
+    <row>
+      <cell>6</cell>
+      <cell>0.444444</cell>
+    </row>
+    <row>
+      <cell>8</cell>
+      <cell>0.333333</cell>
+    </row>
+    <row>
+      <cell>12</cell>
+      <cell>0.222222</cell>
+    </row>
+  </tabular>
+</table>
 
     <p>
       The posterior probability for the 6-sided die is <m>4/9</m>.
@@ -840,6 +944,26 @@ posterior
         </input>
       </program>
     </listing>
+<table xml:id="tbl-dice-posterior2">
+  <tabular>
+    <row>
+      <cell></cell>
+      <cell>probs</cell>
+    </row>
+    <row>
+      <cell>6</cell>
+      <cell>0.000000</cell>
+    </row>
+    <row>
+      <cell>8</cell>
+      <cell>0.692308</cell>
+    </row>
+    <row>
+      <cell>12</cell>
+      <cell>0.307692</cell>
+    </row>
+  </tabular>
+</table>
 
     <p>
       After rolling a 1 and a 7, the posterior probability of the 8-sided die is about 69%.
@@ -906,6 +1030,26 @@ pmf
         </input>
       </program>
     </listing>
+<table xml:id="tbl-dice-copy">
+  <tabular>
+    <row>
+      <cell></cell>
+      <cell>probs</cell>
+    </row>
+    <row>
+      <cell>6</cell>
+      <cell>0.333333</cell>
+    </row>
+    <row>
+      <cell>8</cell>
+      <cell>0.333333</cell>
+    </row>
+    <row>
+      <cell>12</cell>
+      <cell>0.333333</cell>
+    </row>
+  </tabular>
+</table>
 
     <p>
       And use <c>update_dice</c> to do the updates.
@@ -920,6 +1064,26 @@ pmf
         </input>
       </program>
     </listing>
+<table xml:id="tbl-dice-updates">
+  <tabular>
+    <row>
+      <cell></cell>
+      <cell>probs</cell>
+    </row>
+    <row>
+      <cell>6</cell>
+      <cell>0.000000</cell>
+    </row>
+    <row>
+      <cell>8</cell>
+      <cell>0.692308</cell>
+    </row>
+    <row>
+      <cell>12</cell>
+      <cell>0.307692</cell>
+    </row>
+  </tabular>
+</table>
 
     <p>
       The result is the same.
