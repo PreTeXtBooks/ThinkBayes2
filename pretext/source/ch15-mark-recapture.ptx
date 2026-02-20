@@ -5,10 +5,1439 @@
 
   <introduction>
     <p>
-      This chapter explores the mark and recapture method for estimating population sizes.
+      This chapter introduces &quot;mark and recapture&quot; experiments, in which we sample individuals from a population, mark them somehow, and then take a second sample from the same population.  Seeing how many individuals in the second sample are marked, we can estimate the size of the population.
+    </p>
+    <p>
+      Experiments like this were originally used in ecology, but turn out to be useful in many other fields.  Examples in this chapter include software engineering and epidemiology.
+    </p>
+    <p>
+      Also, in this chapter we'll work with models that have three parameters, so we'll extend the joint distributions we've been using to three dimensions.
+    </p>
+    <p>
+      But first, grizzly bears.
     </p>
   </introduction>
 
-  <!-- Sections will be added here -->
+  <section xml:id="sec-grizzly-bear-problem">
+    <title>The Grizzly Bear Problem</title>
+
+    <p>
+      In 1996 and 1997 researchers deployed bear traps in locations in British Columbia and Alberta, Canada, in an effort to estimate the population of grizzly bears.  They describe the experiment in <url href="https://www.researchgate.net/publication/229195465_Estimating_Population_Size_of_Grizzly_Bears_Using_Hair_Capture_DNA_Profiling_and_Mark-Recapture_Analysis">this article</url>.
+    </p>
+    <p>
+      The &quot;trap&quot; consists of  a lure and several strands of barbed wire intended to capture samples of hair from bears that visit the lure.  Using the hair samples, the researchers use DNA analysis to identify individual bears.
+    </p>
+    <p>
+      During the first session, the researchers deployed traps at 76 sites.  Returning 10 days later, they obtained 1043 hair samples and identified 23 different bears.  During a second 10-day session they obtained 1191 samples from 19 different bears, where 4 of the 19 were from bears they had identified in the first batch.
+    </p>
+    <p>
+      To estimate the population of bears from this data, we need a model for the probability that each bear will be observed during each session.  As a starting place, we'll make the simplest assumption, that every bear in the population has the same (unknown) probability of being sampled during each session.
+    </p>
+    <p>
+      With these assumptions we can compute the probability of the data for a range of possible populations.
+    </p>
+    <p>
+      As an example, let's suppose that the actual population of bears is 100.
+    </p>
+    <p>
+      After the first session, 23 of the 100 bears have been identified.
+      During the second session, if we choose 19 bears at random, what is the probability that 4 of them were previously identified?
+    </p>
+    <p>
+      I'll define
+    </p>
+    <ul>
+      <li><m>N</m>: actual population size, 100.</li>
+      <li><m>K</m>: number of bears identified in the first session, 23.</li>
+      <li><m>n</m>: number of bears observed in the second session, 19 in the example.</li>
+      <li><m>k</m>: number of bears in the second session that were previously identified, 4.</li>
+    </ul>
+    <p>
+      For given values of <m>N</m>, <m>K</m>, and <m>n</m>, the probability of finding <m>k</m> previously-identified bears is given by the <url href="https://en.wikipedia.org/wiki/Hypergeometric_distribution">hypergeometric distribution</url>:
+    </p>
+    <p>
+      <me>\binom{K}{k} \binom{N-K}{n-k}/ \binom{N}{n}</me>
+    </p>
+    <p>
+      where the <url href="https://en.wikipedia.org/wiki/Binomial_coefficient">binomial coefficient</url>, <m>\binom{K}{k}</m>, is the number of subsets of size <m>k</m> we can choose from a population of size <m>K</m>.
+    </p>
+    <p>
+      To understand why, consider:
+    </p>
+    <ul>
+      <li>The denominator, <m>\binom{N}{n}</m>, is the number of subsets of <m>n</m> we could choose from a population of <m>N</m> bears.</li>
+      <li>The numerator is the number of subsets that contain <m>k</m> bears from the previously identified <m>K</m> and <m>n-k</m> from the previously unseen <m>N-K</m>.</li>
+    </ul>
+    <p>
+      SciPy provides <c>hypergeom</c>, which we can use to compute this probability for a range of values of <m>k</m>.
+    </p>
+    <program language="python">
+      <input>
+import numpy as np
+from scipy.stats import hypergeom
+
+N = 100
+K = 23
+n = 19
+
+ks = np.arange(12)
+ps = hypergeom(N, K, n).pmf(ks)
+      </input>
+    </program>
+    <p>
+      The result is the distribution of <m>k</m> with given parameters <m>N</m>, <m>K</m>, and <m>n</m>.
+      Here's what it looks like.
+    </p>
+    <program language="python">
+      <input>
+import matplotlib.pyplot as plt
+from utils import decorate
+
+plt.bar(ks, ps)
+
+decorate(xlabel='Number of bears observed twice',
+         ylabel='PMF',
+         title='Hypergeometric distribution of k (known population 100)')
+      </input>
+    </program>
+    <p>
+      The most likely value of <m>k</m> is 4, which is the value actually observed in the experiment.
+      That suggests that <m>N=100</m> is a reasonable estimate of the population, given this data.
+    </p>
+    <p>
+      We've computed the distribution of <m>k</m> given <m>N</m>, <m>K</m>, and <m>n</m>.
+      Now let's go the other way: given <m>K</m>, <m>n</m>, and <m>k</m>, how can we estimate the total population, <m>N</m>?
+    </p>
+  </section>
+
+  <section xml:id="sec-ch15-update-1">
+    <title>The Update</title>
+
+    <p>
+      As a starting place, let's suppose that, prior to this study, an expert estimates that the local bear population is between 50 and 500, and equally likely to be any value in that range.
+    </p>
+    <p>
+      I'll use <c>make_uniform</c> to make a uniform distribution of integers in this range.
+    </p>
+    <program language="python">
+      <input>
+import numpy as np
+from utils import make_uniform
+
+qs = np.arange(50, 501)
+prior_N = make_uniform(qs, name='N')
+prior_N.shape
+      </input>
+    </program>
+    <p>
+      So that's our prior.
+    </p>
+    <p>
+      To compute the likelihood of the data, we can use <c>hypergeom</c> with constants <c>K</c> and <c>n</c>, and a range of values of <c>N</c>.
+    </p>
+    <program language="python">
+      <input>
+Ns = prior_N.qs
+K = 23
+n = 19
+k = 4
+
+likelihood = hypergeom(Ns, K, n).pmf(k)
+      </input>
+    </program>
+    <p>
+      We can compute the posterior in the usual way.
+    </p>
+    <program language="python">
+      <input>
+posterior_N = prior_N * likelihood
+posterior_N.normalize()
+      </input>
+    </program>
+    <p>
+      And here's what it looks like.
+    </p>
+    <program language="python">
+      <input>
+posterior_N.plot(color='C4')
+
+decorate(xlabel='Population of bears (N)',
+         ylabel='PDF',
+         title='Posterior distribution of N')
+      </input>
+    </program>
+    <p>
+      The most likely value is 109.
+    </p>
+    <program language="python">
+      <input>
+posterior_N.max_prob()
+      </input>
+    </program>
+    <p>
+      But the distribution is skewed to the right, so the posterior mean is substantially higher.
+    </p>
+    <program language="python">
+      <input>
+posterior_N.mean()
+      </input>
+    </program>
+    <p>
+      And the credible interval is quite wide.
+    </p>
+    <program language="python">
+      <input>
+posterior_N.credible_interval(0.9)
+      </input>
+    </program>
+    <p>
+      This solution is relatively simple, but it turns out we can do a little better if we model the unknown probability of observing a bear explicitly.
+    </p>
+  </section>
+
+  <section xml:id="sec-two-parameter-model">
+    <title>Two-Parameter Model</title>
+
+    <p>
+      Next we'll try a model with two parameters: the number of bears, <c>N</c>, and the probability of observing a bear, <c>p</c>.
+    </p>
+    <p>
+      We'll assume that the probability is the same in both rounds, which is probably reasonable in this case because it is the same kind of trap in the same place.
+    </p>
+    <p>
+      We'll also assume that the probabilities are independent; that is, the probability a bear is observed in the second round does not depend on whether it was observed in the first round.  This assumption might be less reasonable, but for now it is a necessary simplification.
+    </p>
+    <p>
+      Here are the counts again:
+    </p>
+    <program language="python">
+      <input>
+K = 23
+n = 19
+k = 4
+      </input>
+    </program>
+    <p>
+      For this model, I'll express the data in a notation that will make it easier to generalize to more than two rounds:
+    </p>
+    <ul>
+      <li><c>k10</c> is the number of bears observed in the first round but not the second,</li>
+      <li><c>k01</c> is the number of bears observed in the second round but not the first, and</li>
+      <li><c>k11</c> is the number of bears observed in both rounds.</li>
+    </ul>
+    <p>
+      Here are their values.
+    </p>
+    <program language="python">
+      <input>
+k10 = 23 - 4
+k01 = 19 - 4
+k11 = 4
+      </input>
+    </program>
+    <p>
+      Suppose we know the actual values of <c>N</c> and <c>p</c>.  We can use them to compute the likelihood of this data.
+    </p>
+    <p>
+      For example, suppose we know that <c>N=100</c> and <c>p=0.2</c>.
+      We can use <c>N</c> to compute <c>k00</c>, which is the number of unobserved bears.
+    </p>
+    <program language="python">
+      <input>
+N = 100
+
+observed = k01 + k10 + k11
+k00 = N - observed
+k00
+      </input>
+    </program>
+    <p>
+      For the update, it will be convenient to store the data as a list that represents the number of bears in each category.
+    </p>
+    <program language="python">
+      <input>
+x = [k00, k01, k10, k11]
+x
+      </input>
+    </program>
+    <p>
+      Now, if we know <c>p=0.2</c>, we can compute the probability a bear falls in each category.  For example, the probability of being observed in both rounds is <c>p*p</c>, and the probability of being unobserved in both rounds is <c>q*q</c> (where <c>q=1-p</c>).
+    </p>
+    <program language="python">
+      <input>
+p = 0.2
+q = 1-p
+y = [q*q, q*p, p*q, p*p]
+y
+      </input>
+    </program>
+    <p>
+      Now the probability of the data is given by the <url href="https://en.wikipedia.org/wiki/Multinomial_distribution">multinomial distribution</url>:
+    </p>
+    <p>
+      <me>\frac{N!}{\prod x_i!} \prod y_i^{x_i}</me>
+    </p>
+    <p>
+      where <m>N</m> is actual population, <m>x</m> is a sequence with the counts in each category, and <m>y</m> is a sequence of probabilities for each category.
+    </p>
+    <p>
+      SciPy provides <c>multinomial</c>, which provides <c>pmf</c>, which computes this probability.
+      Here is the probability of the data for these values of <c>N</c> and <c>p</c>.
+    </p>
+    <program language="python">
+      <input>
+from scipy.stats import multinomial
+
+likelihood = multinomial.pmf(x, N, y)
+likelihood
+      </input>
+    </program>
+    <p>
+      That's the likelihood if we know <c>N</c> and <c>p</c>, but of course we don't.  So we'll choose prior distributions for <c>N</c> and <c>p</c>, and use the likelihoods to update it.
+    </p>
+  </section>
+
+  <section xml:id="sec-ch15-prior">
+    <title>The Prior</title>
+
+    <p>
+      We'll use <c>prior_N</c> again for the prior distribution of <c>N</c>, and a uniform prior for the probability of observing a bear, <c>p</c>:
+    </p>
+    <program language="python">
+      <input>
+qs = np.linspace(0, 0.99, num=100)
+prior_p = make_uniform(qs, name='p')
+      </input>
+    </program>
+    <p>
+      We can make a joint distribution in the usual way.
+    </p>
+    <program language="python">
+      <input>
+from utils import make_joint
+
+joint_prior = make_joint(prior_p, prior_N)
+joint_prior.shape
+      </input>
+    </program>
+    <p>
+      The result is a Pandas <c>DataFrame</c> with values of <c>N</c> down the rows and values of <c>p</c> across the columns.
+      However, for this problem it will be convenient to represent the prior distribution as a 1-D <c>Series</c> rather than a 2-D <c>DataFrame</c>.
+      We can convert from one format to the other using <c>stack</c>.
+    </p>
+    <program language="python">
+      <input>
+from empiricaldist import Pmf
+
+joint_pmf = Pmf(joint_prior.stack())
+joint_pmf.head(3)
+      </input>
+    </program>
+    <program language="python">
+      <input>
+type(joint_pmf)
+      </input>
+    </program>
+    <program language="python">
+      <input>
+type(joint_pmf.index)
+      </input>
+    </program>
+    <program language="python">
+      <input>
+joint_pmf.shape
+      </input>
+    </program>
+    <p>
+      The result is a <c>Pmf</c> whose index is a <c>MultiIndex</c>.
+      A <c>MultiIndex</c> can have more than one column; in this example, the first column contains values of <c>N</c> and the second column contains values of <c>p</c>.
+    </p>
+    <p>
+      The <c>Pmf</c> has one row (and one prior probability) for each possible pair of parameters <c>N</c> and <c>p</c>.
+      So the total number of rows is the product of the lengths of <c>prior_N</c> and <c>prior_p</c>.
+    </p>
+    <p>
+      Now we have to compute the likelihood of the data for each pair of parameters.
+    </p>
+  </section>
+
+  <section xml:id="sec-ch15-update-2">
+    <title>The Update</title>
+
+    <p>
+      To allocate space for the likelihoods, it is convenient to make a copy of <c>joint_pmf</c>:
+    </p>
+    <program language="python">
+      <input>
+likelihood = joint_pmf.copy()
+      </input>
+    </program>
+    <p>
+      As we loop through the pairs of parameters, we compute the likelihood of the data as in the previous section, and then store the result as an element of <c>likelihood</c>.
+    </p>
+    <program language="python">
+      <input>
+observed = k01 + k10 + k11
+
+for N, p in joint_pmf.index:
+    k00 = N - observed
+    x = [k00, k01, k10, k11]
+    q = 1-p
+    y = [q*q, q*p, p*q, p*p]
+    likelihood[N, p] = multinomial.pmf(x, N, y)
+      </input>
+    </program>
+    <p>
+      Now we can compute the posterior in the usual way.
+    </p>
+    <program language="python">
+      <input>
+posterior_pmf = joint_pmf * likelihood
+posterior_pmf.normalize()
+      </input>
+    </program>
+    <p>
+      We'll use <c>plot_contour</c> again to visualize the joint posterior distribution.
+      But remember that the posterior distribution we just computed is represented as a <c>Pmf</c>, which is a <c>Series</c>, and <c>plot_contour</c> expects a <c>DataFrame</c>.
+    </p>
+    <p>
+      Since we used <c>stack</c> to convert from a <c>DataFrame</c> to a <c>Series</c>, we can use <c>unstack</c> to go the other way.
+    </p>
+    <program language="python">
+      <input>
+joint_posterior = posterior_pmf.unstack()
+      </input>
+    </program>
+    <p>
+      And here's what the result looks like.
+    </p>
+    <program language="python">
+      <input>
+from utils import plot_contour
+
+plot_contour(joint_posterior)
+
+decorate(title='Joint posterior distribution of N and p')
+      </input>
+    </program>
+    <p>
+      The most likely values of <c>N</c> are near 100, as in the previous model. The most likely values of <c>p</c> are near 0.2.
+    </p>
+    <p>
+      The shape of this contour indicates that these parameters are correlated.  If <c>p</c> is near the low end of the range, the most likely values of <c>N</c> are higher; if <c>p</c> is near the high end of the range, <c>N</c> is lower.
+    </p>
+    <p>
+      Now that we have a posterior <c>DataFrame</c>, we can extract the marginal distributions in the usual way.
+    </p>
+    <program language="python">
+      <input>
+from utils import marginal
+
+posterior2_p = marginal(joint_posterior, 0)
+posterior2_N = marginal(joint_posterior, 1)
+      </input>
+    </program>
+    <p>
+      Here's the posterior distribution for <c>p</c>:
+    </p>
+    <program language="python">
+      <input>
+posterior2_p.plot(color='C1')
+
+decorate(xlabel='Probability of observing a bear',
+         ylabel='PDF',
+         title='Posterior marginal distribution of p')
+      </input>
+    </program>
+    <p>
+      The most likely values are near 0.2.
+    </p>
+    <p>
+      Here's the posterior distribution for <c>N</c> based on the two-parameter model, along with the posterior we got using the one-parameter (hypergeometric) model.
+    </p>
+    <program language="python">
+      <input>
+posterior_N.plot(label='one-parameter model', color='C4')
+posterior2_N.plot(label='two-parameter model', color='C1')
+
+decorate(xlabel='Population of bears (N)',
+         ylabel='PDF',
+         title='Posterior marginal distribution of N')
+      </input>
+    </program>
+    <p>
+      The results are qualitatively similar.  The posterior means and credible intervals are nearly the same.  The only visible difference is that the two-parameter model is a bit smoother.
+    </p>
+    <program language="python">
+      <input>
+print(posterior_N.mean(), posterior_N.credible_interval(0.9))
+      </input>
+    </program>
+    <program language="python">
+      <input>
+print(posterior2_N.mean(), posterior2_N.credible_interval(0.9))
+      </input>
+    </program>
+    <p>
+      So for practical purposes, the simpler one-parameter model is sufficient.
+      But we'll use the two-parameter model again in the exercises.
+    </p>
+  </section>
+
+  <section xml:id="sec-joint-marginal">
+    <title>Joint and Marginal Distributions</title>
+
+    <p>
+      Marginal distributions are called &quot;marginal&quot; because they used to be computed by writing the joint distribution in a grid and computing the totals in the margins.
+      In this section we'll do the same thing, but with Python instead of pencil and paper.
+    </p>
+    <p>
+      To represent the joint distribution of two parameters, we used a <c>DataFrame</c> with one parameter along the rows and the other along the columns.  Then we stacked it into a <c>Pmf</c> with a <c>MultiIndex</c>.
+    </p>
+    <p>
+      I chose this representation because it makes it easier to loop through the pairs of parameters and compute likelihoods.
+      But it is also possible to compute the likelihoods with the parameters in a <c>DataFrame</c>, and that's what we'll do in this section.
+    </p>
+    <p>
+      To show how it works, I'll start again with the joint prior.
+    </p>
+    <program language="python">
+      <input>
+joint2 = make_joint(prior_p, prior_N)
+joint2.shape
+      </input>
+    </program>
+    <p>
+      And I'll extract the values of the parameters as arrays.
+    </p>
+    <program language="python">
+      <input>
+Ns = joint2.columns.values
+ps = joint2.index.values
+      </input>
+    </program>
+    <p>
+      We can use <c>np.meshgrid</c> to make a mesh, which is a pair of arrays with the values of <c>N</c> and <c>p</c> in a grid.
+    </p>
+    <program language="python">
+      <input>
+P, N = np.meshgrid(ps, Ns)
+P.shape, N.shape
+      </input>
+    </program>
+    <p>
+      <c>N</c> has a repeated copy of <c>Ns</c> along each column; <c>P</c> has a repeated copy of <c>ps</c> along each row.
+    </p>
+    <p>
+      We can use these arrays to compute the array of probabilities, <c>y</c>, all at once, without a loop.
+    </p>
+    <program language="python">
+      <input>
+observed = k01 + k10 + k11
+k00 = N - observed
+      </input>
+    </program>
+    <program language="python">
+      <input>
+Q = 1-P
+a = Q*Q
+b = Q*P
+c = P*Q
+d = P*P
+      </input>
+    </program>
+    <p>
+      Now we can compute the likelihoods, all at once, without a loop.
+    </p>
+    <program language="python">
+      <input>
+likelihood2 = multinomial.pmf([k00, k01, k10, k11], N, 
+                               [a, b, c, d])
+      </input>
+    </program>
+    <p>
+      As we did in the previous section, we can use <c>T</c> to transpose the likelihood array; that way the row and column indices correspond to the row and column indices in the prior.
+    </p>
+    <program language="python">
+      <input>
+likelihood2 = likelihood2.T
+      </input>
+    </program>
+    <p>
+      Now we can compute the posterior as a <c>DataFrame</c>:
+    </p>
+    <program language="python">
+      <input>
+joint_posterior2 = joint2 * likelihood2
+joint_posterior2 /= joint_posterior2.to_numpy().sum()
+      </input>
+    </program>
+    <p>
+      And here's what it looks like.
+    </p>
+    <program language="python">
+      <input>
+plot_contour(joint_posterior2)
+
+decorate(title='Joint posterior distribution of N and p')
+      </input>
+    </program>
+    <p>
+      It is identical to the posterior we computed in the previous section; we have just demonstrated two ways to do the same computation.
+    </p>
+    <p>
+      With the posterior in the form of a <c>DataFrame</c>, we can extract the marginals by adding up the rows and columns.
+    </p>
+    <program language="python">
+      <input>
+column_marginal = joint_posterior2.sum(axis=0)
+row_marginal = joint_posterior2.sum(axis=1)
+      </input>
+    </program>
+    <p>
+      The column marginal contains posterior probabilities for each value of <c>N</c>; the row marginal contains posterior probabilities for each value of <c>p</c>.
+    </p>
+    <p>
+      And we can confirm that they are the same as the marginals we computed in the previous section.
+    </p>
+    <program language="python">
+      <input>
+np.allclose(column_marginal, posterior2_N)
+      </input>
+    </program>
+    <program language="python">
+      <input>
+np.allclose(row_marginal, posterior2_p)
+      </input>
+    </program>
+  </section>
+
+  <section xml:id="sec-lincoln-index">
+    <title>The Lincoln Index Problem</title>
+
+    <p>
+      <url href="http://www.johndcook.com/blog/2010/07/13/lincoln-index/">In an excellent blog post</url>, John D. Cook describes a historical example of a mark and recapture experiment.
+      A few weeks after Microsoft released Windows 7, they announced that one of the engineers working on the project had hidden an Easter Egg in Windows 7 to see how many people would find it.  And they found it.
+    </p>
+    <p>
+      I'll quote John's explanation:
+    </p>
+    <blockquote>
+      <p>
+        About two weeks after Windows 7 went on sale, engineer Raymond Chen announced that he'd hid an Easter egg in the operating system. Then he told people where to find it. Windows 7 has a Sticky Notes feature and Raymond's Easter egg is a little poem that pops up if you type &quot;.txt&quot; into a sticky note. Within 24 hours, someone had found the Easter egg before seeing Raymond's post and had reported it to Microsoft. [...] Microsoft engineers were able to estimate the population of Windows 7 users based on this one data point.
+      </p>
+    </blockquote>
+    <p>
+      The engineers were, of course, using the Lincoln-Petersen estimator.  Given one sample and one recapture, the Lincoln-Petersen formula estimates the population:
+    </p>
+    <p>
+      <me>N \approx K n / k</me>
+    </p>
+    <p>
+      With <m>K=1</m> (one engineer knew about the Easter egg), <m>k=1</m> (one person reported finding it), and an estimated <m>n=1000</m> people who found it independently, the estimated population is <m>N = 1 \times 1000 / 1 = 1000</m>.
+    </p>
+    <p>
+      However, we can do better than the point estimate from the Lincoln-Petersen formula; using the analysis in this chapter, we can compute a posterior distribution for <m>N</m>.
+    </p>
+    <p>
+      To keep things simple, let's consider the problem with only one "capture" event, where one engineer hid the egg, and one recapture event, where one person found it before being told.  And we are told that maybe 1000 people found it after being told.
+    </p>
+    <p>
+      Since we are using a two-parameter model, we have to think about the probability that someone would find the Easter egg.  To keep things simple, we'll assume that the probability is the same for everyone, and estimate it along with the total number of users.
+    </p>
+    <p>
+      For this problem I'll use units of thousands, and a uniform prior from 100 to 500 thousand users.
+    </p>
+    <program language="python">
+      <input>
+qs = np.arange(100, 501)
+prior_N = make_uniform(qs, name='N')
+      </input>
+    </program>
+    <p>
+      And a uniform prior for <c>p</c>:
+    </p>
+    <program language="python">
+      <input>
+qs = np.linspace(0, 0.05, num=101)
+prior_p = make_uniform(qs, name='p')
+      </input>
+    </program>
+    <p>
+      The prior distribution of <c>p</c> is uniform from 0 to 0.05, which represents my beliefs that the probability is small, but I don't know how small.
+    </p>
+    <p>
+      Now we can form the joint prior and compute the likelihood for each pair of values.
+    </p>
+    <program language="python">
+      <input>
+joint_prior = make_joint(prior_p, prior_N)
+      </input>
+    </program>
+    <p>
+      As in the previous section, I'll extract the values of the parameters and use <c>meshgrid</c> to compute them as arrays.
+    </p>
+    <program language="python">
+      <input>
+Ns = joint_prior.columns.values
+ps = joint_prior.index.values
+P, N = np.meshgrid(ps, Ns)
+      </input>
+    </program>
+    <p>
+      This time we'll say that there is one capture (<m>k_10 = 1</m>) and one recapture (<m>k_11 = 1</m>), and the estimated number of people who found the egg after being told is <m>k_01 = 1000</m> (in units of thousands, that's 1).
+    </p>
+    <program language="python">
+      <input>
+k10 = 1
+k01 = 1
+k11 = 1
+      </input>
+    </program>
+    <p>
+      For each value of <c>N</c>, we can compute <c>k00</c>, and for each pair of values <c>N</c> and <c>p</c>, we can compute the likelihood.
+    </p>
+    <program language="python">
+      <input>
+observed = k01 + k10 + k11
+k00 = N - observed
+
+Q = 1-P
+a = Q*Q
+b = Q*P
+c = P*Q
+d = P*P
+
+likelihood = multinomial.pmf([k00, k01, k10, k11], N, 
+                              [a, b, c, d]).T
+      </input>
+    </program>
+    <p>
+      Now we can compute and visualize the posterior joint distribution.
+    </p>
+    <program language="python">
+      <input>
+joint_posterior = joint_prior * likelihood
+joint_posterior /= joint_posterior.to_numpy().sum()
+
+plot_contour(joint_posterior)
+
+decorate(title='Joint posterior distribution of N and p')
+      </input>
+    </program>
+    <p>
+      The most likely values of <c>N</c> are around 250 (thousand) and the most likely values of <c>p</c> are near 0.01 or 1%.
+    </p>
+    <p>
+      Let's see what the marginal distributions look like.
+    </p>
+    <program language="python">
+      <input>
+posterior_N = marginal(joint_posterior, 1)
+posterior_p = marginal(joint_posterior, 0)
+      </input>
+    </program>
+    <p>
+      Here's the posterior distribution for <c>N</c>:
+    </p>
+    <program language="python">
+      <input>
+posterior_N.plot(color='C4')
+
+decorate(xlabel='Number of users (thousands)',
+         ylabel='PDF',
+         title='Posterior distribution of N')
+      </input>
+    </program>
+    <p>
+      The posterior mean is about 308 thousand.
+    </p>
+    <program language="python">
+      <input>
+posterior_N.mean()
+      </input>
+    </program>
+    <p>
+      And here's the 90% credible interval.
+    </p>
+    <program language="python">
+      <input>
+posterior_N.credible_interval(0.9)
+      </input>
+    </program>
+    <p>
+      The posterior distribution is quite wide because we don't have much data.
+    </p>
+    <p>
+      Here's the posterior distribution for <c>p</c>:
+    </p>
+    <program language="python">
+      <input>
+posterior_p.plot(color='C1')
+
+decorate(xlabel='Probability of finding the egg',
+         ylabel='PDF',
+         title='Posterior distribution of p')
+      </input>
+    </program>
+    <p>
+      The posterior mean is a little less than 1%.
+    </p>
+    <program language="python">
+      <input>
+posterior_p.mean()
+      </input>
+    </program>
+  </section>
+
+  <section xml:id="sec-three-parameter-model">
+    <title>Three-Parameter Model</title>
+
+    <p>
+      In the Lincoln Index problem, we assumed that the two groups have the same probability of finding the Easter egg.  In general, that might not be a good assumption.  So now we'll consider a version of the problem with three parameters: <c>N</c>, <c>p0</c>, and <c>p1</c>, where <c>p0</c> is the probability that the first group finds the egg and <c>p1</c> is the probability that the second group finds it.
+    </p>
+    <p>
+      To see how this works, let's consider a different scenario.  Suppose that two testers independently test a program looking for bugs.
+      Suppose the first tester finds 20 bugs, the second finds 15, and they find 3 in common; how can we estimate the number of bugs?
+    </p>
+    <p>
+      This problem is similar to the Grizzly Bear problem, so I'll represent the data in the same way.
+    </p>
+    <program language="python">
+      <input>
+k10 = 20 - 3
+k01 = 15 - 3
+k11 = 3
+      </input>
+    </program>
+    <p>
+      But in this case it is probably not reasonable to assume that the testers have the same probability of finding a bug.
+      So I'll define two parameters, <c>p0</c> for the probability that the first tester finds a bug, and <c>p1</c> for the probability that the second tester finds a bug.
+    </p>
+    <p>
+      I will continue to assume that the probabilities are independent, which is like assuming that all bugs are equally easy to find.  That might not be a good assumption, but let's stick with it for now.
+    </p>
+    <p>
+      As an example, suppose we know that the probabilities are 0.2 and 0.15.
+    </p>
+    <program language="python">
+      <input>
+p0, p1 = 0.2, 0.15
+      </input>
+    </program>
+    <p>
+      We can compute the array of probabilities, <c>y</c>, like this:
+    </p>
+    <program language="python">
+      <input>
+def compute_probs(p0, p1):
+    """Computes the probability for each of 4 categories."""
+    q0 = 1-p0
+    q1 = 1-p1
+    return [q0*q1, q0*p1, p0*q1, p0*p1]
+      </input>
+    </program>
+    <program language="python">
+      <input>
+y = compute_probs(p0, p1)
+y
+      </input>
+    </program>
+    <p>
+      With these probabilities, there is a 68% chance that neither tester finds the bug and a 3% chance that both do.
+    </p>
+    <p>
+      Pretending that these probabilities are known, we can compute the posterior distribution for <c>N</c>.
+      Here's a prior distribution that's uniform from 32 to 350 bugs.
+    </p>
+    <program language="python">
+      <input>
+qs = np.arange(32, 350, step=5) 
+prior_N = make_uniform(qs, name='N')
+prior_N.head(3)
+      </input>
+    </program>
+    <p>
+      I'll put the data in an array, with 0 as a place-keeper for the unknown value <c>k00</c>.
+    </p>
+    <program language="python">
+      <input>
+data = np.array([0, k01, k10, k11])
+      </input>
+    </program>
+    <p>
+      And here are the likelihoods for each value of <c>N</c>, with <c>ps</c> as a constant.
+    </p>
+    <program language="python">
+      <input>
+likelihood = prior_N.copy()
+observed = data.sum()
+x = data.copy()
+
+for N in prior_N.qs:
+    x[0] = N - observed
+    likelihood[N] = multinomial.pmf(x, N, y)
+      </input>
+    </program>
+    <p>
+      We can compute the posterior in the usual way.
+    </p>
+    <program language="python">
+      <input>
+posterior_N = prior_N * likelihood
+posterior_N.normalize()
+      </input>
+    </program>
+    <p>
+      And here's what it looks like.
+    </p>
+    <program language="python">
+      <input>
+posterior_N.plot(color='C4')
+
+decorate(xlabel='Number of bugs (N)',
+         ylabel='PMF',
+         title='Posterior marginal distribution of N with known p0, p1')
+      </input>
+    </program>
+    <program language="python">
+      <input>
+print(posterior_N.mean(), 
+      posterior_N.credible_interval(0.9))
+      </input>
+    </program>
+    <p>
+      With the assumption that <c>p0</c> and <c>p1</c> are known to be <c>0.2</c> and <c>0.15</c>, the posterior mean is 102 with 90% credible interval (77, 127).
+      But this result is based on the assumption that we know the probabilities, and we don't.
+    </p>
+    <p>
+      What we need is a model with three parameters: <c>N</c>, <c>p0</c>, and <c>p1</c>.
+      We'll use <c>prior_N</c> again for the prior distribution of <c>N</c>, and here are the priors for <c>p0</c> and <c>p1</c>:
+    </p>
+    <program language="python">
+      <input>
+qs = np.linspace(0, 1, num=51)
+prior_p0 = make_uniform(qs, name='p0')
+prior_p1 = make_uniform(qs, name='p1')
+      </input>
+    </program>
+    <p>
+      Now we have to assemble them into a joint prior with three dimensions.
+      I'll start by putting the first two into a <c>DataFrame</c>.
+    </p>
+    <program language="python">
+      <input>
+joint2 = make_joint(prior_p0, prior_N)
+joint2.shape
+      </input>
+    </program>
+    <p>
+      Now I'll stack them, as in the previous example, and put the result in a <c>Pmf</c>.
+    </p>
+    <program language="python">
+      <input>
+joint2_pmf = Pmf(joint2.stack())
+joint2_pmf.head(3)
+      </input>
+    </program>
+    <p>
+      We can use <c>make_joint</c> again to add in the third parameter.
+    </p>
+    <program language="python">
+      <input>
+joint3 = make_joint(prior_p1, joint2_pmf)
+joint3.shape
+      </input>
+    </program>
+    <p>
+      The result is a <c>DataFrame</c> with values of <c>N</c> and <c>p0</c> in a <c>MultiIndex</c> that goes down the rows and values of <c>p1</c> in an index that goes across the columns.
+    </p>
+    <program language="python">
+      <input>
+joint3.head(3)
+      </input>
+    </program>
+    <p>
+      Now I'll apply <c>stack</c> again:
+    </p>
+    <program language="python">
+      <input>
+joint3_pmf = Pmf(joint3.stack())
+joint3_pmf.head(3)
+      </input>
+    </program>
+    <p>
+      The result is a <c>Pmf</c> with a three-column <c>MultiIndex</c> containing all possible triplets of parameters.
+    </p>
+    <p>
+      The number of rows is the product of the number of values in all three priors, which is almost 170,000.
+    </p>
+    <program language="python">
+      <input>
+joint3_pmf.shape
+      </input>
+    </program>
+    <p>
+      That's still small enough to be practical, but it will take longer to compute the likelihoods than in the previous examples.
+    </p>
+    <p>
+      Here's the loop that computes the likelihoods; it's similar to the one in the previous section:
+    </p>
+    <program language="python">
+      <input>
+likelihood = joint3_pmf.copy()
+observed = data.sum()
+x = data.copy()
+
+for N, p0, p1 in joint3_pmf.index:
+    x[0] = N - observed
+    y = compute_probs(p0, p1)
+    likelihood[N, p0, p1] = multinomial.pmf(x, N, y)
+      </input>
+    </program>
+    <p>
+      We can compute the posterior in the usual way.
+    </p>
+    <program language="python">
+      <input>
+posterior_pmf = joint3_pmf * likelihood
+posterior_pmf.normalize()
+      </input>
+    </program>
+    <p>
+      Now, to extract the marginal distributions, we could unstack the joint posterior as we did in the previous section.
+      But <c>Pmf</c> provides a version of <c>marginal</c> that works with a <c>Pmf</c> rather than a <c>DataFrame</c>.
+      Here's how we use it to get the posterior distribution for <c>N</c>.
+    </p>
+    <program language="python">
+      <input>
+posterior_N = posterior_pmf.marginal(0)
+      </input>
+    </program>
+    <p>
+      And here's what it looks like.
+    </p>
+    <program language="python">
+      <input>
+posterior_N.plot(color='C4')
+
+decorate(xlabel='Number of bugs (N)',
+         ylabel='PDF',
+         title='Posterior marginal distributions of N')
+      </input>
+    </program>
+    <program language="python">
+      <input>
+posterior_N.mean()
+      </input>
+    </program>
+    <p>
+      The posterior mean is 105 bugs, which suggests that there are still many bugs the testers have not found.
+    </p>
+    <p>
+      Here are the posteriors for <c>p0</c> and <c>p1</c>.
+    </p>
+    <program language="python">
+      <input>
+posterior_p0 = posterior_pmf.marginal(1)
+posterior_p1 = posterior_pmf.marginal(2)
+
+posterior_p0.plot(label='p0')
+posterior_p1.plot(label='p1')
+
+decorate(xlabel='Probability of finding a bug',
+         ylabel='PDF',
+         title='Posterior marginal distributions of p0 and p1')
+      </input>
+    </program>
+    <program language="python">
+      <input>
+posterior_p0.mean(), posterior_p0.credible_interval(0.9)
+      </input>
+    </program>
+    <program language="python">
+      <input>
+posterior_p1.mean(), posterior_p1.credible_interval(0.9)
+      </input>
+    </program>
+    <p>
+      Comparing the posterior distributions, the tester who found more bugs probably has a higher probability of finding bugs.  The posterior means are about 23% and 18%.  But the distributions overlap, so we should not be too sure.
+    </p>
+    <p>
+      This is the first example we've seen with three parameters.
+      As the number of parameters increases, the number of combinations increases quickly.
+      The method we've been using so far, enumerating all possible combinations, becomes impractical if the number of parameters is more than 3 or 4.
+    </p>
+    <p>
+      However there are other methods that can handle models with many more parameters, as we'll see in a later chapter on MCMC.
+    </p>
+  </section>
+
+  <section xml:id="sec-ch15-summary">
+    <title>Summary</title>
+
+    <p>
+      The problems in this chapter are examples of <url href="https://en.wikipedia.org/wiki/Mark_and_recapture">mark and recapture</url> experiments, which are used in ecology to estimate animal populations.  They also have applications in engineering, as in the Lincoln index problem.  And in the exercises you'll see that they are used in epidemiology, too.
+    </p>
+    <p>
+      This chapter introduces two new probability distributions:
+    </p>
+    <ul>
+      <li>The hypergeometric distribution is a variation of the binomial distribution in which samples are drawn from the population without replacement.</li>
+      <li>The multinomial distribution is a generalization of the binomial distribution where there are more than two possible outcomes.</li>
+    </ul>
+    <p>
+      Also in this chapter, we saw the first example of a model with three parameters.  We'll see more in subsequent chapters.
+    </p>
+  </section>
+
+  <section xml:id="sec-ch15-exercises">
+    <title>Exercises</title>
+
+    <exercise xml:id="ex-hepatitis-two-lists">
+      <statement>
+        <p>
+          <url href="http://chao.stat.nthu.edu.tw/wordpress/paper/110.pdf">In an excellent paper</url>, Anne Chao explains how mark and recapture experiments are used in epidemiology to estimate the prevalence of a disease in a human population based on multiple incomplete lists of cases.
+        </p>
+        <p>
+          One of the examples in that paper is a study &quot;to estimate the number of people who were infected by hepatitis in an outbreak that occurred in and around a college in northern Taiwan from April to July 1995.&quot;
+        </p>
+        <p>
+          Three lists of cases were available:
+        </p>
+        <ol>
+          <li>135 cases identified using a serum test.</li>
+          <li>122 cases reported by local hospitals.</li>
+          <li>126 cases reported on questionnaires collected by epidemiologists.</li>
+        </ol>
+        <p>
+          In this exercise, we'll use only the first two lists; in the next exercise we'll bring in the third list.
+        </p>
+        <p>
+          Make a joint prior and update it using this data, then compute the posterior mean of <c>N</c> and a 90% credible interval.
+        </p>
+        <p>
+          The following array contains 0 as a place-holder for the unknown value of <c>k00</c>, followed by known values of <c>k01</c>, <c>k10</c>, and <c>k11</c>.
+        </p>
+        <program language="python">
+          <input>
+data2 = np.array([0, 73, 86, 49])
+          </input>
+        </program>
+        <p>
+          These data indicate that there are 73 cases on the second list that are not on the first, 86 cases on the first list that are not on the second, and 49 cases on both lists.
+        </p>
+        <p>
+          To keep things simple, we'll assume that each case has the same probability of appearing on each list.  So we'll use a two-parameter model where <c>N</c> is the total number of cases and <c>p</c> is the probability that any case appears on any list.
+        </p>
+        <p>
+          Here are priors you can start with (but feel free to modify them).
+        </p>
+        <program language="python">
+          <input>
+qs = np.arange(200, 500, step=5)
+prior_N = make_uniform(qs, name='N')
+prior_N.head(3)
+          </input>
+        </program>
+        <program language="python">
+          <input>
+qs = np.linspace(0, 0.98, num=50)
+prior_p = make_uniform(qs, name='p')
+prior_p.head(3)
+          </input>
+        </program>
+      </statement>
+    <solution>
+      <program language="python">
+        <input>
+data2 = np.array([0, 73, 86, 49])
+        </input>
+      </program>
+      <program language="python">
+        <input>
+qs = np.arange(200, 500, step=5)
+prior_N = make_uniform(qs, name='N')
+prior_N.head(3)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+qs = np.linspace(0, 0.98, num=50)
+prior_p = make_uniform(qs, name='p')
+prior_p.head(3)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+joint_prior = make_joint(prior_p, prior_N)
+joint_prior.head(3)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+prior_pmf = Pmf(joint_prior.stack())
+prior_pmf.head(3)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+observed = data2.sum()
+x = data2.copy()
+likelihood = prior_pmf.copy()
+
+for N, p in prior_pmf.index:
+    x[0] = N - observed
+    q = 1-p
+    y = [q*q, q*p, p*q, p*p]
+    likelihood.loc[N, p] = multinomial.pmf(x, N, y)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+posterior_pmf = prior_pmf * likelihood
+posterior_pmf.normalize()
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+joint_posterior = posterior_pmf.unstack()
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+plot_contour(joint_posterior)
+
+decorate(title='Joint posterior distribution of N and p')
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+marginal_N = marginal(joint_posterior, 1)
+marginal_N.plot(color='C4')
+
+decorate(xlabel='Number of cases (N)',
+         ylabel='PDF',
+         title='Posterior marginal distribution of N')
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+marginal_N.mean(), marginal_N.credible_interval(0.9)
+        </input>
+      </program>
+    </solution>
+    </exercise>
+
+    <exercise xml:id="ex-hepatitis-three-lists">
+      <statement>
+        <p>
+          Now let's do the version of the problem with all three lists.  Here's the data from Chao's paper:
+        </p>
+        <pre>
+Hepatitis A virus list
+P    Q    E    Data
+1    1    1    k111 =28
+1    1    0    k110 =21
+1    0    1    k101 =17
+1    0    0    k100 =69
+0    1    1    k011 =18
+0    1    0    k010 =55
+0    0    1    k001 =63
+0    0    0    k000 =??
+        </pre>
+        <p>
+          Write a loop that computes the likelihood of the data for each pair of parameters, then update the prior and compute the posterior mean of <c>N</c>.  How does it compare to the results using only the first two lists?
+        </p>
+        <p>
+          Here's the data in a NumPy array (in reverse order).
+        </p>
+        <program language="python">
+          <input>
+data3 = np.array([0, 63, 55, 18, 69, 17, 21, 28])
+          </input>
+        </program>
+        <p>
+          Again, the first value is a place-keeper for the unknown <c>k000</c>.  The second value is <c>k001</c>, which means there are 63 cases that appear on the third list but not the first two.  And the last value is <c>k111</c>, which means there are 28 cases that appear on all three lists.
+        </p>
+        <p>
+          In the two-list version of the problem we computed <c>ps</c> by enumerating the combinations of <c>p</c> and <c>q</c>.
+        </p>
+        <program language="python">
+          <input>
+q = 1-p
+ps = [q*q, q*p, p*q, p*p]
+          </input>
+        </program>
+        <p>
+          We could do the same thing for the three-list version, computing the probability for each of the eight categories.  But we can generalize it by recognizing that we are computing the cartesian product of <c>p</c> and <c>q</c>, repeated once for each list.
+        </p>
+        <p>
+          And we can use the following function (based on <url href="https://stackoverflow.com/questions/58242078/cartesian-product-of-arbitrary-lists-in-pandas/58242079#58242079">this StackOverflow answer</url>) to compute Cartesian products:
+        </p>
+        <program language="python">
+          <input>
+def cartesian_product(*args, **options):
+    """Cartesian product of sequences.
+    
+    args: any number of sequences
+    options: passes to `MultiIndex.from_product`
+    
+    returns: DataFrame with one column per sequence
+    """
+    index = pd.MultiIndex.from_product(args, **options)
+    return pd.DataFrame(index=index).reset_index()
+          </input>
+        </program>
+        <p>
+          Here's an example with <c>p=0.2</c>:
+        </p>
+        <program language="python">
+          <input>
+p = 0.2
+t = (1-p, p)
+df = cartesian_product(t, t, t)
+df
+          </input>
+        </program>
+        <p>
+          To compute the probability for each category, we take the product across the columns:
+        </p>
+        <program language="python">
+          <input>
+y = df.prod(axis=1)
+y
+          </input>
+        </program>
+        <p>
+          Now you finish it off from there.
+        </p>
+      </statement>
+    <solution>
+      <program language="python">
+        <input>
+data3 = np.array([0, 63, 55, 18, 69, 17, 21, 28])
+        </input>
+      </program>
+      <program language="python">
+        <input>
+q = 1-p
+ps = [q*q, q*p, p*q, p*p]
+        </input>
+      </program>
+      <program language="python">
+        <input>
+def cartesian_product(*args, **options):
+    """Cartesian product of sequences.
+    
+    args: any number of sequences
+    options: passes to `MultiIndex.from_product`
+    
+    returns: DataFrame with one column per sequence
+    """
+    index = pd.MultiIndex.from_product(args, **options)
+    return pd.DataFrame(index=index).reset_index()
+        </input>
+      </program>
+      <program language="python">
+        <input>
+p = 0.2
+t = (1-p, p)
+df = cartesian_product(t, t, t)
+df
+        </input>
+      </program>
+      <program language="python">
+        <input>
+y = df.prod(axis=1)
+y
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+observed = data3.sum()
+x = data3.copy()
+likelihood = prior_pmf.copy()
+
+for N, p in prior_pmf.index:
+    x[0] = N - observed
+    t = (1-p, p)
+    df = cartesian_product(t, t, t)
+    y = df.prod(axis=1)
+    likelihood.loc[N, p] = multinomial.pmf(x, N, y)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+posterior_pmf = prior_pmf * likelihood
+posterior_pmf.normalize()
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+joint_posterior = posterior_pmf.unstack()
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+plot_contour(joint_posterior)
+
+decorate(title='Joint posterior distribution of N and p')
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+marginal3_N = marginal(joint_posterior, 1)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+marginal_N.plot(label='After two lists', color='C4')
+marginal3_N.plot(label='After three lists', color='C1')
+
+decorate(xlabel='Number of cases (N)',
+         ylabel='PDF',
+         title='Posterior marginal distribution of N')
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+marginal_N.mean(), marginal_N.credible_interval(0.9)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+marginal3_N.mean(), marginal3_N.credible_interval(0.9)
+        </input>
+      </program>
+    </solution>
+    </exercise>
+
+    <p>
+      <em>Think Bayes</em>, Second Edition
+    </p>
+    <p>
+      Copyright 2020 Allen B. Downey
+    </p>
+    <p>
+      License: <url href="https://creativecommons.org/licenses/by-nc-sa/4.0/">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)</url>
+    </p>
+  </section>
 
 </chapter>

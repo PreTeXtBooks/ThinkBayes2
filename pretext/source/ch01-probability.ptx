@@ -799,6 +799,18 @@ In the next chapter, we'll see how.
           Think carefully about the order of the arguments you pass to <c>conditional</c>.
         </p>
       </statement>
+  <solution>
+    <program language="python">
+      <input>
+conditional(liberal, given=democrat)
+      </input>
+    </program>
+    <program language="python">
+      <input>
+conditional(democrat, given=liberal)
+      </input>
+    </program>
+  </solution>
     </exercise>
     <exercise xml:id="ex-104">
       <statement>
@@ -820,6 +832,18 @@ In the next chapter, we'll see how.
           * The probability that Linda is a banker and a liberal Democrat, given that she is female.
         </p>
       </statement>
+  <solution>
+    <program language="python">
+      <input>
+conditional(banker, given=female)
+      </input>
+    </program>
+    <program language="python">
+      <input>
+conditional(banker &amp; liberal &amp; democrat, given=female)
+      </input>
+    </program>
+  </solution>
     </exercise>
     <exercise xml:id="ex-107">
       <statement>
@@ -834,6 +858,30 @@ In the next chapter, we'll see how.
 Rather than use the specific ages 25 and 35, let's define <c>young</c> and <c>old</c> as under 30 or over 65:
         </p>
       </statement>
+  <solution>
+    <p>For the young liberal questions:</p>
+    <program language="python">
+      <input>
+prob(young &amp; liberal)
+      </input>
+    </program>
+    <program language="python">
+      <input>
+conditional(liberal, given=young)
+      </input>
+    </program>
+    <p>For the old conservative questions:</p>
+    <program language="python">
+      <input>
+prob(old &amp; conservative)
+      </input>
+    </program>
+    <program language="python">
+      <input>
+conditional(old, given=conservative)
+      </input>
+    </program>
+</solution>
     </exercise>
     <program language="python">
       <input>

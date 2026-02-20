@@ -5,10 +5,1317 @@
 
   <introduction>
     <p>
-      This chapter introduces Markov Chain Monte Carlo methods for Bayesian inference.
+      You can order print and ebook versions of *Think Bayes 2e* from <url href="https://bookshop.org/a/98697/9781492089469">Bookshop.org</url> and <url href="https://amzn.to/334eqGo">Amazon</url>.
+    </p>
+    <p>
+      For most of this book we've been using grid methods to approximate posterior distributions. For models with one or two parameters, grid algorithms are fast and the results are precise enough for most practical purposes. With three parameters, they start to be slow, and with more than three they are usually not practical.
+    </p>
+    <p>
+      In the previous chapter we saw that we can solve some problems using conjugate priors. But the problems we can solve this way tend to be the same ones we can solve with grid algorithms.
+    </p>
+    <p>
+      For problems with more than a few parameters, the most powerful tool we have is MCMC, which stands for "Markov chain Monte Carlo". In this context, "Monte Carlo" refers to methods that generate random samples from a distribution. Unlike grid methods, MCMC methods don't try to compute the posterior distribution; they sample from it instead.
+    </p>
+    <p>
+      It might seem strange that you can generate a sample without ever computing the distribution, but that's the magic of MCMC.
+    </p>
+    <p>
+      To demonstrate, we'll start by solving the World Cup problem. Yes, again.
     </p>
   </introduction>
 
-  <!-- Sections will be added here -->
+  <section xml:id="sec-ch19-the-world-cup-problem">
+    <title>The World Cup Problem</title>
+
+    <p>
+      In [[_PoissonProcesses]] we modeled goal scoring in football (soccer) as a Poisson process characterized by a goal-scoring rate, denoted <m>\lambda</m>.
+    </p>
+    <p>
+      We used a gamma distribution to represent the prior distribution of <m>\lambda</m>, then we used the outcome of the game to compute the posterior distribution for both teams.
+    </p>
+    <p>
+      To answer the first question, we used the posterior distributions to compute the "probability of superiority" for France.
+    </p>
+    <p>
+      To answer the second question, we computed the posterior predictive distributions for each team, that is, the distribution of goals we expect in a rematch.
+    </p>
+    <p>
+      In this chapter we'll solve this problem again using PyMC3, which is a library that provide implementations of several MCMC methods.
+    </p>
+    <p>
+      But we'll start by reviewing the grid approximation of the prior and the prior predictive distribution.
+    </p>
+  </section>
+
+  <section xml:id="sec-ch19-grid-approximation">
+    <title>Grid Approximation</title>
+
+    <p>
+      As we did in [[_TheGammaDistribution]] we'll use a gamma distribution with parameter <m>\alpha=1.4</m> to represent the prior.
+    </p>
+    <program language="python">
+      <input>
+      from scipy.stats import gamma
+
+      alpha = 1.4
+      prior_dist = gamma(alpha)
+      </input>
+    </program>
+    <p>
+      I'll use <c>linspace</c> to generate possible values for <m>\lambda</m>, and <c>pmf_from_dist</c> to compute a discrete approximation of the prior.
+    </p>
+    <program language="python">
+      <input>
+      import numpy as np
+      from utils import pmf_from_dist
+
+      lams = np.linspace(0, 10, 101)
+      prior_pmf = pmf_from_dist(prior_dist, lams)
+      </input>
+    </program>
+    <p>
+      We can use the Poisson distribution to compute the likelihood of the data; as an example, we'll use 4 goals.
+    </p>
+    <program language="python">
+      <input>
+      from scipy.stats import poisson
+
+      data = 4
+      likelihood = poisson.pmf(data, lams)
+      </input>
+    </program>
+    <p>
+      Now we can do the update in the usual way.
+    </p>
+    <program language="python">
+      <input>
+      posterior = prior_pmf * likelihood
+      posterior.normalize()
+      </input>
+    </program>
+    <p>
+      Soon we will solve the same problem with PyMC3, but first it will be useful to introduce something new: the prior predictive distribution.
+    </p>
+  </section>
+
+  <section xml:id="sec-ch19-prior-predictive-distribution">
+    <title>Prior Predictive Distribution</title>
+
+    <p>
+      We have seen the posterior predictive distribution in previous chapters; the prior predictive distribution is similar except that (as you might have guessed) it is based on the prior.
+    </p>
+    <p>
+      To estimate the prior predictive distribution, we'll start by drawing a sample from the prior.
+    </p>
+    <program language="python">
+      <input>
+      sample_prior = prior_dist.rvs(1000)
+      </input>
+    </program>
+    <p>
+      The result is an array of possible values for the goal-scoring rate, <m>\lambda</m>. For each value in <c>sample_prior</c>, I'll generate one value from a Poisson distribution.
+    </p>
+    <program language="python">
+      <input>
+      from scipy.stats import poisson
+
+      sample_prior_pred = poisson.rvs(sample_prior)
+      </input>
+    </program>
+    <p>
+      <c>sample_prior_pred</c> is a sample from the prior predictive distribution. To see what it looks like, we'll compute the PMF of the sample.
+    </p>
+    <program language="python">
+      <input>
+      from empiricaldist import Pmf
+
+      pmf_prior_pred = Pmf.from_seq(sample_prior_pred)
+      </input>
+    </program>
+    <p>
+      And here's what it looks like:
+    </p>
+    <program language="python">
+      <input>
+      from utils import decorate
+
+      pmf_prior_pred.bar()
+      decorate(xlabel='Number of goals',
+               ylabel='PMF',
+               title='Prior Predictive Distribution')
+      </input>
+    </program>
+    <p>
+      One reason to compute the prior predictive distribution is to check whether our model of the system seems reasonable. In this case, the distribution of goals seems consistent with what we know about World Cup football.
+    </p>
+    <p>
+      But in this chapter we have another reason: computing the prior predictive distribution is a first step toward using MCMC.
+    </p>
+  </section>
+
+  <section xml:id="sec-ch19-introducing-pymc3">
+    <title>Introducing PyMC3</title>
+
+    <p>
+      PyMC3 is a Python library that provides several MCMC methods.
+    </p>
+    <p>
+      To use PyMC3, we have to specify a model of the process that generates the data.
+    </p>
+    <p>
+      In this example, the model has two steps:
+    </p>
+    <p>
+      <ul>
+        <li>First we draw a goal-scoring rate from the prior distribution,</li>
+      </ul>
+    </p>
+    <p>
+      <ul>
+        <li>Then we draw a number of goals from a Poisson distribution.</li>
+      </ul>
+    </p>
+    <p>
+      Here's how we specify this model in PyMC3:
+    </p>
+    <program language="python">
+      <input>
+      import pymc3 as pm
+
+      with pm.Model() as model:
+          lam = pm.Gamma('lam', alpha=1.4, beta=1.0)
+          goals = pm.Poisson('goals', lam)
+      </input>
+    </program>
+    <p>
+      After importing <c>pymc3</c>, we create a <c>Model</c> object named <c>model</c>.
+    </p>
+    <p>
+      If you are not familiar with the <c>with</c> statement in Python, it is a way to associate a block of statements with an object. In this example, the two indented statements are associated with the new <c>Model</c> object.  As a result, when we create the distribution objects, <c>Gamma</c> and <c>Poisson</c>, they are added to the <c>Model</c>.
+    </p>
+    <p>
+      Inside the <c>with</c> statement:
+    </p>
+    <p>
+      <ul>
+        <li>The first line creates the prior, which is a gamma distribution with the given parameters.</li>
+      </ul>
+    </p>
+    <p>
+      <ul>
+        <li>The second line creates the prior predictive, which is a Poisson distribution with the parameter <c>lam</c>.</li>
+      </ul>
+    </p>
+    <p>
+      The first parameter of <c>Gamma</c> and <c>Poisson</c> is a string variable name.
+    </p>
+    <p>
+      PyMC3 provides a function that generates a visual representation of the model.
+    </p>
+    <program language="python">
+      <input>
+      pm.model_to_graphviz(model)
+      </input>
+    </program>
+    <p>
+      In this visualization, the ovals show that <c>lam</c> is drawn from a gamma distribution and <c>goals</c> is drawn from a Poisson distribution. The arrow shows that the values of <c>lam</c> are used as parameters for the distribution of <c>goals</c>.
+    </p>
+  </section>
+
+  <section xml:id="sec-ch19-sampling-the-prior">
+    <title>Sampling the Prior</title>
+
+    <p>
+      PyMC3 provides a function that generates samples from the prior and prior predictive distributions.
+    </p>
+    <p>
+      We can use a <c>with</c> statement to run this function in the context of the model.
+    </p>
+    <program language="python">
+      <input>
+      with model:
+          trace = pm.sample_prior_predictive(1000)
+      </input>
+    </program>
+    <p>
+      The result is a dictionary-like object that maps from the variables, <c>lam</c> and <c>goals</c>, to the samples. We can extract the sample of <c>lam</c> like this:
+    </p>
+    <program language="python">
+      <input>
+      sample_prior_pymc = trace['lam']
+      sample_prior_pymc.shape
+      </input>
+    </program>
+    <p>
+      The following figure compares the CDF of this sample to the CDF of the sample we generated using the <c>gamma</c> object from SciPy.
+    </p>
+    <program language="python">
+      <input>
+      from empiricaldist import Cdf
+
+      def plot_cdf(sample, **options):
+          """Plot the CDF of a sample.
+
+          sample: sequence of quantities
+          """
+          Cdf.from_seq(sample).plot(**options)
+      </input>
+    </program>
+    <program language="python">
+      <input>
+      plot_cdf(sample_prior, 
+               label='SciPy sample',
+               color='C5')
+      plot_cdf(sample_prior_pymc, 
+               label='PyMC3 sample',
+               color='C0')
+      decorate(xlabel=r'Goals per game ($\lambda$)',
+               ylabel='CDF',
+               title='Prior distribution')
+      </input>
+    </program>
+    <p>
+      The results are similar, which confirms that the specification of the model is correct and the sampler works as advertised.
+    </p>
+    <p>
+      From the trace we can also extract <c>goals</c>, which is a sample from the prior predictive distribution.
+    </p>
+    <program language="python">
+      <input>
+      sample_prior_pred_pymc = trace['goals']
+      sample_prior_pred_pymc.shape
+      </input>
+    </program>
+    <p>
+      And we can compare it to the sample we generated using the <c>poisson</c> object from SciPy.
+    </p>
+    <p>
+      Because the quantities in the posterior predictive distribution are discrete (number of goals) I'll plot the CDFs as step functions.
+    </p>
+    <program language="python">
+      <input>
+      def plot_pred(sample, **options):
+          Cdf.from_seq(sample).step(**options)
+      </input>
+    </program>
+    <program language="python">
+      <input>
+      plot_pred(sample_prior_pred, 
+                label='SciPy sample', 
+                color='C5')
+      plot_pred(sample_prior_pred_pymc, 
+                label='PyMC3 sample', 
+                color='C13')
+      decorate(xlabel='Number of goals',
+               ylabel='PMF',
+               title='Prior Predictive Distribution')
+      </input>
+    </program>
+    <p>
+      Again, the results are similar, so we have some confidence we are using PyMC3 right.
+    </p>
+  </section>
+
+  <section xml:id="sec-ch19-when-do-we-get-to-inference">
+    <title>When Do We Get to Inference?</title>
+
+    <p>
+      Finally, we are ready for actual inference.  We just have to make one small change.
+    </p>
+    <p>
+      Here is the model we used to generate the prior predictive distribution:
+    </p>
+    <program language="python">
+      <input>
+      with pm.Model() as model:
+          lam = pm.Gamma('lam', alpha=1.4, beta=1.0)
+          goals = pm.Poisson('goals', lam)
+      </input>
+    </program>
+    <p>
+      And here is the model we'll use to compute the posterior distribution.
+    </p>
+    <program language="python">
+      <input>
+      with pm.Model() as model2:
+          lam = pm.Gamma('lam', alpha=1.4, beta=1.0)
+          goals = pm.Poisson('goals', lam, observed=4)
+      </input>
+    </program>
+    <p>
+      The difference is that we mark goals as <c>observed</c> and provide the observed data, <c>4</c>.
+    </p>
+    <p>
+      And instead of calling <c>sample_prior_predictive</c>, we'll call <c>sample</c>, which is understood to sample from the posterior distribution of <c>lam</c>.
+    </p>
+    <program language="python">
+      <input>
+      options = dict(return_inferencedata=False)
+
+      with model2:
+          trace2 = pm.sample(500, **options)
+      </input>
+    </program>
+    <p>
+      Although the specification of these models is similar, the sampling process is very different. I won't go into the details of how PyMC3 works, but here are a few things you should be aware of:
+    </p>
+    <p>
+      <ul>
+        <li>Depending on the model, PyMC3 uses one of several MCMC methods; in this example, it uses the <url href="https://en.wikipedia.org/wiki/Hamiltonian_Monte_Carlo#No_U-Turn_Sampler">No U-Turn Sampler</url> (NUTS), which is one of the most efficient and reliable methods we have.</li>
+      </ul>
+    </p>
+    <p>
+      <ul>
+        <li>When the sampler starts, the first values it generates are usually not a representative sample from the posterior distribution, so these values are discarded.  This process is called "tuning".</li>
+      </ul>
+    </p>
+    <p>
+      <ul>
+        <li>Instead of using a single Markov chain, PyMC3 uses multiple chains.  Then we can compare results from multiple chains to make sure they are consistent.</li>
+      </ul>
+    </p>
+    <p>
+      Although we asked for a sample of 500, PyMC3 generated two samples of 1000, discarded half of each, and returned the remaining 1000. From <c>trace2</c> we can extract a sample from the posterior distribution, like this:
+    </p>
+    <program language="python">
+      <input>
+      sample_post_pymc = trace2['lam']
+      </input>
+    </program>
+    <program language="python">
+      <input>
+      sample_post_pymc.shape
+      </input>
+    </program>
+    <p>
+      And we can compare the CDF of this sample to the posterior we computed by grid approximation:
+    </p>
+    <program language="python">
+      <input>
+      posterior.make_cdf().plot(label='posterior grid', 
+                                color='C5')
+      plot_cdf(sample_post_pymc, 
+               label='PyMC3 sample',
+               color='C4')
+
+      decorate(xlabel=r'Goals per game ($\lambda$)',
+               ylabel='CDF',
+               title='Posterior distribution')
+      </input>
+    </program>
+    <p>
+      The results from PyMC3 are consistent with the results from the grid approximation.
+    </p>
+  </section>
+
+  <section xml:id="sec-ch19-posterior-predictive-distribution">
+    <title>Posterior Predictive Distribution</title>
+
+    <p>
+      Finally, to sample from the posterior predictive distribution, we can use <c>sample_posterior_predictive</c>:
+    </p>
+    <program language="python">
+      <input>
+      with model2:
+          post_pred = pm.sample_posterior_predictive(trace2)
+      </input>
+    </program>
+    <p>
+      The result is a dictionary that contains a sample of <c>goals</c>.
+    </p>
+    <program language="python">
+      <input>
+      sample_post_pred_pymc = post_pred['goals']
+      </input>
+    </program>
+    <program language="python">
+      <input>
+      sample_post_pred_pymc.shape
+      </input>
+    </program>
+    <p>
+      I'll also generate a sample from the posterior distribution we computed by grid approximation.
+    </p>
+    <program language="python">
+      <input>
+      sample_post = posterior.sample(1000)
+      sample_post_pred = poisson(sample_post).rvs()
+      </input>
+    </program>
+    <p>
+      And we can compare the two samples.
+    </p>
+    <program language="python">
+      <input>
+      plot_pred(sample_post_pred, 
+                label='grid sample',
+                color='C5')
+      plot_pred(sample_post_pred_pymc, 
+                label='PyMC3 sample',
+                color='C12')
+
+      decorate(xlabel='Number of goals',
+               ylabel='PMF',
+               title='Posterior Predictive Distribution')
+      </input>
+    </program>
+    <p>
+      Again, the results are consistent. So we've established that we can compute the same results using a grid approximation or PyMC3.
+    </p>
+    <p>
+      But it might not be clear why. In this example, the grid algorithm requires less computation than MCMC, and the result is a pretty good approximation of the posterior distribution, rather than a sample.
+    </p>
+    <p>
+      However, this is a simple model with just one parameter. In fact, we could have solved it with even less computation, using a conjugate prior. The power of PyMC3 will be clearer with a more complex model.
+    </p>
+  </section>
+
+  <section xml:id="sec-ch19-happiness">
+    <title>Happiness</title>
+
+    <p>
+      Recently I read <url href="https://ourworldindata.org/happiness-and-life-satisfaction">"Happiness and Life Satisfaction"</url>
+    </p>
+    <p>
+      by Esteban Ortiz-Ospina and Max Roser, which discusses (among many other things) the relationship between income and happiness, both between countries, within countries, and over time.
+    </p>
+    <p>
+      It cites the <url href="https://worldhappiness.report/">"World Happiness Report"</url>, which includes <url href="https://worldhappiness.report/ed/2020/social-environments-for-world-happiness/">results of a multiple regression analysis</url> that explores the relationship between happiness and six potentially predictive factors:
+    </p>
+    <p>
+      <ul>
+        <li>Income as represented by per capita GDP</li>
+      </ul>
+    </p>
+    <p>
+      <ul>
+        <li>Social support</li>
+      </ul>
+    </p>
+    <p>
+      <ul>
+        <li>Healthy life expectancy at birth</li>
+      </ul>
+    </p>
+    <p>
+      <ul>
+        <li>Freedom to make life choices</li>
+      </ul>
+    </p>
+    <p>
+      <ul>
+        <li>Generosity</li>
+      </ul>
+    </p>
+    <p>
+      <ul>
+        <li>Perceptions of corruption</li>
+      </ul>
+    </p>
+    <p>
+      The dependent variable is the national average of responses to the "Cantril ladder question" used by the <url href="https://news.gallup.com/poll/122453/understanding-gallup-uses-cantril-scale.aspx">Gallup World Poll</url>:
+    </p>
+    <p>
+      > Please imagine a ladder with steps numbered from zero at the bottom to 10 at the top. The top of the ladder represents the best possible life for you and the bottom of the ladder represents the worst possible life for you. On which step of the ladder would you say you personally feel you stand at this time?
+    </p>
+    <p>
+      I'll refer to the responses as "happiness", but it might be more precise to think of them as a measure of satisfaction with quality of life.
+    </p>
+    <p>
+      In the next few sections we'll replicate the analysis in this report using Bayesian regression.
+    </p>
+    <p>
+      The data from this report can be <url href="https://happiness-report.s3.amazonaws.com/2020/WHR20_DataForFigure2.1.xls">downloaded from here</url>.
+    </p>
+    <program language="python">
+      <input>
+      # Get the data file
+
+      download('https://happiness-report.s3.amazonaws.com/2020/WHR20_DataForFigure2.1.xls')
+      </input>
+    </program>
+    <p>
+      We can use Pandas to read the data into a <c>DataFrame</c>.
+    </p>
+    <program language="python">
+      <input>
+      import pandas as pd
+
+      filename = 'WHR20_DataForFigure2.1.xls'
+      df = pd.read_excel(filename)
+      </input>
+    </program>
+    <program language="python">
+      <input>
+      df.head(3)
+      </input>
+    </program>
+    <program language="python">
+      <input>
+      df.shape
+      </input>
+    </program>
+    <p>
+      The <c>DataFrame</c> has one row for each of 153 countries and one column for each of 20 variables.
+    </p>
+    <p>
+      The column called <c>'Ladder score'</c> contains the measurements of happiness we will try to predict.
+    </p>
+    <program language="python">
+      <input>
+      score = df['Ladder score']
+      </input>
+    </program>
+  </section>
+
+  <section xml:id="sec-ch19-simple-regression">
+    <title>Simple Regression</title>
+
+    <p>
+      To get started, let's look at the relationship between happiness and income as represented by gross domestic product (GDP) per person.
+    </p>
+    <p>
+      The column named <c>'Logged GDP per capita'</c> represents the natural logarithm of GDP for each country, divided by population, corrected for <url href="https://en.wikipedia.org/wiki/Purchasing_power_parity">purchasing power parity</url> (PPP).
+    </p>
+    <program language="python">
+      <input>
+      log_gdp = df['Logged GDP per capita']
+      </input>
+    </program>
+    <p>
+      The following figure is a scatter plot of <c>score</c> versus <c>log_gdp</c>, with one marker for each country.
+    </p>
+    <program language="python">
+      <input>
+      import matplotlib.pyplot as plt
+
+      plt.plot(log_gdp, score, '.')
+
+      decorate(xlabel='Log GDP per capita at PPP',
+               ylabel='Happiness ladder score')
+      </input>
+    </program>
+    <p>
+      It's clear that there is a relationship between these variables: people in countries with higher GDP generally report higher levels of happiness.
+    </p>
+    <p>
+      We can use <c>linregress</c> from SciPy to compute a simple regression of these variables.
+    </p>
+    <program language="python">
+      <input>
+      from scipy.stats import linregress
+
+      result = linregress(log_gdp, score)
+      </input>
+    </program>
+    <p>
+      And here are the results.
+    </p>
+    <program language="python">
+      <input>
+      pd.DataFrame([result.slope, result.intercept],
+                   index=['Slope', 'Intercept'],
+                   columns=[''])
+      </input>
+    </program>
+    <p>
+      The estimated slope is about 0.72, which suggests that an increase of one unit in log-GDP, which is a factor of <m>e \approx 2.7</m> in GDP, is associated with an increase of 0.72 units on the happiness ladder.
+    </p>
+    <p>
+      Now let's estimate the same parameters using PyMC3. We'll use the same regression model as in Section [[_RegressionModel]]:
+    </p>
+    <p>
+      <me>y = a x + b + \epsilon</me>
+    </p>
+    <p>
+      where <m>y</m> is the dependent variable (ladder score), <m>x</m> is the predictive variable (log GDP) and <m>\epsilon</m> is a series of values from a normal distribution with standard deviation <m>\sigma</m>.
+    </p>
+    <p>
+      <m>a</m> and <m>b</m> are the slope and intercept of the regression line. They are unknown parameters, so we will use the data to estimate them.
+    </p>
+    <p>
+      The following is the PyMC3 specification of this model.
+    </p>
+    <program language="python">
+      <input>
+      x_data = log_gdp
+      y_data = score
+
+      with pm.Model() as model3:
+          a = pm.Uniform('a', 0, 4)
+          b = pm.Uniform('b', -4, 4)
+          sigma = pm.Uniform('sigma', 0, 2)
+
+          y_est = a * x_data + b
+          y = pm.Normal('y', 
+                        mu=y_est, sd=sigma, 
+                        observed=y_data)
+      </input>
+    </program>
+    <p>
+      The prior distributions for the parameters <c>a</c>, <c>b</c>, and <c>sigma</c> are uniform with ranges that are wide enough to cover the posterior distributions.
+    </p>
+    <p>
+      <c>y_est</c> is the estimated value of the dependent variable, based on the regression equation. And <c>y</c> is a normal distribution with mean <c>y_est</c> and standard deviation <c>sigma</c>.
+    </p>
+    <p>
+      Notice how the data are included in the model:
+    </p>
+    <p>
+      <ul>
+        <li>The values of the predictive variable, <c>x_data</c>, are used to compute <c>y_est</c>.</li>
+      </ul>
+    </p>
+    <p>
+      <ul>
+        <li>The values of the dependent variable, <c>y_data</c>, are provided as the observed values of <c>y</c>.</li>
+      </ul>
+    </p>
+    <p>
+      Now we can use this model to generate a sample from the posterior distribution.
+    </p>
+    <program language="python">
+      <input>
+      with model3:
+          trace3 = pm.sample(500, **options)
+      </input>
+    </program>
+    <p>
+      When you run the sampler, you might get warning messages about "divergences" and the "acceptance probability". You can ignore them for now.
+    </p>
+    <p>
+      The result is an object that contains samples from the joint posterior distribution of <c>a</c>, <c>b</c>, and <c>sigma</c>.
+    </p>
+    <program language="python">
+      <input>
+      trace3
+      </input>
+    </program>
+    <p>
+      ArviZ provides <c>plot_posterior</c>, which we can use to plot the posterior distributions of the parameters. Here are the posterior distributions of slope, <c>a</c>, and intercept, <c>b</c>.
+    </p>
+    <program language="python">
+      <input>
+      import arviz as az
+
+      with model3:
+          az.plot_posterior(trace3, var_names=['a', 'b']);
+      </input>
+    </program>
+    <p>
+      The graphs show the distributions of the samples, estimated by KDE, and 94% credible intervals.  In the figure, "HDI" stands for <url href="https://www.sciencedirect.com/topics/mathematics/highest-density-interval">"highest-density interval"</url>.
+    </p>
+    <p>
+      The means of these samples are consistent with the parameters we estimated with <c>linregress</c>.
+    </p>
+    <program language="python">
+      <input>
+      print('Sample mean:', trace3['a'].mean())
+      print('Regression slope:', result.slope)
+      </input>
+    </program>
+    <program language="python">
+      <input>
+      print('Sample mean:', trace3['b'].mean())
+      print('Regression intercept:', result.intercept)
+      </input>
+    </program>
+    <p>
+      Finally, we can check the marginal posterior distribution of <c>sigma</c>
+    </p>
+    <program language="python">
+      <input>
+      az.plot_posterior(trace3['sigma']);
+      </input>
+    </program>
+    <p>
+      The values in the posterior distribution of <c>sigma</c> seem plausible.
+    </p>
+    <p>
+      The simple regression model has only three parameters, so we could have used a grid algorithm. But the regression model in the happiness report has six predictive variables, so it has eight parameters in total, including the intercept and <c>sigma</c>.
+    </p>
+    <p>
+      It is not practical to compute a grid approximation for a model with eight parameters. Even a coarse grid, with 20 points along each dimension, would have more than 25 billion points. And with 153 countries, we would have to compute almost 4 trillion likelihoods.
+    </p>
+    <p>
+      But PyMC3 can handle a model with eight parameters comfortably, as we'll see in the next section.
+    </p>
+    <program language="python">
+      <input>
+      20 ** 8 / 1e9
+      </input>
+    </program>
+    <program language="python">
+      <input>
+      153 * 20 ** 8 / 1e12
+      </input>
+    </program>
+  </section>
+
+  <section xml:id="sec-ch19-multiple-regression">
+    <title>Multiple Regression</title>
+
+    <p>
+      Before we implement the multiple regression model, I'll select the columns we need from the <c>DataFrame</c>.
+    </p>
+    <program language="python">
+      <input>
+      columns = ['Ladder score',
+                 'Logged GDP per capita',
+                 'Social support',
+                 'Healthy life expectancy',
+                 'Freedom to make life choices',
+                 'Generosity',
+                 'Perceptions of corruption']
+
+      subset = df[columns]
+      </input>
+    </program>
+    <program language="python">
+      <input>
+      subset.head(3)
+      </input>
+    </program>
+    <p>
+      The predictive variables have different units: log-GDP is in log-dollars, life expectancy is in years, and the other variables are on arbitrary scales. To make these factors comparable, I'll standardize the data so that each variable has mean 0 and standard deviation 1.
+    </p>
+    <program language="python">
+      <input>
+      standardized = (subset - subset.mean()) / subset.std()
+      </input>
+    </program>
+    <p>
+      Now let's build the model. I'll extract the dependent variable.
+    </p>
+    <program language="python">
+      <input>
+      y_data = standardized['Ladder score']
+      </input>
+    </program>
+    <p>
+      And the independent variables.
+    </p>
+    <program language="python">
+      <input>
+      x1 = standardized[columns[1]]
+      x2 = standardized[columns[2]]
+      x3 = standardized[columns[3]]
+      x4 = standardized[columns[4]]
+      x5 = standardized[columns[5]]
+      x6 = standardized[columns[6]]
+      </input>
+    </program>
+    <p>
+      And here's the model.  <c>b0</c> is the intercept; <c>b1</c> through <c>b6</c> are the parameters associated with the predictive variables.
+    </p>
+    <program language="python">
+      <input>
+      with pm.Model() as model4:
+          b0 = pm.Uniform('b0', -4, 4)
+          b1 = pm.Uniform('b1', -4, 4)
+          b2 = pm.Uniform('b2', -4, 4)
+          b3 = pm.Uniform('b3', -4, 4)
+          b4 = pm.Uniform('b4', -4, 4)
+          b5 = pm.Uniform('b5', -4, 4)
+          b6 = pm.Uniform('b6', -4, 4)
+          sigma = pm.Uniform('sigma', 0, 2)
+
+          y_est = b0 + b1*x1 + b2*x2 + b3*x3 + b4*x4 + b5*x5 + b6*x6
+          y = pm.Normal('y', 
+                        mu=y_est, sd=sigma, 
+                        observed=y_data)
+      </input>
+    </program>
+    <p>
+      We could express this model more concisely using a vector of predictive variables and a vector of parameters, but I decided to keep it simple.
+    </p>
+    <p>
+      Now we can sample from the joint posterior distribution.
+    </p>
+    <program language="python">
+      <input>
+      with model4:
+          trace4 = pm.sample(500, **options)
+      </input>
+    </program>
+    <p>
+      Because we standardized the data, we expect the intercept to be 0, and in fact the posterior mean of <c>b0</c> is close to 0.
+    </p>
+    <program language="python">
+      <input>
+      trace4['b0'].mean()
+      </input>
+    </program>
+    <p>
+      We can also check the posterior mean of <c>sigma</c>:
+    </p>
+    <program language="python">
+      <input>
+      trace4['sigma'].mean()
+      </input>
+    </program>
+    <p>
+      From <c>trace4</c> we can extract samples from the posterior distributions of the parameters and compute their means.
+    </p>
+    <program language="python">
+      <input>
+      param_names = ['b1', 'b2', 'b3', 'b4', 'b5', 'b6']
+
+      means = [trace4[name].mean() 
+               for name in param_names]
+      </input>
+    </program>
+    <p>
+      We can also compute 94% credible intervals (between the 3rd and 97th percentiles).
+    </p>
+    <program language="python">
+      <input>
+      def credible_interval(sample):
+          """Compute 94% credible interval."""
+          ci = np.percentile(sample, [3, 97])
+          return np.round(ci, 3)
+
+      cis = [credible_interval(trace4[name])
+             for name in param_names]
+      </input>
+    </program>
+    <p>
+      The following table summarizes the results.
+    </p>
+    <program language="python">
+      <input>
+      index = columns[1:]
+      table = pd.DataFrame(index=index)
+      table['Posterior mean'] = np.round(means, 3)
+      table['94% CI'] = cis
+      table
+      </input>
+    </program>
+    <p>
+      It looks like GDP has the strongest association with happiness (or satisfaction), followed by social support, life expectancy, and freedom.
+    </p>
+    <p>
+      After controlling for those other factors, the parameters of the other factors are substantially smaller, and since the CI for generosity includes 0, it is plausible that generosity is not substantially related to happiness, at least as they were measured in this study.
+    </p>
+    <p>
+      This example demonstrates the power of MCMC to handle models with more than a few parameters. But it does not really demonstrate the power of Bayesian regression.
+    </p>
+    <p>
+      If the goal of a regression model is to estimate parameters, there is no great advantage to Bayesian regression compared to conventional least squares regression.
+    </p>
+    <p>
+      Bayesian methods are more useful if we plan to use the posterior distribution of the parameters as part of a decision analysis process.
+    </p>
+  </section>
+
+  <section xml:id="sec-ch19-summary">
+    <title>Summary</title>
+
+    <p>
+      In this chapter we used PyMC3 to implement two models we've seen before: a Poisson model of goal-scoring in soccer and a simple regression model.
+    </p>
+    <p>
+      Then we implemented a multiple regression model that would not have been possible to compute with a grid approximation.
+    </p>
+    <p>
+      MCMC is more powerful than grid methods, but that power comes with some disadvantages:
+    </p>
+    <p>
+      <ul>
+        <li>MCMC algorithms are fiddly.  The same model might behave well with some priors and less well with others.  And the sampling process often produces warnings about tuning steps, divergences, "r-hat statistics", acceptance rates, and effective samples.  It takes some expertise to diagnose and correct these issues.</li>
+      </ul>
+    </p>
+    <p>
+      <ul>
+        <li>I find it easier to develop models incrementally using grid algorithms, checking intermediate results along the way.  With PyMC3, it is not as easy to be confident that you have specified a model correctly.</li>
+      </ul>
+    </p>
+    <p>
+      For these reasons, I recommend a model development process that starts with grid algorithms and resorts to MCMC if necessary.
+    </p>
+    <p>
+      As we saw in the previous chapters, you can solve a lot of real-world problems with grid methods.
+    </p>
+    <p>
+      But when you need MCMC, it is useful to have a grid algorithm to compare to (even if it is based on a simpler model).
+    </p>
+    <p>
+      All of the models in this book can be implemented in PyMC3, but some of them are easier to translate than others.
+    </p>
+    <p>
+      In the exercises, you will have a chance to practice.
+    </p>
+  </section>
+
+  <exercises xml:id="sec-ch19-exercises">
+    <title>Exercises</title>
+
+    <exercise xml:id="ex-ch19-1">
+      <statement>
+        <p>
+          As a warmup, let's use PyMC3 to solve the Euro problem. Suppose we spin a coin 250 times and it comes up heads 140 times. What is the posterior distribution of <m>x</m>, the probability of heads?
+        </p>
+        <p>
+          For the prior, use a beta distribution with parameters <m>\alpha=1</m> and <m>\beta=1</m>.
+        </p>
+        <p>
+          See <url href="https://docs.pymc.io/api/distributions/continuous.html">the PyMC3 documentation</url> for the list of continuous distributions.
+        </p>
+        <program language="python">
+          <input>
+          # Solution goes here
+          </input>
+        </program>
+      </statement>
+    <solution>
+      <program language="python">
+        <input>
+
+n = 250
+k_obs = 140
+
+with pm.Model() as model5:
+    x = pm.Beta('x', alpha=1, beta=1)
+    k = pm.Binomial('k', n=n, p=x, observed=k_obs)
+    trace5 = pm.sample(500, **options)
+    az.plot_posterior(trace5)
+        </input>
+      </program>
+    </solution>
+    </exercise>
+
+    <exercise xml:id="ex-ch19-2">
+      <statement>
+        <p>
+          Now let's use PyMC3 to replicate the solution to the Grizzly Bear problem in [[_TheGrizzlyBearProblem]], which is based on the hypergeometric distribution.
+        </p>
+        <p>
+          I'll present the problem with slightly different notation, to make it consistent with PyMC3.
+        </p>
+        <p>
+          Suppose that during the first session, <c>k=23</c> bears are tagged.  During the second session, <c>n=19</c> bears are identified, of which <c>x=4</c> had been tagged.
+        </p>
+        <p>
+          Estimate the posterior distribution of <c>N</c>, the number of bears in the environment.
+        </p>
+        <p>
+          For the prior, use a discrete uniform distribution from 50 to 500.
+        </p>
+        <p>
+          See <url href="https://docs.pymc.io/api/distributions/discrete.html">the PyMC3 documentation</url> for the list of discrete distributions.
+        </p>
+        <p>
+          Note: <c>HyperGeometric</c> was added to PyMC3 after version 3.8, so you might need to update your installation to do this exercise.
+        </p>
+        <program language="python">
+          <input>
+          # Solution goes here
+          </input>
+        </program>
+      </statement>
+    <solution>
+      <program language="python">
+        <input>
+
+k = 23
+n = 19
+x = 4
+
+with pm.Model() as model6:
+    N = pm.DiscreteUniform('N', 50, 500)
+    y = pm.HyperGeometric('y', N=N, k=k, n=n, observed=x)
+    trace6 = pm.sample(1000, **options)
+    az.plot_posterior(trace6)
+        </input>
+      </program>
+    </solution>
+    </exercise>
+
+    <exercise xml:id="ex-ch19-3">
+      <statement>
+        <p>
+          In [[_TheWeibullDistribution]] we generated a sample from a Weibull distribution with <m>\lambda=3</m> and <m>k=0.8</m>. Then we used the data to compute a grid approximation of the posterior distribution of those parameters.
+        </p>
+        <p>
+          Now let's do the same with PyMC3.
+        </p>
+        <p>
+          For the priors, you can use uniform distributions as we did in [[_SurvivalAnalysis]], or you could use <c>HalfNormal</c> distributions provided by PyMC3.
+        </p>
+        <p>
+          Note: The <c>Weibull</c> class in PyMC3 uses different parameters than SciPy.  The parameter <c>alpha</c> in PyMC3 corresponds to <m>k</m>, and <c>beta</c> corresponds to <m>\lambda</m>.
+        </p>
+        <p>
+          Here's the data again:
+        </p>
+        <program language="python">
+          <input>
+          data = [0.80497283, 2.11577082, 0.43308797, 0.10862644, 5.17334866,
+                 3.25745053, 3.05555883, 2.47401062, 0.05340806, 1.08386395]
+          </input>
+        </program>
+        <program language="python">
+          <input>
+          # Solution goes here
+          </input>
+        </program>
+      </statement>
+    <solution>
+      <program language="python">
+        <input>
+data = [0.80497283, 2.11577082, 0.43308797, 0.10862644, 5.17334866,
+       3.25745053, 3.05555883, 2.47401062, 0.05340806, 1.08386395]
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+with pm.Model() as model7:
+    lam = pm.Uniform('lam', 0.1, 10.1)
+    k = pm.Uniform('k', 0.1, 5.1)
+    y = pm.Weibull('y', alpha=k, beta=lam, observed=data)
+    trace7 = pm.sample(1000, **options)
+    az.plot_posterior(trace7)
+        </input>
+      </program>
+    </solution>
+    </exercise>
+
+    <exercise xml:id="ex-ch19-4">
+      <statement>
+        <p>
+          In [[_ImprovingReadingAbility]] we used data from a reading test to estimate the parameters of a normal distribution.
+        </p>
+        <p>
+          Make a model that defines uniform prior distributions for <c>mu</c> and <c>sigma</c> and uses the data to estimate their posterior distributions.
+        </p>
+        <p>
+          Here's the data again.
+        </p>
+        <program language="python">
+          <input>
+          download('https://github.com/AllenDowney/ThinkBayes2/raw/master/data/drp_scores.csv')
+          </input>
+        </program>
+        <program language="python">
+          <input>
+          import pandas as pd
+
+          df = pd.read_csv('drp_scores.csv', skiprows=21, delimiter='\t')
+          df.head()
+          </input>
+        </program>
+        <p>
+          I'll use <c>groupby</c> to separate the treated group from the control group.
+        </p>
+        <program language="python">
+          <input>
+          grouped = df.groupby('Treatment')
+          responses = {}
+
+          for name, group in grouped:
+              responses[name] = group['Response']
+          </input>
+        </program>
+        <p>
+          Now estimate the parameters for the treated group.
+        </p>
+        <program language="python">
+          <input>
+          data = responses['Treated']
+          </input>
+        </program>
+        <program language="python">
+          <input>
+          # Solution goes here
+          </input>
+        </program>
+        <program language="python">
+          <input>
+          # Solution goes here
+          </input>
+        </program>
+      </statement>
+    <solution>
+      <program language="python">
+        <input>
+download('https://github.com/AllenDowney/ThinkBayes2/raw/master/data/drp_scores.csv')
+        </input>
+      </program>
+      <program language="python">
+        <input>
+import pandas as pd
+
+df = pd.read_csv('drp_scores.csv', skiprows=21, delimiter='\t')
+df.head()
+        </input>
+      </program>
+      <program language="python">
+        <input>
+grouped = df.groupby('Treatment')
+responses = {}
+
+for name, group in grouped:
+    responses[name] = group['Response']
+        </input>
+      </program>
+      <program language="python">
+        <input>
+data = responses['Treated']
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+with pm.Model() as model8:
+    mu = pm.Uniform('mu', 20, 80)
+    sigma = pm.Uniform('sigma', 5, 30)
+    y = pm.Normal('y', mu, sigma, observed=data)
+    trace8 = pm.sample(500, **options)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+with model8:
+    az.plot_posterior(trace8)
+        </input>
+      </program>
+    </solution>
+    </exercise>
+
+    <exercise xml:id="ex-ch19-5">
+      <statement>
+        <p>
+          In [[_TheLincolnIndexProblem]] we used a grid algorithm to solve the Lincoln Index problem as presented by John D. Cook:
+        </p>
+        <p>
+          > "Suppose you have a tester who finds 20 bugs in your program. You want to estimate how many bugs are really in the program. You know there are at least 20 bugs, and if you have supreme confidence in your tester, you may suppose there are around 20 bugs. But maybe your tester isn't very good. Maybe there are hundreds of bugs. How can you have any idea how many bugs there are? There's no way to know with one tester. But if you have two testers, you can get a good idea, even if you don't know how skilled the testers are."
+        </p>
+        <p>
+          Suppose the first tester finds 20 bugs, the second finds 15, and they find 3 in common; use PyMC3 to estimate the number of bugs.
+        </p>
+        <p>
+          Note: This exercise is more difficult that some of the previous ones.  One of the challenges is that the data includes <c>k00</c>, which depends on <c>N</c>:
+        </p>
+        <p>
+          <c>k00 = N - num_seen</c>
+        </p>
+        <p>
+          So we have to construct the data as part of the model. To do that, we can use <c>pm.math.stack</c>, which makes an array:
+        </p>
+        <p>
+          <c>data = pm.math.stack((k00, k01, k10, k11))</c>
+        </p>
+        <p>
+          Finally, you might find it helpful to use <c>pm.Multinomial</c>.
+        </p>
+        <p>
+          I'll use the following notation for the data:
+        </p>
+        <p>
+          <ul>
+            <li>k11 is the number of bugs found by both testers,</li>
+          </ul>
+        </p>
+        <p>
+          <ul>
+            <li>k10 is the number of bugs found by the first tester but not the second,</li>
+          </ul>
+        </p>
+        <p>
+          <ul>
+            <li>k01 is the number of bugs found by the second tester but not the first, and</li>
+          </ul>
+        </p>
+        <p>
+          <ul>
+            <li>k00 is the unknown number of undiscovered bugs.</li>
+          </ul>
+        </p>
+        <p>
+          Here are the values for all but <c>k00</c>:
+        </p>
+        <program language="python">
+          <input>
+          k10 = 20 - 3
+          k01 = 15 - 3
+          k11 = 3
+          </input>
+        </program>
+        <p>
+          In total, 32 bugs have been discovered:
+        </p>
+        <program language="python">
+          <input>
+          num_seen = k01 + k10 + k11
+          num_seen
+          </input>
+        </program>
+        <program language="python">
+          <input>
+          # Solution goes here
+          </input>
+        </program>
+        <program language="python">
+          <input>
+          # Solution goes here
+          </input>
+        </program>
+        <program language="python">
+          <input>
+          # Solution goes here
+          </input>
+        </program>
+
+      </statement>
+    <solution>
+      <program language="python">
+        <input>
+k10 = 20 - 3
+k01 = 15 - 3
+k11 = 3
+        </input>
+      </program>
+      <program language="python">
+        <input>
+num_seen = k01 + k10 + k11
+num_seen
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+with pm.Model() as model9:
+    p0 = pm.Beta('p0', alpha=1, beta=1)
+    p1 = pm.Beta('p1', alpha=1, beta=1)
+    N = pm.DiscreteUniform('N', num_seen, 350)
+    
+    q0 = 1-p0
+    q1 = 1-p1
+    ps = [q0*q1, q0*p1, p0*q1, p0*p1]
+    
+    k00 = N - num_seen
+    data = pm.math.stack((k00, k01, k10, k11))
+    y = pm.Multinomial('y', n=N, p=ps, observed=data)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+with model9:
+    trace9 = pm.sample(1000, **options)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+with model9:
+    az.plot_posterior(trace9)
+        </input>
+      </program>
+    </solution>
+    </exercise>
+  </exercises>
 
 </chapter>

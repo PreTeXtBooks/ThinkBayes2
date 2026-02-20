@@ -642,6 +642,52 @@ mix = make_mixture(pmf_dice, dice)
           </ul>
         </p>
       </statement>
+      <solution>
+        <p>Here are the means:</p>
+        <program language="python">
+          <input>
+# Here are the means
+cdf_best3.mean(), cdf_standard.mean()
+          </input>
+        </program>
+        <p>And the standard deviations:</p>
+        <program language="python">
+          <input>
+# And the standard deviations
+cdf_best3.std(), cdf_standard.std()
+          </input>
+        </program>
+        <p>Here's the probability that a single attribute is less than 8:</p>
+        <program language="python">
+          <input>
+# Here's the probability that a single attribute is less than 8
+cdf_best3.lt_dist(8)
+          </input>
+        </program>
+        <p>And the probability that a single attribute is greater than 15:</p>
+        <program language="python">
+          <input>
+# And the probability that a single attribute is greater than 15
+cdf_best3.gt_dist(15)
+          </input>
+        </program>
+        <p>Here are two ways to compute the probability that at least one attribute is less than 8:</p>
+        <program language="python">
+          <input>
+# Here are two ways to compute the probability that at
+# least one attribute is less than 8
+cdf_min6.lt_dist(8), 1 - (1-cdf_best3.lt_dist(8))**6
+          </input>
+        </program>
+        <p>And two ways to compute the probability that at least one attribute is greater than 15:</p>
+        <program language="python">
+          <input>
+# And two ways to compute the probability that at least
+# one attribute is greater than 15
+cdf_max6.gt_dist(15), 1 - (1-cdf_best3.gt_dist(15))**6
+          </input>
+        </program>
+      </solution>
     </exercise>
 
     <exercise xml:id="ex-min-max-mixture-dice-box">
@@ -699,6 +745,34 @@ mix = make_mixture(pmf_dice, dice)
           To see whether this anecdote is plausible, let's suppose that when the baker sees Poincaré coming, he hefts <c>n</c> loaves of bread and gives Poincaré the heaviest one.  How many loaves would the baker have to heft to make the average of the maximum 1000 g?
         </p>
       </statement>
+      <solution>
+        <p>Here's the mean of the maximum of n loaves, for a range of values of n:</p>
+        <program language="python">
+          <input>
+# Here's the mean of the maximum of `n` loaves,
+# for a range of values of `n`
+
+cdf = Cdf.from_seq(sample)
+
+for n in range(2, 6):
+    cdf_max = cdf.max_dist(n)
+    print(n, cdf_max.mean())
+          </input>
+        </program>
+        <p>It looks like hefting 4 loaves is enough to get the mean over 1000, so the story is not entirely implausible. Here's what the distribution of the maximum looks like, compared to the actual distribution of weights:</p>
+        <program language="python">
+          <input>
+# Here's what the distribution of the maximum looks like, compared
+# to the actual distribution of weights.
+
+cdf.plot(label='one loaf')
+cdf.max_dist(4).plot(label='maximum of four loaves')
+
+decorate(xlabel='Weight in grams',
+         ylabel='CDF')
+          </input>
+        </program>
+      </solution>
     </exercise>
 
     <exercise xml:id="ex-min-max-mixture-hospitals">

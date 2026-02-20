@@ -4,11 +4,1322 @@
   <title>Odds and Addends</title>
 
   <introduction>
-    <p>
-      This chapter introduces odds and addends as alternative representations of probability.
-    </p>
+<p>
+  You can order print and ebook versions of <em>Think Bayes 2e</em> from
+<url href="https://bookshop.org/a/98697/9781492089469">Bookshop.org</url> and
+<url href="https://amzn.to/334eqGo">Amazon</url>.
+</p>
+<program language="python">
+  <input>
+  # install empiricaldist if necessary
+
+  try:
+      import empiricaldist
+  except ImportError:
+      !pip install empiricaldist
+      import empiricaldist
+  </input>
+</program>
+<program language="python">
+  <input>
+  # Get utils.py
+
+  from os.path import basename, exists
+
+  def download(url):
+      filename = basename(url)
+      if not exists(filename):
+          from urllib.request import urlretrieve
+          local, _ = urlretrieve(url, filename)
+          print('Downloaded ' + local)
+      
+  download('https://github.com/AllenDowney/ThinkBayes2/raw/master/soln/utils.py')
+  </input>
+</program>
+<program language="python">
+  <input>
+  from utils import set_pyplot_params
+  set_pyplot_params()
+  </input>
+</program>
+<p>
+  This chapter presents a new way to represent a degree of certainty, <em>odds</em>, and a new form of Bayes's Theorem, called <em>Bayes's Rule</em>.
+Bayes's Rule is convenient if you want to do a Bayesian update on paper or in your head.
+It also sheds light on the important idea of <em>evidence</em> and how we can quantify the strength of evidence.
+</p>
+<p>
+  The second part of the chapter is about "addends", that is, quantities being added, and how we can compute their distributions.
+We'll define functions that compute the distribution of sums, differences, products, and other operations.
+Then we'll use those distributions as part of a Bayesian update.
+</p>
   </introduction>
 
-  <!-- Sections will be added here -->
+  <section xml:id="sec-ch06-odds">
+    <title>Odds</title>
 
+<p>
+  One way to represent a probability is with a number between 0 and 1, but that's not the only way.
+If you have ever bet on a football game or a horse race, you have probably encountered another representation of probability, called <em>odds</em>.
+</p>
+<p>
+  You might have heard expressions like "the odds are three to one", but you might not know what that means.
+The <em>odds in favor</em> of an event are the ratio of the probability
+it will occur to the probability that it will not.
+</p>
+<p>
+  The following function does this calculation.
+</p>
+<program language="python">
+  <input>
+  def odds(p):
+      return p / (1-p)
+  </input>
+</program>
+<p>
+  For example, if my team has a 75% chance of winning, the odds in their favor are three to one, because the chance of winning is three times the chance of losing.
+</p>
+<program language="python">
+  <input>
+  odds(0.75)
+  </input>
+</program>
+<p>
+  You can write odds in decimal form, but it is also common to
+write them as a ratio of integers.
+So "three to one" is sometimes written <m>3:1</m>.
+</p>
+<p>
+  When probabilities are low, it is more common to report the
+<em>odds against</em> rather than the odds in favor.
+For example, if my horse has a 10% chance of winning, the odds in favor are <m>1:9</m>.
+</p>
+<program language="python">
+  <input>
+  odds(0.1)
+  </input>
+</program>
+<p>
+  But in that case it would be more common I to say that the odds against are <m>9:1</m>.
+</p>
+<program language="python">
+  <input>
+  odds(0.9)
+  </input>
+</program>
+<p>
+  Given the odds in favor, in decimal form, you can convert to probability like this:
+</p>
+<program language="python">
+  <input>
+  def prob(o):
+      return o / (o+1)
+  </input>
+</program>
+<p>
+  For example, if the odds are <m>3/2</m>, the corresponding probability is <m>3/5</m>:
+</p>
+<program language="python">
+  <input>
+  prob(3/2)
+  </input>
+</program>
+<p>
+  Or if you represent odds with a numerator and denominator, you can convert to probability like this:
+</p>
+<program language="python">
+  <input>
+  def prob2(yes, no):
+      return yes / (yes + no)
+  </input>
+</program>
+<program language="python">
+  <input>
+  prob2(3, 2)
+  </input>
+</program>
+<p>
+  Probabilities and odds are different representations of the
+same information; given either one, you can compute the other.
+But some computations are easier when we work with odds, as we'll see in the next section, and some computations are even easier with log odds, which we'll see later.
+</p>
+  </section>
+
+  <section xml:id="sec-ch06-bayess-rule">
+    <title>Bayes's Rule</title>
+
+<p>
+  So far we have worked with Bayes's theorem in the "probability form":
+</p>
+<p>
+  <me>P(H|D) = \frac{P(H)~P(D|H)}{P(D)}</me>
+</p>
+<p>
+  Writing <m>\mathrm{odds}(A)</m> for odds in favor of <m>A</m>, we can express Bayes's Theorem in "odds form":
+</p>
+<p>
+  <me>\mathrm{odds}(A|D) = \mathrm{odds}(A)~\frac{P(D|A)}{P(D|B)}</me>
+</p>
+<p>
+  This is Bayes's Rule, which says that the posterior odds are the prior odds times the likelihood ratio.
+Bayes's Rule is convenient for computing a Bayesian update on paper or in your head. For example, let's go back to the cookie problem:
+</p>
+<blockquote>
+  <p>
+    Suppose there are two bowls of cookies. Bowl 1 contains 30 vanilla cookies and 10 chocolate cookies. Bowl 2 contains 20 of each. Now suppose you choose one of the bowls at random and, without looking, select a cookie at random. The cookie is vanilla. What is the probability that it came from Bowl 1?
+  </p>
+</blockquote>
+<p>
+  The prior probability is 50%, so the prior odds are 1. The likelihood ratio is <m>\frac{3}{4} / \frac{1}{2}</m>, or <m>3/2</m>. So the posterior odds are <m>3/2</m>, which corresponds to probability <m>3/5</m>.
+</p>
+<program language="python">
+  <input>
+  prior_odds = 1
+  likelihood_ratio = (3/4) / (1/2)
+  post_odds = prior_odds * likelihood_ratio
+  post_odds
+  </input>
+</program>
+<program language="python">
+  <input>
+  post_prob = prob(post_odds)
+  post_prob
+  </input>
+</program>
+<p>
+  If we draw another cookie and it's chocolate, we can do another update:
+</p>
+<program language="python">
+  <input>
+  likelihood_ratio = (1/4) / (1/2)
+  post_odds *= likelihood_ratio
+  post_odds
+  </input>
+</program>
+<p>
+  And convert back to probability.
+</p>
+<program language="python">
+  <input>
+  post_prob = prob(post_odds)
+  post_prob
+  </input>
+</program>
+  </section>
+
+  <section xml:id="sec-ch06-olivers-blood">
+    <title>Oliver's Blood</title>
+
+<p>
+  I’ll use Bayes’s Rule to solve another problem from MacKay’s
+<url href="https://www.inference.org.uk/mackay/itila/"><em>Information Theory, Inference, and Learning Algorithms</em></url>:
+</p>
+<blockquote>
+  <p>
+    Two people have left traces of their own blood at the scene of a crime. A suspect, Oliver, is tested and found to have type ‘O’ blood. The blood groups of the two traces are found to be of type ‘O’ (a common type in the local population, having frequency 60%) and of type ‘AB’ (a rare type, with frequency 1%). Do these data \[the traces found at the scene\] give evidence in favor of the proposition that Oliver was one of the people \[who left blood at the scene\]?
+  </p>
+</blockquote>
+<p>
+  To answer this question, we need to think about what it means for data
+to give evidence in favor of (or against) a hypothesis. Intuitively, we might say that data favor a hypothesis if the hypothesis is more likely in light of the data than it was before.
+</p>
+<p>
+  In the cookie problem, the prior odds are 1, which corresponds to probability 50%. The posterior odds are <m>3/2</m>, or probability 60%. So the vanilla cookie is evidence in favor of Bowl 1.
+</p>
+<p>
+  Bayes's Rule provides a way to make this intuition more precise. Again
+</p>
+<p>
+  <me>\mathrm{odds}(A|D) = \mathrm{odds}(A)~\frac{P(D|A)}{P(D|B)}</me>
+</p>
+<p>
+  Dividing through by <m>\mathrm{odds}(A)</m>, we get:
+</p>
+<p>
+  <me>\frac{\mathrm{odds}(A|D)}{\mathrm{odds}(A)} = \frac{P(D|A)}{P(D|B)}</me>
+</p>
+<p>
+  The term on the left is the ratio of the posterior and prior odds. The term on the right is the likelihood ratio, also called the <em>Bayes
+factor</em>.
+</p>
+<p>
+  If the Bayes factor is greater than 1, that means that the data were
+more likely under <m>A</m> than under <m>B</m>. And that means that the odds are
+greater, in light of the data, than they were before.
+</p>
+<p>
+  If the Bayes factor is less than 1, that means the data were less likely under <m>A</m> than under <m>B</m>, so the odds in favor of <m>A</m> go down.
+</p>
+<p>
+  Finally, if the Bayes factor is exactly 1, the data are equally likely
+under either hypothesis, so the odds do not change.
+</p>
+<p>
+  Let's apply that to the problem at hand. If Oliver is one of the people who left blood at the crime scene, he accounts for the ‘O’ sample; in that case, the probability of the data is the probability that a random member of the population has type ‘AB’ blood, which is 1%.
+</p>
+<p>
+  If Oliver did not leave blood at the scene, we have two samples to
+account for. 
+If we choose two random people from the population, what is the chance of finding one with type ‘O’ and one with type ‘AB’? 
+Well, there are two ways it might happen:
+</p>
+<ul>
+  <li>The first person might have ‘O’ and the second ‘AB’,</li>
+</ul>
+<ul>
+  <li>Or the first person might have ‘AB’ and the second ‘O’.</li>
+</ul>
+<p>
+  The probability of either combination is <m>(0.6) (0.01)</m>, which is 0.6%, so the total probability is twice that, or 1.2%.
+So the data are a little more likely if Oliver is <em>not</em> one of the people who left blood at the scene.
+</p>
+<p>
+  We can use these probabilities to compute the likelihood ratio:
+</p>
+<program language="python">
+  <input>
+  like1 = 0.01
+  like2 = 2 * 0.6 * 0.01
+
+  likelihood_ratio = like1 / like2
+  likelihood_ratio
+  </input>
+</program>
+<p>
+  Since the likelihood ratio is less than 1, the blood tests are evidence <em>against</em> the hypothesis that Oliver left blood at the scence.
+</p>
+<p>
+  But it is weak evidence.  For example, if the prior odds were 1 (that is, 50% probability), the posterior odds would be 0.83, which corresponds to a probability of 45%:
+</p>
+<program language="python">
+  <input>
+  post_odds = 1 * like1 / like2
+  prob(post_odds)
+  </input>
+</program>
+<p>
+  So this evidence doesn't "move the needle" very much.
+</p>
+<p>
+  This example is a little contrived, but it demonstrates the
+counterintuitive result that data <em>consistent</em> with a hypothesis are
+not necessarily <em>in favor of</em> the hypothesis.
+</p>
+<p>
+  If this result still bothers you, this way of thinking might help: the
+data consist of a common event, type ‘O’ blood, and a rare event, type
+‘AB’ blood. If Oliver accounts for the common event, that leaves the
+rare event unexplained. If Oliver doesn’t account for the ‘O’ blood, we
+have two chances to find someone in the population with ‘AB’ blood. And
+that factor of two makes the difference.
+</p>
+<p>
+  <em>Exercise:</em> Suppose that based on other evidence, you prior belief in Oliver's guilt is 90%.  How much would the blood evidence in this section change your beliefs?  What if you initially thought there was only a 10% chance of his guilt?
+</p>
+<program language="python">
+  <input>
+  # Solution goes here
+  </input>
+</program>
+<program language="python">
+  <input>
+  # Solution goes here
+  </input>
+</program>
+  </section>
+
+  <section xml:id="sec-ch06-addends">
+    <title>Addends</title>
+
+<p>
+  The second half of this chapter is about distributions of sums and results of other operations.
+We'll start with a forward problem, where we are given the inputs and compute the distribution of the output.
+Then we'll work on inverse problems, where we are given the outputs and we compute the distribution of the inputs.
+</p>
+<p>
+  As a first example, suppose you roll two dice and add them up. What is the distribution of the sum? 
+I’ll use the following function to create a <c>Pmf</c> that represents the
+possible outcomes of a die:
+</p>
+<program language="python">
+  <input>
+  import numpy as np
+  from empiricaldist import Pmf
+
+  def make_die(sides):
+      outcomes = np.arange(1, sides+1)
+      die = Pmf(1/sides, outcomes)
+      return die
+  </input>
+</program>
+<p>
+  On a six-sided die, the outcomes are 1 through 6, all
+equally likely.
+</p>
+<program language="python">
+  <input>
+  die = make_die(6)
+  </input>
+</program>
+<program language="python">
+  <input>
+  from utils import decorate
+
+  die.bar(alpha=0.4)
+  decorate(xlabel='Outcome',
+           ylabel='PMF')
+  </input>
+</program>
+<p>
+  If we roll two dice and add them up, there are 11 possible outcomes, 2
+through 12, but they are not equally likely. To compute the distribution
+of the sum, we have to enumerate the possible outcomes.
+</p>
+<p>
+  And that's how this function works:
+</p>
+<program language="python">
+  <input>
+  def add_dist(pmf1, pmf2):
+      """Compute the distribution of a sum."""
+      res = Pmf()
+      for q1, p1 in pmf1.items():
+          for q2, p2 in pmf2.items():
+              q = q1 + q2
+              p = p1 * p2
+              res[q] = res(q) + p
+      return res
+  </input>
+</program>
+<p>
+  The parameters are <c>Pmf</c> objects representing distributions.
+</p>
+<p>
+  The loops iterate though the quantities and probabilities in the <c>Pmf</c> objects.
+Each time through the loop <c>q</c> gets the sum of a pair of quantities, and <c>p</c> gets the probability of the pair.
+Because the same sum might appear more than once, we have to add up the total probability for each sum.
+</p>
+<p>
+  Notice a subtle element of this line:
+</p>
+<p>
+  ``<c>
+          res[q] = res(q) + p
+</c>``
+</p>
+<p>
+  I use parentheses on the right side of the assignment, which returns 0 if <c>q</c> does not appear yet in <c>res</c>.
+I use brackets on the left side of the assignment to create or update an element in <c>res</c>; using parentheses on the left side would not work.
+</p>
+<p>
+  <c>Pmf</c> provides <c>add_dist</c>, which does the same thing.
+You can call it as a method, like this:
+</p>
+<program language="python">
+  <input>
+  twice = die.add_dist(die)
+  </input>
+</program>
+<p>
+  Or as a function, like this:
+</p>
+<program language="python">
+  <input>
+  twice = Pmf.add_dist(die, die)
+  </input>
+</program>
+<p>
+  And here's what the result looks like:
+</p>
+<program language="python">
+  <input>
+  from utils import decorate
+
+  def decorate_dice(title=''):
+      decorate(xlabel='Outcome',
+               ylabel='PMF',
+               title=title)
+  </input>
+</program>
+<program language="python">
+  <input>
+  twice = add_dist(die, die)
+  twice.bar(color='C1', alpha=0.5)
+  decorate_dice()
+  </input>
+</program>
+<p>
+  If we have a sequence of <c>Pmf</c> objects that represent dice, we can compute the distribution of the sum like this:
+</p>
+<program language="python">
+  <input>
+  def add_dist_seq(seq):
+      """Compute Pmf of the sum of values from seq."""
+      total = seq[0]
+      for other in seq[1:]:
+          total = total.add_dist(other)
+      return total
+  </input>
+</program>
+<p>
+  As an example, we can make a list of three dice like this:
+</p>
+<program language="python">
+  <input>
+  dice = [die] * 3
+  </input>
+</program>
+<p>
+  And we can compute the distribution of their sum like this.
+</p>
+<program language="python">
+  <input>
+  thrice = add_dist_seq(dice)
+  </input>
+</program>
+<p>
+  The following figure shows what these three distributions look like:
+</p>
+<ul>
+  <li>The distribution of a single die is uniform from 1 to 6.</li>
+</ul>
+<ul>
+  <li>The sum of two dice has a triangle distribution between 2 and 12.</li>
+</ul>
+<ul>
+  <li>The sum of three dice has a bell-shaped distribution between 3</li>
+</ul>
+<program language="python">
+  <input>
+  import matplotlib.pyplot as plt
+
+  die.plot(label='once')
+  twice.plot(label='twice', ls='--')
+  thrice.plot(label='thrice', ls=':')
+
+  plt.xticks([0,3,6,9,12,15,18])
+  decorate_dice(title='Distributions of sums')
+  </input>
+</program>
+<p>
+  As an aside, this example demonstrates the Central Limit Theorem, which says that the distribution of a sum converges on a bell-shaped normal distribution, at least under some conditions.
+</p>
+  </section>
+
+  <section xml:id="sec-ch06-gluten-sensitivity">
+    <title>Gluten Sensitivity</title>
+
+<p>
+  In 2015 I read a paper that tested whether people diagnosed with gluten sensitivity (but not celiac disease) were able to distinguish gluten flour from non-gluten flour in a blind challenge
+(<url href="https://onlinelibrary.wiley.com/doi/full/10.1111/apt.13372">you can read the paper here</url>).
+</p>
+<p>
+  Out of 35 subjects, 12 correctly identified the gluten flour based on
+resumption of symptoms while they were eating it. Another 17 wrongly
+identified the gluten-free flour based on their symptoms, and 6 were
+unable to distinguish.
+</p>
+<p>
+  The authors conclude, "Double-blind gluten challenge induces symptom
+recurrence in just one-third of patients."
+</p>
+<p>
+  This conclusion seems odd to me, because if none of the patients were
+sensitive to gluten, we would expect some of them to identify the gluten flour by chance. 
+So here's the question: based on this data, how many of the subjects are sensitive to gluten and how many are guessing?
+</p>
+<p>
+  We can use Bayes's Theorem to answer this question, but first we have to make some modeling decisions. I'll assume:
+</p>
+<ul>
+  <li>People who are sensitive to gluten have a 95% chance of correctly</li>
+</ul>
+<ul>
+  <li>People who are not sensitive have a 40% chance of identifying the</li>
+</ul>
+<p>
+  These particular values are arbitrary, but the results are not sensitive to these choices.
+</p>
+<p>
+  I will solve this problem in two steps. First, assuming that we know how many subjects are sensitive, I will compute the distribution of the data. 
+Then, using the likelihood of the data, I will compute the posterior distribution of the number of sensitive patients.
+</p>
+<p>
+  The first is the <em>forward problem</em>; the second is the <em>inverse
+problem</em>.
+</p>
+  </section>
+
+  <section xml:id="sec-ch06-the-forward-problem">
+    <title>The Forward Problem</title>
+
+<p>
+  Suppose we know that 10 of the 35 subjects are sensitive to gluten. That
+means that 25 are not:
+</p>
+<program language="python">
+  <input>
+  n = 35
+  num_sensitive = 10
+  num_insensitive = n - num_sensitive
+  </input>
+</program>
+<p>
+  Each sensitive subject has a 95% chance of identifying the gluten flour,
+so the number of correct identifications follows a binomial distribution.
+</p>
+<p>
+  I'll use <c>make_binomial</c>, which we defined in &lt;&lt;_TheBinomialDistribution&gt;&gt;, to make a <c>Pmf</c> that represents the binomial distribution.
+</p>
+<program language="python">
+  <input>
+  from utils import make_binomial
+
+  dist_sensitive = make_binomial(num_sensitive, 0.95)
+  dist_insensitive = make_binomial(num_insensitive, 0.40)
+  </input>
+</program>
+<p>
+  The results are the distributions for the number of correct identifications in each group.
+</p>
+<p>
+  Now we can use <c>add_dist</c> to compute the distribution of the total number of correct identifications:
+</p>
+<program language="python">
+  <input>
+  dist_total = Pmf.add_dist(dist_sensitive, dist_insensitive)
+  </input>
+</program>
+<p>
+  Here are the results:
+</p>
+<program language="python">
+  <input>
+  dist_sensitive.plot(label='sensitive', ls=':')
+  dist_insensitive.plot(label='insensitive', ls='--')
+  dist_total.plot(label='total')
+
+  decorate(xlabel='Number of correct identifications',
+           ylabel='PMF',
+           title='Gluten sensitivity')
+  </input>
+</program>
+<p>
+  We expect most of the sensitive subjects to identify the gluten flour correctly.
+Of the 25 insensitive subjects, we expect about 10 to identify the gluten flour by chance.
+So we expect about 20 correct identifications in total.
+</p>
+<p>
+  This is the answer to the forward problem: given the number of sensitive subjects, we can compute the distribution of the data.
+</p>
+  </section>
+
+  <section xml:id="sec-ch06-the-inverse-problem">
+    <title>The Inverse Problem</title>
+
+<p>
+  Now let's solve the inverse problem: given the data, we'll compute the posterior distribution of the number of sensitive subjects.
+</p>
+<p>
+  Here's how.  I'll loop through the possible values of <c>num_sensitive</c> and compute the distribution of the data for each:
+</p>
+<program language="python">
+  <input>
+  import pandas as pd
+
+  table = pd.DataFrame()
+  for num_sensitive in range(0, n+1):
+      num_insensitive = n - num_sensitive
+      dist_sensitive = make_binomial(num_sensitive, 0.95)
+      dist_insensitive = make_binomial(num_insensitive, 0.4)
+      dist_total = Pmf.add_dist(dist_sensitive, dist_insensitive)    
+      table[num_sensitive] = dist_total
+  </input>
+</program>
+<p>
+  The loop enumerates the possible values of <c>num_sensitive</c>.
+For each value, it computes the distribution of the total number of correct identifications, and stores the result as a column in a Pandas <c>DataFrame</c>.
+</p>
+<program language="python">
+  <input>
+  table.head(3)
+  </input>
+</program>
+<p>
+  The following figure shows selected columns from the <c>DataFrame</c>, corresponding to different hypothetical values of <c>num_sensitive</c>:
+</p>
+<program language="python">
+  <input>
+  table[0].plot(label='num_sensitive = 0')
+  table[10].plot(label='num_sensitive = 10')
+  table[20].plot(label='num_sensitive = 20', ls='--')
+  table[30].plot(label='num_sensitive = 30', ls=':')
+      
+  decorate(xlabel='Number of correct identifications',
+           ylabel='PMF',
+           title='Gluten sensitivity')
+  </input>
+</program>
+<p>
+  Now we can use this table to compute the likelihood of the data:
+</p>
+<program language="python">
+  <input>
+  likelihood1 = table.loc[12]
+  </input>
+</program>
+<p>
+  <c>loc</c> selects a row from the <c>DataFrame</c>.
+The row with index 12 contains the probability of 12 correct identifications for each hypothetical value of <c>num_sensitive</c>.
+And that's exactly the likelihood we need to do a Bayesian update.
+</p>
+<p>
+  I'll use a uniform prior, which implies that I would be equally surprised by any value of <c>num_sensitive</c>:
+</p>
+<program language="python">
+  <input>
+  hypos = np.arange(n+1)
+  prior = Pmf(1, hypos)
+  </input>
+</program>
+<p>
+  And here's the update:
+</p>
+<program language="python">
+  <input>
+  posterior1 = prior * likelihood1
+  posterior1.normalize()
+  </input>
+</program>
+<p>
+  For comparison, I also compute the posterior for another possible outcome, 20 correct identifications.
+</p>
+<program language="python">
+  <input>
+  likelihood2 = table.loc[20]
+  posterior2 = prior * likelihood2
+  posterior2.normalize()
+  </input>
+</program>
+<p>
+  The following figure shows posterior distributions of <c>num_sensitive</c> based on the actual data, 12 correct identifications, and the other possible outcome, 20 correct identifications.
+</p>
+<program language="python">
+  <input>
+  posterior1.plot(label='posterior with 12 correct', color='C4')
+  posterior2.plot(label='posterior with 20 correct', color='C1')
+
+  decorate(xlabel='Number of sensitive subjects',
+           ylabel='PMF',
+           title='Posterior distributions')
+  </input>
+</program>
+<p>
+  With 12 correct identifications, the most likely conclusion is that none of the subjects are sensitive to gluten.
+If there had been 20 correct identifications, the most likely conclusion would be that 11-12 of the subjects were sensitive.
+</p>
+<program language="python">
+  <input>
+  posterior1.max_prob()
+  </input>
+</program>
+<program language="python">
+  <input>
+  posterior2.max_prob()
+  </input>
+</program>
+  </section>
+
+  <section xml:id="sec-ch06-summary">
+    <title>Summary</title>
+
+<p>
+  This chapter presents two topics that are almost unrelated except that they make the title of the chapter catchy.
+</p>
+<p>
+  The first part of the chapter is about Bayes's Rule, evidence, and how we can quantify the strength of evidence using a likelihood ratio or Bayes factor.
+</p>
+<p>
+  The second part is about <c>add_dist</c>, which computes the distribution of a sum.
+We can use this function to solve forward and inverse problems; that is, given the parameters of a system, we can compute the distribution of the data or, given the data, we can compute the distribution of the parameters.
+</p>
+<p>
+  In the next chapter, we'll compute distributions for minimums and maximums, and use them to solve more Bayesian problems.
+But first you might want to work on these exercises.
+</p>
+  </section>
+
+  <exercises xml:id="sec-ch06-exercises">
+    <title>Exercises</title>
+
+    <exercise xml:id="ex-ch06-1">
+      <title>Exercise 1</title>
+      <statement>
+      <p>
+        Let's use Bayes's Rule to solve the Elvis problem from &lt;&lt;_Distributions&gt;&gt;:
+      </p>
+      <blockquote>
+        <p>
+          Elvis Presley had a twin brother who died at birth. What is the probability that Elvis was an identical twin?
+        </p>
+      </blockquote>
+      <p>
+        In 1935, about 2/3 of twins were fraternal and 1/3 were identical.
+The question contains two pieces of information we can use to update this prior.
+      </p>
+      <ul>
+        <li>First, Elvis's twin was also male, which is more likely if they were identical twins, with a likelihood ratio of 2.</li>
+      </ul>
+      <ul>
+        <li>Also, Elvis's twin died at birth, which is more likely if they were identical twins, with a likelihood ratio of 1.25.</li>
+      </ul>
+      <p>
+        If you are curious about where those numbers come from, I wrote <url href="https://www.allendowney.com/blog/2020/01/28/the-elvis-problem-revisited">a blog post about it</url>.
+      </p>
+      <program language="python">
+        <input>
+        # Solution goes here
+        </input>
+      </program>
+      <program language="python">
+        <input>
+        # Solution goes here
+        </input>
+      </program>
+      <program language="python">
+        <input>
+        # Solution goes here
+        </input>
+      </program>
+      </statement>
+    <solution>
+      <program language="python">
+        <input>
+
+prior_odds = odds(1/3)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+post_odds = prior_odds * 2 * 1.25
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+prob(post_odds)
+        </input>
+      </program>
+    </solution>
+    </exercise>
+
+    <exercise xml:id="ex-ch06-2">
+      <title>Exercise 2</title>
+      <statement>
+      <p>
+        The following is an <url href="https://www.glassdoor.com/Interview/You-re-about-to-get-on-a-plane-to-Seattle-You-want-to-know-if-you-should-bring-an-umbrella-You-call-3-random-friends-of-y-QTN_519262.htm">interview question that appeared on glassdoor.com</url>, attributed to Facebook:
+      </p>
+      <blockquote>
+        <p>
+          You're about to get on a plane to Seattle. You want to know if you should bring an umbrella. You call 3 random friends of yours who live there and ask each independently if it's raining. Each of your friends has a 2/3 chance of telling you the truth and a 1/3 chance of messing with you by lying. All 3 friends tell you that "Yes" it is raining. What is the probability that it's actually raining in Seattle?
+        </p>
+      </blockquote>
+      <p>
+        Use Bayes's Rule to solve this problem.  As a prior you can assume that it rains in Seattle about 10% of the time.
+      </p>
+      <p>
+        This question causes some confusion about the differences between Bayesian and frequentist interpretations of probability; if you are curious about this point, <url href="http://allendowney.blogspot.com/2016/09/bayess-theorem-is-not-optional.html">I wrote a blog article about it</url>.
+      </p>
+      <program language="python">
+        <input>
+        # Solution goes here
+        </input>
+      </program>
+      <program language="python">
+        <input>
+        # Solution goes here
+        </input>
+      </program>
+      <program language="python">
+        <input>
+        # Solution goes here
+        </input>
+      </program>
+      </statement>
+    <solution>
+      <program language="python">
+        <input>
+
+prior_odds = odds(0.1)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+post_odds = prior_odds * 2 * 2 * 2
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+prob(post_odds)
+        </input>
+      </program>
+    </solution>
+    </exercise>
+
+    <exercise xml:id="ex-ch06-3">
+      <title>Exercise 3</title>
+      <statement>
+      <p>
+        <url href="https://www.cdc.gov/tobacco/data_statistics/fact_sheets/health_effects/effects_cig_smoking">According to the CDC</url>, people who smoke are about 25 times more likely to develop lung cancer than nonsmokers.
+      </p>
+      <p>
+        <url href="https://www.cdc.gov/tobacco/data_statistics/fact_sheets/adult_data/cig_smoking/index.htm">Also according to the CDC</url>, about 14\% of adults in the U.S. are smokers.
+If you learn that someone has lung cancer, what is the probability they are a smoker?
+      </p>
+      <program language="python">
+        <input>
+        # Solution goes here
+        </input>
+      </program>
+      <program language="python">
+        <input>
+        # Solution goes here
+        </input>
+      </program>
+      <program language="python">
+        <input>
+        # Solution goes here
+        </input>
+      </program>
+      </statement>
+    <solution>
+      <program language="python">
+        <input>
+
+prior_odds = odds(0.14)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+post_odds = prior_odds * 25
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+prob(post_odds)
+        </input>
+      </program>
+    </solution>
+    </exercise>
+
+    <exercise xml:id="ex-ch06-4">
+      <title>Exercise 4</title>
+      <statement>
+      <p>
+        In <em>Dungeons &amp; Dragons</em>, the amount of damage a goblin can withstand is the sum of two six-sided dice. The amount of damage you inflict with a short sword is determined by rolling one six-sided die.
+A goblin is defeated if the total damage you inflict is greater than or equal to the amount it can withstand.
+      </p>
+      <p>
+        Suppose you are fighting a goblin and you have already inflicted 3 points of damage. What is your probability of defeating the goblin with your next successful attack?
+      </p>
+      <p>
+        Hint: You can use <c>Pmf.sub_dist</c> to subtract a constant amount, like 3, from a <c>Pmf</c>.
+      </p>
+      <program language="python">
+        <input>
+        # Solution goes here
+        </input>
+      </program>
+      <program language="python">
+        <input>
+        # Solution goes here
+        </input>
+      </program>
+      <program language="python">
+        <input>
+        # Solution goes here
+        </input>
+      </program>
+      <program language="python">
+        <input>
+        # Solution goes here
+        </input>
+      </program>
+      <program language="python">
+        <input>
+        # Solution goes here
+        </input>
+      </program>
+      <program language="python">
+        <input>
+        # Solution goes here
+        </input>
+      </program>
+      <program language="python">
+        <input>
+        # Solution goes here
+        </input>
+      </program>
+      <program language="python">
+        <input>
+        # Solution goes here
+        </input>
+      </program>
+      </statement>
+    <solution>
+      <program language="python">
+        <input>
+
+d6 = make_die(6)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+# The amount the goblin started with is the sum of two d6
+hp_before = Pmf.add_dist(d6, d6)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+# Here's the number of hit points after the first attack
+hp_after = Pmf.sub_dist(hp_before, 3)
+hp_after
+        </input>
+      </program>
+      <program language="python">
+        <input>
+# So we have to zero them out and renormalize
+hp_after[[-1, 0]] = 0
+hp_after.normalize()
+hp_after
+        </input>
+      </program>
+      <program language="python">
+        <input>
+# The damage from the second attack is one d6
+damage = d6
+        </input>
+      </program>
+      <program language="python">
+        <input>
+# Here's what the distributions look like
+hp_after.bar(label='Hit points')
+damage.plot(label='Damage', color='C1')
+decorate_dice('The Goblin Problem')
+        </input>
+      </program>
+      <program language="python">
+        <input>
+# Here's the distribution of points the goblin has left
+points_left = Pmf.sub_dist(hp_after, damage)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+# And here's the probability the goblin is dead
+points_left.prob_le(0)
+        </input>
+      </program>
+    </solution>
+    </exercise>
+
+    <exercise xml:id="ex-ch06-5">
+      <title>Exercise 5</title>
+      <statement>
+      <p>
+        Suppose I have a box with a 6-sided die, an 8-sided die, and a 12-sided die.
+I choose one of the dice at random, roll it twice, multiply the outcomes, and report that the product is 12.
+What is the probability that I chose the 8-sided die?
+      </p>
+      <p>
+        Hint: <c>Pmf</c> provides a function called <c>mul_dist</c> that takes two <c>Pmf</c> objects and returns a <c>Pmf</c> that represents the distribution of the product.
+      </p>
+      <program language="python">
+        <input>
+        # Solution goes here
+        </input>
+      </program>
+      <program language="python">
+        <input>
+        # Solution goes here
+        </input>
+      </program>
+      <program language="python">
+        <input>
+        # Solution goes here
+        </input>
+      </program>
+      <program language="python">
+        <input>
+        # Solution goes here
+        </input>
+      </program>
+      </statement>
+    <solution>
+      <program language="python">
+        <input>
+
+hypos = [6, 8, 12]
+prior = Pmf(1, hypos)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+d4 = make_die(4)
+Pmf.mul_dist(d4, d4)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+# Here's the likelihood of getting a 12 for each die
+likelihood = []
+
+for sides in hypos:
+    die = make_die(sides)
+    pmf = Pmf.mul_dist(die, die)
+    likelihood.append(pmf[12])
+    
+likelihood
+        </input>
+      </program>
+      <program language="python">
+        <input>
+# And here's the update
+posterior = prior * likelihood
+posterior.normalize()
+posterior
+        </input>
+      </program>
+    </solution>
+    </exercise>
+
+    <exercise xml:id="ex-ch06-6">
+      <title>Exercise 6</title>
+      <statement>
+      <p>
+        <em>Betrayal at House on the Hill</em> is a strategy game in which characters with different attributes explore a haunted house.  Depending on their attributes, the characters roll different numbers of dice.  For example, if attempting a task that depends on knowledge, Professor Longfellow rolls 5 dice, Madame Zostra rolls 4, and Ox Bellows rolls 3.  Each die yields 0, 1, or 2 with equal probability.
+      </p>
+      <p>
+        If a randomly chosen character attempts a task three times and rolls a total of 3 on the first attempt, 4 on the second, and 5 on the third, which character do you think it was?
+      </p>
+      <program language="python">
+        <input>
+        # Solution goes here
+        </input>
+      </program>
+      <program language="python">
+        <input>
+        # Solution goes here
+        </input>
+      </program>
+      <program language="python">
+        <input>
+        # Solution goes here
+        </input>
+      </program>
+      <program language="python">
+        <input>
+        # Solution goes here
+        </input>
+      </program>
+      <program language="python">
+        <input>
+        # Solution goes here
+        </input>
+      </program>
+      <program language="python">
+        <input>
+        # Solution goes here
+        </input>
+      </program>
+      <program language="python">
+        <input>
+        # Solution goes here
+        </input>
+      </program>
+      </statement>
+    <solution>
+      <program language="python">
+        <input>
+
+die = Pmf(1/3, [0,1,2])
+die
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+pmfs = {}
+pmfs['Bellows'] = add_dist_seq([die]*3)
+pmfs['Zostra'] = add_dist_seq([die]*4)
+pmfs['Longfellow'] = add_dist_seq([die]*5)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+pmfs['Zostra'](4)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+pmfs['Zostra']([3,4,5]).prod()
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+hypos = pmfs.keys()
+prior = Pmf(1/3, hypos)
+prior
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+likelihood = prior.copy()
+
+for hypo in hypos:
+    likelihood[hypo] = pmfs[hypo]([3,4,5]).prod()
+
+likelihood
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+posterior = (prior * likelihood)
+posterior.normalize()
+posterior
+        </input>
+      </program>
+    </solution>
+    </exercise>
+
+    <exercise xml:id="ex-ch06-7">
+      <title>Exercise 7</title>
+      <statement>
+      <p>
+        There are 538 members of the United States Congress. Suppose we audit their investment portfolios and find that 312 of them out-perform the market.
+Let's assume that an honest member of Congress has only a 50% chance of out-performing the market, but a dishonest member who trades on inside information has a 90% chance.  How many members of Congress are honest?
+      </p>
+      <p>
+        <em>Think Bayes</em>, Second Edition
+      </p>
+      <p>
+        Copyright 2020 Allen B. Downey
+      </p>
+      <p>
+        License: <url href="https://creativecommons.org/licenses/by-nc-sa/4.0/">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)</url>
+      </p>
+      <program language="python">
+        <input>
+        # Solution goes here
+        </input>
+      </program>
+      <program language="python">
+        <input>
+        # Solution goes here
+        </input>
+      </program>
+      <program language="python">
+        <input>
+        # Solution goes here
+        </input>
+      </program>
+      <program language="python">
+        <input>
+        # Solution goes here
+        </input>
+      </program>
+      <program language="python">
+        <input>
+        # Solution goes here
+        </input>
+      </program>
+      <program language="python">
+        <input>
+        # Solution goes here
+        </input>
+      </program>
+      <program language="python">
+        <input>
+        # Solution goes here
+        </input>
+      </program>
+      </statement>
+    <solution>
+      <program language="python">
+        <input>
+
+n = 538
+
+ns = range(0, n+1)
+table = pd.DataFrame(index=ns, columns=ns, dtype=float)
+
+for n_honest in ns:
+    n_dishonest = n - n_honest
+
+    dist_honest = make_binomial(n_honest, 0.5)
+    dist_dishonest = make_binomial(n_dishonest, 0.9)
+    dist_total = Pmf.add_dist(dist_honest, dist_dishonest)    
+    table[n_honest] = dist_total
+    
+table.shape
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+data = 312
+likelihood = table.loc[312]
+len(likelihood)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+hypos = np.arange(n+1)
+prior = Pmf(1, hypos)
+len(prior)
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+posterior = prior * likelihood
+posterior.normalize()
+posterior.mean()
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+posterior.plot(label='posterior')
+decorate(xlabel='Number of honest members of Congress',
+         ylabel='PMF')
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+posterior.max_prob()
+        </input>
+      </program>
+      <program language="python">
+        <input>
+
+posterior.credible_interval(0.9)
+        </input>
+      </program>
+    </solution>
+    </exercise>
+
+  </exercises>
 </chapter>
