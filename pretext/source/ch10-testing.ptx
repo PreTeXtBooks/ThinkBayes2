@@ -605,7 +605,15 @@ Actual P(win)  Posterior mean Credible interval
 
   <section xml:id="sec-ch10-explore-and-exploit">
     <title>Explore and Exploit</title>
+   <p>Based on these posterior distributions, which machine do you think we should play next? One option would be to choose the machine with the highest posterior mean.
+</p><p>
 
+That would not be a bad idea, but it has a drawback: since we have only played each machine a few times, the posterior distributions are wide and overlapping, which means we are not sure which machine is the best; if we focus on one machine too soon, we might choose the wrong machine and play it more than we should.
+</p><p>
+
+To avoid that problem, we could go to the other extreme and play all machines equally until we are confident we have identified the best machine, and then play it exclusively.
+</p><p>
+That's not a bad idea either, but it has a drawback: while we are gathering data, we are not making good use of it; until we’re sure which machine is the best, we are playing the others more than we should.</p>
     <p>
       The Bayesian Bandits strategy avoids both drawbacks by gathering and using data at the same time.  In other words, it balances exploration and exploitation.
     </p>
@@ -707,7 +715,7 @@ choose(beliefs)
 
   <section xml:id="sec-ch10-the-strategy">
     <title>The Strategy</title>
-
+<p>Putting it all together, the following function chooses a machine, plays once, and updates <c>beliefs</c>:</p>
     <program language="python">
       <input>
 def choose_play_update(beliefs):
@@ -846,345 +854,7 @@ Actual P(win) Times played
       Details of this exercise are in the notebook.
     </p>
 
-    <exercise xml:id="ex-ch10-1">
-      <title>Adaptive Testing</title>
-      <statement>
-        <p>Details of this exercise are in the sections below.</p>
-      </statement>
-    <solution>
-      <program language="python">
-        <input>
-def prob_correct(ability, difficulty):
-    """Probability of a correct response."""
-    a = 100
-    c = 0.25
-    x = (ability - difficulty) / a
-    p = c + (1-c) / (1 + np.exp(-x))
-    return p
-        </input>
-      </program>
-      <program language="python">
-        <input>
-abilities = np.linspace(100, 900)
-diff = 500
-ps = prob_correct(abilities, diff)
-        </input>
-      </program>
-      <program language="python">
-        <input>
-plt.plot(abilities, ps)
-decorate(xlabel='Ability',
-         ylabel='Probability correct',
-         title='Probability of correct answer, difficulty=500',
-         ylim=[0, 1.05])
-        </input>
-      </program>
-    <image source="images/ch10_testing_b27b0ad1.png" width="80%"/>
-      <program language="python">
-        <input>
-def play(ability, difficulty):
-    """Simulate a test-taker answering a question."""
-    p = prob_correct(ability, difficulty)
-    return np.random.random() &lt; p
-        </input>
-      </program>
-      <program language="python">
-        <input>
-prob_correct(600, 500)
-        </input>
-    </program>
-<pre>
-0.7982939339725037
-</pre>
-      <program language="python">
-        <input>
-np.random.seed(18)
-        </input>
-      </program>
-      <program language="python">
-        <input>
-num_questions = 51
-outcomes = [play(600, 500) for _ in range(num_questions)]
-np.mean(outcomes)
-        </input>
-    </program>
-<pre>
-0.803921568627451
-</pre>
-      <program language="python">
-        <input>
-from scipy.stats import norm
-
-mean = 500
-std = 300
-
-qs = np.linspace(0, 1000)
-ps = norm(mean, std).pdf(qs)
-
-prior = Pmf(ps, qs)
-prior.normalize()
-        </input>
-    </program>
-<pre>
-0.04464186995102338
-</pre>
-      <program language="python">
-        <input>
-prior.plot(label='std=300', color='C5')
-
-decorate(xlabel='Ability',
-         ylabel='PDF',
-         title='Prior distribution of ability',
-         ylim=[0, 0.032])
-        </input>
-      </program>
-    <image source="images/ch10_testing_e36729ec.png" width="80%"/>
-      <program language="python">
-        <input>
-def update_ability(pmf, data):
-    """Update the distribution of ability."""
-    difficulty, outcome = data
-    
-    abilities = pmf.qs
-    ps = prob_correct(abilities, difficulty)
-    
-    if outcome:
-        pmf *= ps
-    else:
-        pmf *= 1 - ps
-        
-    pmf.normalize()
-        </input>
-      </program>
-      <program language="python">
-        <input>
-actual_600 = prior.copy()
-
-for outcome in outcomes:
-    data = (500, outcome)
-    update_ability(actual_600, data)
-        </input>
-      </program>
-      <program language="python">
-        <input>
-actual_600.plot(color='C4')
-
-decorate(xlabel='Ability',
-         ylabel='PDF',
-         title='Posterior distribution of ability')
-        </input>
-      </program>
-    <image source="images/ch10_testing_e5ddc059.png" width="80%"/>
-      <program language="python">
-        <input>
-actual_600.mean()
-        </input>
-    </program>
-<pre>
-604.3325737356816
-</pre>
-      <program language="python">
-        <input>
-def choose(i, belief):
-    """Choose the difficulty of the next question."""
-    return 500
-        </input>
-      </program>
-      <program language="python">
-        <input>
-def simulate_test(actual_ability):
-    """Simulate a person taking a test."""
-    belief = prior.copy()
-    trace = pd.DataFrame(columns=['difficulty', 'outcome'])
-
-    for i in range(num_questions):
-        difficulty = choose(i, belief)
-        outcome = play(actual_ability, difficulty)
-        data = (difficulty, outcome)
-        update_ability(belief, data)
-        trace.loc[i] = difficulty, outcome
-        
-    return belief, trace
-        </input>
-      </program>
-      <program language="python">
-        <input>
-belief, trace = simulate_test(600)
-        </input>
-      </program>
-      <program language="python">
-        <input>
-trace['outcome'].sum()
-        </input>
-    </program>
-<pre>
-42
-</pre>
-      <program language="python">
-        <input>
-belief.plot(color='C4', label='ability=600')
-
-decorate(xlabel='Ability',
-         ylabel='PDF',
-         title='Posterior distribution of ability')
-        </input>
-      </program>
-    <image source="images/ch10_testing_ffb3ab16.png" width="80%"/>
-      <program language="python">
-        <input>
-belief.mean(), belief.std()
-        </input>
-    </program>
-<pre>
-(618.6942050450824, 40.08554296596485)
-</pre>
-      <program language="python">
-        <input>
-actual_abilities = np.linspace(200, 800)
-results = pd.DataFrame(columns=['ability', 'posterior_std'])
-series = pd.Series(index=actual_abilities, dtype=float, name='std')
-
-for actual_ability in actual_abilities:
-    belief, trace = simulate_test(actual_ability)
-    series[actual_ability] = belief.std()
-        </input>
-      </program>
-      <program language="python">
-        <input>
-from utils import plot_series_lowess
-
-plot_series_lowess(series, 'C1')
-
-decorate(xlabel='Actual ability',
-         ylabel='Standard deviation of posterior')
-        </input>
-      </program>
-    <image source="images/ch10_testing_b06c6b9d.png" width="80%"/>
-      <program language="python">
-        <input>
-def sample_posterior(actual_ability, iters):
-    """Simulate multiple tests and compute posterior means.
-    
-    actual_ability: number
-    iters: number of simulated tests
-    
-    returns: array of scores
-    """
-    scores = []
-
-    for i in range(iters):
-        belief, trace = simulate_test(actual_ability)
-        score = belief.mean()
-        scores.append(score)
-        
-    return np.array(scores)
-        </input>
-      </program>
-      <program language="python">
-        <input>
-sample_500 = sample_posterior(500, iters=100)
-        </input>
-      </program>
-      <program language="python">
-        <input>
-sample_600 = sample_posterior(600, iters=100)
-        </input>
-      </program>
-      <program language="python">
-        <input>
-sample_700 = sample_posterior(700, iters=100)
-        </input>
-      </program>
-      <program language="python">
-        <input>
-sample_800 = sample_posterior(800, iters=100)
-        </input>
-      </program>
-      <program language="python">
-        <input>
-from empiricaldist import Cdf
-
-cdf_500 = Cdf.from_seq(sample_500)
-cdf_600 = Cdf.from_seq(sample_600)
-cdf_700 = Cdf.from_seq(sample_700)
-cdf_800 = Cdf.from_seq(sample_800)
-        </input>
-      </program>
-      <program language="python">
-        <input>
-cdf_500.plot(label='ability=500', color='C1',
-            linestyle='dashed')
-cdf_600.plot(label='ability=600', color='C3')
-cdf_700.plot(label='ability=700', color='C2',
-            linestyle='dashed')
-cdf_800.plot(label='ability=800', color='C0')
-
-decorate(xlabel='Test score',
-         ylabel='CDF',
-         title='Sampling distribution of test scores')
-        </input>
-      </program>
-    <image source="images/ch10_testing_a34d7d32.png" width="80%"/>
-      <program language="python">
-        <input>
-np.mean(sample_600 &gt; sample_500)
-        </input>
-      </program>
-      <program language="python">
-        <input>
-np.mean(sample_700 &gt; sample_600)
-        </input>
-      </program>
-      <program language="python">
-        <input>
-np.mean(sample_800 &gt; sample_700)
-        </input>
-      </program>
-      <program language="python">
-        <input>
-
-num_questions = 51
-difficulties = np.linspace(200, 800, num_questions)
-
-def choose(i, belief):
-    """Choose the difficulty of the next question.
-    
-    i: index from [0..num_questions-1]
-    belief: Pmf representing current estimate of ability
-    
-    returns: difficulty
-    """
-    return difficulties[i]
-        </input>
-      </program>
-      <program language="python">
-        <input>
-
-def choose(i, belief):
-    """Choose the difficulty of the next question.
-    
-    i: index from [0..num_questions-1]
-    belief: Pmf representing current estimate of ability
-    
-    returns: difficulty
-    """
-    return belief.mean()
-        </input>
-      </program>
-    </solution>
-    </exercise>
-
-    <exercise xml:id="ex-ch10-2">
-      <title>Triangle Prior</title>
-      <statement>
-        <p>Now compute the total probability of the data under this definition of "biased" and compute the Bayes factor, compared with the fair hypothesis. Is the data evidence that the coin is biased?</p>
-      </statement>
-    </exercise>
-  </section>
-
-  <section xml:id="sec-ch10-the-model">
-    <title>The Model</title>
-
+<exercise>
     <p>
       The model we'll use is based on <url href="https://en.wikipedia.org/wiki/Item_response_theory">item response theory</url>, which assumes that we can quantify the difficulty of each question and the ability of each test-taker, and that the probability of a correct response is a function of difficulty and ability.
     </p>
@@ -1241,6 +911,7 @@ decorate(xlabel='Ability',
     <p>
       Someone with <c>ability=900</c> is nearly certain to get the right answer. Someone with <c>ability=100</c> has about a 25% chance of getting the right answer by guessing.
     </p>
+</exercise>
   </section>
 
   <section xml:id="sec-ch10-simulating-the-test">
@@ -1299,7 +970,11 @@ np.mean(outcomes)
 
   <section xml:id="sec-ch10-the-prior">
     <title>The Prior</title>
-
+<p>The SAT is designed so the distribution of scores is roughly normal, with mean 500 and standard deviation 100. So the lowest score, 200, is three standard deviations below the mean, and the highest score, 800, is three standard deviations above.
+</p><p>
+We could use that distribution as a prior, but it would tend to cut off the low and high ends of the distribution. Instead, I’ll inflate the standard deviation to 300, to leave open the possibility that ability can be less than 200 or more than 800.
+</p><p>
+Here’s a Pmf that represents the prior distribution.</p>
     <program language="python">
       <input>
 from scipy.stats import norm
@@ -1335,7 +1010,7 @@ decorate(xlabel='Ability',
 
   <section xml:id="sec-ch10-update-2">
     <title>The Update</title>
-
+<p>The following function takes a prior <c>Pmf</c> and the outcome of a single question, and updates the <c>Pmf</c> in place.</p>
     <program language="python">
       <input>
 def update_ability(pmf, data):
@@ -1399,7 +1074,7 @@ actual_600.mean()
 
   <section xml:id="sec-ch10-adaptation">
     <title>Adaptation</title>
-
+<p>Now let’s simulate an adaptive test. I’ll use the following function to choose questions, starting with the simplest strategy: all questions have the same difficulty.</p>
     <program language="python">
       <input>
 def choose(i, belief):
@@ -1475,7 +1150,9 @@ decorate(xlabel='Ability',
 
   <section xml:id="sec-ch10-quantifying-precision">
     <title>Quantifying Precision</title>
+<p>To quantify the precision of the estimates, I’ll use the standard deviation of the posterior distribution. The standard deviation measures the spread of the distribution, so higher value indicates more uncertainty about the ability of the test-taker.
 
+In the previous example, the standard deviation of the posterior distribution is about 40.</p>
     <program language="python">
       <input>
 belief.mean(), belief.std()
@@ -1531,7 +1208,9 @@ decorate(xlabel='Actual ability',
 
   <section xml:id="sec-ch10-discriminatory-power">
     <title>Discriminatory Power</title>
-
+<p>In the previous section we used the standard deviation of the posterior distribution to quantify the precision of the estimates. Another way to describe the performance of the test (as opposed to the performance of the test-takers) is to measure “discriminatory power”, which is the ability of the test to distinguish correctly between test-takers with different ability.
+</p><p>
+To measure discriminatory power, I’ll simulate a person taking the test 100 times; after each simulation, I’ll use the mean of the posterior distribution as their “score”.</p>
     <program language="python">
       <input>
 def sample_posterior(actual_ability, iters):
@@ -1638,6 +1317,63 @@ np.mean(sample_800 &gt; sample_700)
         <p>For the first version of <c>choose</c>, what is the ideal distribution of difficulties?</p>
         <p>For the second version, what is the adaptive strategy that maximizes the precision of the test over the range of abilities?</p>
       </statement>
+    <solution>
+      <program language="python">
+        <input>
+# Solution
+
+# I don't know what the optimal distribution of questions
+# is, but my guess is that it would follow the distribution
+# of ability.
+
+# But as a simplification, I used a uniform distribution
+# from 200 to 800.
+
+# It works pretty well (and substantially better than the
+# test where all questions are equally difficult.)
+
+num_questions = 51
+difficulties = np.linspace(200, 800, num_questions)
+
+def choose(i, belief):
+    """Choose the difficulty of the next question.
+    
+    i: index from [0..num_questions-1]
+    belief: Pmf representing current estimate of ability
+    
+    returns: difficulty
+    """
+    return difficulties[i]
+        </input>
+      </program>
+    </solution>
+    <solution>
+      <program language="python">
+        <input>
+# Solution
+
+# I suspect that the optimal strategy is to choose
+# a question so that the test-taker has a 50% chance
+# of getting it right.
+
+# As rough approximation of that, I choose a question
+# with difficulty equal to the posterior mean of ability.
+
+# It works quite well (and substantially better than
+# the previous version).
+
+def choose(i, belief):
+    """Choose the difficulty of the next question.
+    
+    i: index from [0..num_questions-1]
+    belief: Pmf representing current estimate of ability
+    
+    returns: difficulty
+    """
+    return belief.mean()
+        </input>
+      </program>
+    </solution>
     </exercise>
   </section>
 
