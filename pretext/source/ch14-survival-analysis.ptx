@@ -58,7 +58,7 @@ set_pyplot_params()
       The <url href="https://en.wikipedia.org/wiki/Weibull_distribution">Weibull distribution</url> is often used in survival analysis because it is a good model for the distribution of lifetimes for manufactured products, at least over some parts of the range.
     </p>
     <p>
-      SciPy provides several versions of the Weibull distribution; the one we'll use is called <c>weibull_min</c>. To make the interface consistent with our notation, I'll wrap it in a function that takes as parameters $\lambda$, which mostly affects the location or "central tendency" of the distribution, and $k$, which affects the shape.
+      SciPy provides several versions of the Weibull distribution; the one we'll use is called <c>weibull_min</c>. To make the interface consistent with our notation, I'll wrap it in a function that takes as parameters <m>\lambda</m>, which mostly affects the location or "central tendency" of the distribution, and <m>k</m>, which affects the shape.
     </p>
     <program language="python">
       <input>
@@ -69,7 +69,7 @@ def weibull_dist(lam, k):
       </input>
     </program>
     <p>
-      As an example, here's a Weibull distribution with parameters $\lambda=3$ and $k=0.8$.
+      As an example, here's a Weibull distribution with parameters <m>\lambda=3</m> and <m>k=0.8</m>.
     </p>
     <program language="python">
       <input>
@@ -120,7 +120,7 @@ array([0.80497283, 2.11577082, 0.43308797, 0.10862644, 5.17334866,
       So, given the parameters of the distribution, we can generate a sample. Now let's see if we can go the other way: given the sample, we'll estimate the parameters.
     </p>
     <p>
-      Here's a uniform prior distribution for $\lambda$:
+      Here's a uniform prior distribution for <m>\lambda</m>:
     </p>
     <program language="python">
       <input>
@@ -131,7 +131,7 @@ prior_lam = make_uniform(lams, name='lambda')
       </input>
     </program>
     <p>
-      And a uniform prior for $k$:
+      And a uniform prior for <m>k</m>:
     </p>
     <program language="python">
       <input>
@@ -150,10 +150,10 @@ prior = make_joint(prior_lam, prior_k)
       </input>
     </program>
     <p>
-      The result is a <c>DataFrame</c> that represents the joint prior, with possible values of $\lambda$ across the columns and values of $k$ down the rows.
+      The result is a <c>DataFrame</c> that represents the joint prior, with possible values of <m>\lambda</m> across the columns and values of <m>k</m> down the rows.
     </p>
     <p>
-      Now I'll use <c>meshgrid</c> to make a 3-D mesh with $\lambda$ on the first axis (<c>axis=0</c>), $k$ on the second axis (<c>axis=1</c>), and the data on the third axis (<c>axis=2</c>).
+      Now I'll use <c>meshgrid</c> to make a 3-D mesh with <m>\lambda</m> on the first axis (<c>axis=0</c>), <m>k</m> on the second axis (<c>axis=1</c>), and the data on the third axis (<c>axis=2</c>).
     </p>
     <program language="python">
       <input>
@@ -239,7 +239,7 @@ decorate(title='Posterior joint distribution of Weibull parameters')
     </program>
     <image source="images/ch14_survival_analysis_319f30c9.png" width="80%"/>
     <p>
-      It looks like the range of likely values for $\lambda$ is about 1 to 4, which contains the actual value we used to generate the data, 3. And the range for $k$ is about 0.5 to 1.5, which contains the actual value, 0.8.
+      It looks like the range of likely values for <m>\lambda</m> is about 1 to 4, which contains the actual value we used to generate the data, 3. And the range for <m>k</m> is about 0.5 to 1.5, which contains the actual value, 0.8.
     </p>
   </section>
 
@@ -273,10 +273,10 @@ decorate(xlabel='lam',
     </program>
     <image source="images/ch14_survival_analysis_ab5edebf.png" width="80%"/>
     <p>
-      The vertical gray line show the actual value of $\lambda$.
+      The vertical gray line show the actual value of <m>\lambda</m>.
     </p>
     <p>
-      Here's the marginal posterior distribution for $k$.
+      Here's the marginal posterior distribution for <m>k</m>.
     </p>
     <program language="python">
       <input>
@@ -559,7 +559,7 @@ decorate(title='Posterior joint distribution, incomplete data')
     </program>
     <image source="images/ch14_survival_analysis_10b2d200.png" width="80%"/>
     <p>
-      Compared to the previous contour plot, it looks like the range of likely values for $\lambda$ is substantially wider. We can see that more clearly by looking at the marginal distributions.
+      Compared to the previous contour plot, it looks like the range of likely values for <m>\lambda</m> is substantially wider. We can see that more clearly by looking at the marginal distributions.
     </p>
     <program language="python">
       <input>
@@ -568,7 +568,7 @@ posterior_k2 = marginal(posterior2, 1)
       </input>
     </program>
     <p>
-      Here's the posterior marginal distribution for $\lambda$ compared to the distribution we got using all complete data.
+      Here's the posterior marginal distribution for <m>\lambda</m> compared to the distribution we got using all complete data.
     </p>
     <program language="python">
       <input>
@@ -589,7 +589,7 @@ decorate(xlabel='lambda',
       As an aside, notice that the posterior distribution does not come all the way to 0 on the right side. That suggests that the range of the prior distribution is not wide enough to cover the most likely values for this parameter. If I were concerned about making this distribution more accurate, I would go back and run the update again with a wider prior.
     </p>
     <p>
-      Here's the posterior marginal distribution for $k$:
+      Here's the posterior marginal distribution for <m>k</m>:
     </p>
     <program language="python">
       <input>
@@ -678,7 +678,7 @@ pmf_bulb.mean()
 1413.84
 </pre>
     <p>
-      Assuming that these data are well modeled by a Weibull distribution, let's estimate the parameters that fit the data. Again, I'll start with uniform priors for $\lambda$ and $k$:
+      Assuming that these data are well modeled by a Weibull distribution, let's estimate the parameters that fit the data. Again, I'll start with uniform priors for <m>\lambda</m> and <m>k</m>:
     </p>
     <program language="python">
       <input>
@@ -742,7 +742,7 @@ decorate(title='Joint posterior distribution, light bulbs')
     <title>Posterior Means</title>
 
     <p>
-      To compute the posterior mean of a joint distribution, we'll make a mesh that contains the values of $\lambda$ and $k$.
+      To compute the posterior mean of a joint distribution, we'll make a mesh that contains the values of <m>\lambda</m> and <m>k</m>.
     </p>
     <program language="python">
       <input>
@@ -887,7 +887,7 @@ joint_weibull_mean(posterior_bulb2)
       If we knew the parameters of the Weibull distribution for sure, the answer would be a binomial distribution.
     </p>
     <p>
-      For example, if we know that $\lambda=1550$ and $k=4.25$, we can use <c>weibull_dist</c> to compute the probability that a bulb dies before you return:
+      For example, if we know that <m>\lambda=1550</m> and <m>k=4.25</m>, we can use <c>weibull_dist</c> to compute the probability that a bulb dies before you return:
     </p>
     <program language="python">
       <input>
@@ -928,7 +928,7 @@ decorate(xlabel='Number of dead bulbs',
     </program>
     <image source="images/ch14_survival_analysis_dcff7e90.png" width="80%"/>
     <p>
-      But that's based on the assumption that we know $\lambda$ and $k$, and we don't. Instead, we have a posterior distribution that contains possible values of these parameters and their probabilities.
+      But that's based on the assumption that we know <m>\lambda</m> and <m>k</m>, and we don't. Instead, we have a posterior distribution that contains possible values of these parameters and their probabilities.
     </p>
     <p>
       So the posterior predictive distribution is not a single binomial; instead it is a mixture of binomials, weighted with the posterior probabilities.
@@ -1018,7 +1018,7 @@ decorate(xlabel='Number of dead bulbs',
     <title>Exercises</title>
 
     <p>
-      <em>Exercise:</em> Using data about the lifetimes of light bulbs, we computed the posterior distribution from the parameters of a Weibull distribution, $\lambda$ and $k$, and the posterior predictive distribution for the number of dead bulbs, out of 100, after 1000 hours.
+      <em>Exercise:</em> Using data about the lifetimes of light bulbs, we computed the posterior distribution from the parameters of a Weibull distribution, <m>\lambda</m> and <m>k</m>, and the posterior predictive distribution for the number of dead bulbs, out of 100, after 1000 hours.
     </p>
     <p>
       Now suppose you do the experiment:  You install 100 light bulbs, come back after 1000 hours, and find 20 dead light bulbs. Update the posterior distribution based on this data. How much does it change the posterior mean?
@@ -1096,10 +1096,10 @@ joint_weibull_mean(posterior_bulb3)
       According to hydrologists, the distribution of total daily rainfall (for days with rain) is well modeled by a two-parameter gamma distribution.
     </p>
     <p>
-      When we worked with the one-parameter gamma distribution in &lt;&lt;_TheGammaDistribution&gt;&gt;, we used the Greek letter $\alpha$ for the parameter.
+      When we worked with the one-parameter gamma distribution in &lt;&lt;_TheGammaDistribution&gt;&gt;, we used the Greek letter <m>\alpha</m> for the parameter.
     </p>
     <p>
-      For the two-parameter gamma distribution, we will use $k$ for the "shape parameter", which determines the shape of the distribution, and the Greek letter $\theta$ or <c>theta</c> for the "scale parameter".
+      For the two-parameter gamma distribution, we will use <m>k</m> for the "shape parameter", which determines the shape of the distribution, and the Greek letter <m>\theta</m> or <c>theta</c> for the "scale parameter".
     </p>
     <p>
       The following function takes these parameters and returns a <c>gamma</c> object from SciPy.
@@ -1202,7 +1202,7 @@ decorate(xlabel='Total rainfall (in)',
       I suggest you proceed in the following steps:
     </p>
     <p>
-      1. Construct a prior distribution for the parameters of the gamma distribution.  Note that $k$ and $\theta$ must be greater than 0.
+      1. Construct a prior distribution for the parameters of the gamma distribution.  Note that <m>k</m> and <m>\theta</m> must be greater than 0.
     </p>
     <p>
       2. Use the observed rainfalls to update the distribution of parameters.
