@@ -838,8 +838,11 @@ Actual P(win) Times played
   <section xml:id="sec-ch10-exercises">
     <title>Exercises</title>
 
+    <exercise xml:id="ex-ch10-irt">
+      <title>Exercise 1</title>
+      <statement>
     <p>
-      <em>Exercise:</em> Standardized tests like the <url href="https://en.wikipedia.org/wiki/SAT">SAT</url> are often used as part of the admission process at colleges and universities. The goal of the SAT is to measure the academic preparation of the test-takers; if it is accurate, their scores should reflect their actual ability in the domain of the test.
+      Standardized tests like the <url href="https://en.wikipedia.org/wiki/SAT">SAT</url> are often used as part of the admission process at colleges and universities. The goal of the SAT is to measure the academic preparation of the test-takers; if it is accurate, their scores should reflect their actual ability in the domain of the test.
     </p>
     <p>
       Until recently, tests like the SAT were taken with paper and pencil, but now students have the option of taking the test online.  In the online format, it is possible for the test to be "adaptive", which means that it can <url href="https://www.nytimes.com/2018/04/05/education/learning/tests-act-sat.html">choose each question based on responses to previous questions</url>.
@@ -853,8 +856,6 @@ Actual P(win) Times played
     <p>
       Details of this exercise are in the notebook.
     </p>
-
-<exercise>
     <p>
       The model we'll use is based on <url href="https://en.wikipedia.org/wiki/Item_response_theory">item response theory</url>, which assumes that we can quantify the difficulty of each question and the ability of each test-taker, and that the probability of a correct response is a function of difficulty and ability.
     </p>
@@ -911,7 +912,8 @@ decorate(xlabel='Ability',
     <p>
       Someone with <c>ability=900</c> is nearly certain to get the right answer. Someone with <c>ability=100</c> has about a 25% chance of getting the right answer by guessing.
     </p>
-</exercise>
+      </statement>
+    </exercise>
   </section>
 
   <section xml:id="sec-ch10-simulating-the-test">

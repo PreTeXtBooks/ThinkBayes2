@@ -912,32 +912,26 @@ plt.ylabel('CDF');
       <solution>
         <program language="python">
           <input>
-# Solution goes here
           </input>
         </program>
         <program language="python">
           <input>
-# Solution goes here
           </input>
         </program>
         <program language="python">
           <input>
-# Solution goes here
           </input>
         </program>
         <program language="python">
           <input>
-# Solution goes here
           </input>
         </program>
         <program language="python">
           <input>
-# Solution goes here
           </input>
         </program>
         <program language="python">
           <input>
-# Solution goes here
           </input>
         </program>
       </solution>
@@ -977,22 +971,18 @@ plt.ylabel('CDF');
       <solution>
         <program language="python">
           <input>
-# Solution goes here
           </input>
         </program>
         <program language="python">
           <input>
-# Solution goes here
           </input>
         </program>
         <program language="python">
           <input>
-# Solution goes here
           </input>
         </program>
         <program language="python">
           <input>
-# Solution goes here
           </input>
         </program>
       </solution>
@@ -1037,12 +1027,10 @@ sample = np.random.normal(mean, std, size=365)
       <solution>
         <program language="python">
           <input>
-# Solution goes here
           </input>
         </program>
         <program language="python">
           <input>
-# Solution goes here
           </input>
         </program>
       </solution>

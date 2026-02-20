@@ -455,8 +455,9 @@ That's why we need grid algorithms and the methods in the next two chapters, App
     <title>Exercises</title>
 
     <exercise xml:id="ex-ch18-1">
+      <title>Exercise 1</title>
       <statement>
-        <p><em>Exercise:</em> In the second version of the World Cup problem, the data we use for the update is not the number of goals in a game, but the time until the first goal.
+        <p>In the second version of the World Cup problem, the data we use for the update is not the number of goals in a game, but the time until the first goal.
 So the probability of the data is given by the exponential distribution rather than the Poisson distribution.</p>
         <p>But it turns out that the gamma distribution is <em>also</em> the conjugate prior of the exponential distribution, so there is a simple way to compute this update, too.
 The PDF of the exponential distribution is a function of <m>t</m> with <m>\lambda</m> as a parameter.</p>
@@ -512,8 +513,9 @@ decorate_rate(title='World Cup Problem, Germany v Brazil')
     </exercise>
 
     <exercise xml:id="ex-ch18-2">
+      <title>Exercise 2</title>
       <statement>
-        <p><em>Exercise:</em> For problems like the Euro problem where the likelihood function is binomial, we can do a Bayesian update with just a few arithmetic operations, but only if the prior is a beta distribution.</p>
+        <p>For problems like the Euro problem where the likelihood function is binomial, we can do a Bayesian update with just a few arithmetic operations, but only if the prior is a beta distribution.</p>
         <p>If we want a uniform prior, we can use a beta distribution with <c>alpha=1</c> and <c>beta=1</c>.
 But what can we do if the prior distribution we want is not a beta distribution?
 For example, in <!-- ref: TrianglePrior --> we also solved the Euro problem with a triangle prior, which is not a beta distribution.</p>
@@ -669,8 +671,9 @@ True
     </exercise>
 
     <exercise xml:id="ex-ch18-3">
+      <title>Exercise 3</title>
       <statement>
-        <p><em>Exercise:</em>  <url href="https://en.wikipedia.org/wiki/3Blue1Brown">3Blue1Brown</url> is a YouTube channel about math; if you are not already aware of it, I recommend it highly.
+        <p><url href="https://en.wikipedia.org/wiki/3Blue1Brown">3Blue1Brown</url> is a YouTube channel about math; if you are not already aware of it, I recommend it highly.
 In <url href="https://www.youtube.com/watch?v=8idr1WZ1A7Q">this video</url> the narrator presents this problem:</p>
         <blockquote>
           <p>You are buying a product online and you see three sellers offering the same product at the same price.  One of them has a 100% positive rating, but with only 10 reviews.  Another has a 96% positive rating with 50 total reviews.  And yet another has a 93% positive rating, but with 200 total reviews.</p>
@@ -766,8 +769,9 @@ Pmf.from_seq(best)
     </exercise>
 
     <exercise xml:id="ex-ch18-4">
+      <title>Exercise 4</title>
       <statement>
-        <p><em>Exercise:</em> Use a Dirichlet prior with parameter vector <c>alpha = [1, 1, 1]</c> to solve the Lions and Tigers and Bears problem:</p>
+        <p>Use a Dirichlet prior with parameter vector <c>alpha = [1, 1, 1]</c> to solve the Lions and Tigers and Bears problem:</p>
         <blockquote>
           <p>Suppose we visit a wild animal preserve where we know that the only animals are lions and tigers and bears, but we don't know how many of each there are.</p>
           <p>During the tour, we see three lions, two tigers, and one bear. Assuming that every animal had an equal chance to appear in our sample, estimate the prevalence of each species.</p>

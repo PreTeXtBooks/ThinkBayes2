@@ -1088,8 +1088,11 @@ accuracy(df)
   <section xml:id="sec-ch12-exercises">
     <title>Exercises</title>
 
+    <exercise xml:id="ex-ch12-1">
+      <title>Exercise 1</title>
+      <statement>
     <p>
-      <em>Exercise:</em>  In my example I used culmen length and flipper length because they seemed to provide the most power to distinguish the three species.  But maybe we can do better by using more features.
+      In my example I used culmen length and flipper length because they seemed to provide the most power to distinguish the three species.  But maybe we can do better by using more features.
     </p>
     <p>
       Make a naive Bayesian classifier that uses all four measurements in the dataset: culmen length and depth, flipper length, and body mass.
@@ -1097,8 +1100,8 @@ accuracy(df)
     <p>
       Is it more accurate than the model with two features?
     </p>
-
-<solution>
+      </statement>
+    <solution>
     <program language="python">
       <input>
 
@@ -1142,10 +1145,14 @@ accuracy(df)
 <pre>
 0.9678362573099415
 </pre>
-</solution>
+    </solution>
+    </exercise>
 
+    <exercise xml:id="ex-ch12-2">
+      <title>Exercise 2</title>
+      <statement>
     <p>
-      <em>Exercise:</em>  One of the reasons the penguin dataset was collected was to quantify sexual dimorphism in different penguin species, that is, physical differences between male and female penguins.  One way to quantify dimorphism is to use measurements to classify penguins by sex.  If a species is more dimorphic, we expect to be able to classify them more accurately.
+      One of the reasons the penguin dataset was collected was to quantify sexual dimorphism in different penguin species, that is, physical differences between male and female penguins.  One way to quantify dimorphism is to use measurements to classify penguins by sex.  If a species is more dimorphic, we expect to be able to classify them more accurately.
     </p>
     <p>
       As an exercise, pick a species and use a Bayesian classifier (naive or not) to classify the penguins by sex.  Which features are most useful?  What accuracy can you achieve?
@@ -1193,8 +1200,8 @@ subset = df[valid &amp; gentoo].copy()
     <p>
       OK, you can finish it off from here.
     </p>
-
-<solution>
+      </statement>
+    <solution>
     <program language="python">
       <input>
 # Here are the feature distributions grouped by sex
@@ -1213,8 +1220,6 @@ plot_cdfs(subset, 'Culmen Depth (mm)', by='Sex')
 
     <program language="python">
       <input>
-# Solution
-
 plot_cdfs(subset, 'Flipper Length (mm)', by='Sex')
       </input>
     </program>
@@ -1372,7 +1377,8 @@ classify_by_sex(subset)
 # All of these results are consistent with what's in the paper.
       </input>
     </program>
-</solution>
+    </solution>
+    </exercise>
 
     <p>
       <em>Think Bayes</em>, Second Edition

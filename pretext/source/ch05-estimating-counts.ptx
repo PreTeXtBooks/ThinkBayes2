@@ -809,8 +809,6 @@ posterior
       </program>
       <program language="python">
         <input>
-# Solution
-
 # According to this analysis, the probability is about 91% that our 
 # civilization will be short-lived.  
 # But this conclusion is based on a dubious prior.

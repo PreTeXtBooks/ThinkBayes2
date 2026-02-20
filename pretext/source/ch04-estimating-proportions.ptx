@@ -832,8 +832,6 @@ decorate(xlabel='Probability of getting a hit',
       <solution>
         <program language="python">
           <input>
-# Solution
-
 posterior = prior.copy()
 
 for data in 'YYY':
@@ -848,8 +846,6 @@ posterior.normalize()
 
         <program language="python">
           <input>
-# Solution
-
 prior.plot(label='prior')
 posterior.plot(label='posterior ')
 decorate(xlabel='Probability of getting a hit',
@@ -860,8 +856,6 @@ decorate(xlabel='Probability of getting a hit',
 
         <program language="python">
           <input>
-# Solution
-
 prior.max_prob()
       </input>
     </program>
@@ -871,8 +865,6 @@ prior.max_prob()
 
         <program language="python">
           <input>
-# Solution
-
 posterior.max_prob()
       </input>
     </program>
@@ -908,8 +900,6 @@ Knowing this, people might be more willing to answer honestly.
       <solution>
         <program language="python">
           <input>
-# Solution
-
 # I'll use a uniform distribution again, although there might
 # be background information we could use to choose a more
 # specific prior.
@@ -921,8 +911,6 @@ prior = Pmf(1, hypos)
 
         <program language="python">
           <input>
-# Solution
-
 # If the actual fraction of cheaters is `x`, the number of
 # YESes is (0.5 + x/2), and the number of NOs is (1-x)/2
 
@@ -935,8 +923,6 @@ likelihood = {
 
         <program language="python">
           <input>
-# Solution
-
 dataset = 'Y' * 80 + 'N' * 20
 
 posterior = prior.copy()
@@ -953,8 +939,6 @@ posterior.normalize()
 
         <program language="python">
           <input>
-# Solution
-
 posterior.plot(label='80 YES, 20 NO')
 decorate(xlabel='Proportion of cheaters',
          ylabel='PMF')
@@ -964,8 +948,6 @@ decorate(xlabel='Proportion of cheaters',
 
         <program language="python">
           <input>
-# Solution
-
 posterior.idxmax()
           </input>
         </program>
@@ -989,8 +971,6 @@ What happens as you vary the value of <c>y</c>?
       <solution>
         <program language="python">
           <input>
-# Solution
-
 def update_unreliable(pmf, dataset, y):
     
     likelihood = {
@@ -1006,8 +986,6 @@ def update_unreliable(pmf, dataset, y):
 
         <program language="python">
           <input>
-# Solution
-
 hypos = np.linspace(0, 1, 101)
 prior = Pmf(1, hypos)
 dataset = 'H' * 140 + 'T' * 110
@@ -1025,8 +1003,6 @@ update_unreliable(posterior04, dataset, 0.4)
 
         <program language="python">
           <input>
-# Solution
-
 posterior00.plot(label='y = 0.0')
 posterior02.plot(label='y = 0.2')
 posterior04.plot(label='y = 0.4')
@@ -1038,8 +1014,6 @@ decorate(xlabel='Proportion of heads',
 
         <program language="python">
           <input>
-# Solution
-
 posterior00.idxmax(), posterior02.idxmax(), posterior04.idxmax()
           </input>
         </program>
@@ -1070,8 +1044,6 @@ is <m>\left[2x(1-x)\right]^2</m>.
       <solution>
         <program language="python">
           <input>
-# Solution
-
 hypos = np.linspace(0.1, 0.4, 101)
 prior = Pmf(1, hypos)
           </input>
@@ -1079,8 +1051,6 @@ prior = Pmf(1, hypos)
 
         <program language="python">
           <input>
-# Solution
-
 # Here's a specific version for n=2 shots per test
 
 x = hypos
@@ -1091,8 +1061,6 @@ likelihood = np.sum(likes, axis=0)
 
         <program language="python">
           <input>
-# Solution
-
 # Here's a more general version for any n shots per test
 
 from scipy.stats import binom
@@ -1105,8 +1073,6 @@ likelihood2 = np.sum(likes2, axis=0)
 
         <program language="python">
           <input>
-# Solution
-
 # Here are the likelihoods, computed both ways
 
 import matplotlib.pyplot as plt
@@ -1122,8 +1088,6 @@ decorate(xlabel='Probability of hitting the target',
 
         <program language="python">
           <input>
-# Solution
-
 posterior = prior * likelihood
 posterior.normalize()
       </input>
@@ -1134,8 +1098,6 @@ posterior.normalize()
 
         <program language="python">
           <input>
-# Solution
-
 posterior.plot(label='Two tests, two shots, same outcome',
                color='C4')
 decorate(xlabel='Probability of hitting the target',
@@ -1148,8 +1110,6 @@ decorate(xlabel='Probability of hitting the target',
 
         <program language="python">
           <input>
-# Solution
-
 # Getting the same result in both tests is more likely for 
 # extreme values of `x` and least likely when `x=0.5`.
 
