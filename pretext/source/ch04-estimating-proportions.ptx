@@ -48,12 +48,12 @@ First we'll use the binomial distribution to see where that 7% came from; then w
       If we add up the total number of heads, there are three possible results: 0, 1, or 2.  The probabilities of 0 and 2 are 25%, and the probability of 1 is 50%.
     </p>
     <p>
-      More generally, suppose the probability of heads is $p$ and we spin the coin $n$ times.  The probability that we get a total of $k$ heads is given by the <url href="https://en.wikipedia.org/wiki/Binomial_distribution">binomial distribution</url>:
+      More generally, suppose the probability of heads is <m>p</m> and we spin the coin <m>n</m> times.  The probability that we get a total of <m>k</m> heads is given by the <url href="https://en.wikipedia.org/wiki/Binomial_distribution">binomial distribution</url>:
     </p>
-    <p>$$\binom{n}{k} p^k (1-p)^{n-k}$$</p>
+    <p><me>\binom{n}{k} p^k (1-p)^{n-k}</me></p>
     <p>
-      for any value of $k$ from 0 to $n$, including both.
-The term $\binom{n}{k}$ is the <url href="https://en.wikipedia.org/wiki/Binomial_coefficient">binomial coefficient</url>, usually pronounced "n choose k".
+      for any value of <m>k</m> from 0 to <m>n</m>, including both.
+The term <m>\binom{n}{k}</m> is the <url href="https://en.wikipedia.org/wiki/Binomial_coefficient">binomial coefficient</url>, usually pronounced "n choose k".
     </p>
     <p>
       We could evaluate this expression ourselves, but we can also use the SciPy function <c>binom.pmf</c>.
@@ -71,6 +71,9 @@ k = 1
 binom.pmf(k, n, p)
       </input>
     </program>
+<pre>
+0.5000000000000002
+</pre>
 
     <p>
       Instead of providing a single value for <c>k</c>, we can also call <c>binom.pmf</c> with an array of values.
@@ -85,6 +88,9 @@ ps = binom.pmf(ks, n, p)
 ps
       </input>
     </program>
+<pre>
+array([0.25, 0.5 , 0.25])
+</pre>
 
     <p>
       The result is a NumPy array with the probability of 0, 1, or 2 heads.
@@ -102,6 +108,12 @@ pmf_k = Pmf(ps, ks)
 pmf_k
       </input>
     </program>
+<pre>
+0    0.25
+1    0.50
+2    0.25
+dtype: float64
+</pre>
 
     <p>
       The following function computes the binomial distribution for given values of <c>n</c> and <c>p</c> and returns a <c>Pmf</c> that represents the result.
@@ -138,6 +150,12 @@ decorate(xlabel='Number of heads (k)',
          title='Binomial distribution')
       </input>
     </program>
+    <figure xml:id="fig-ch04-binomial-distribution">
+      <caption>Binomial distribution with <m>n=250</m> and <m>p=0.5</m>.</caption>
+      <image source="ch04/fig-cell8.png" width="80%">
+        <description>A plot of the binomial distribution showing the probability of each number of heads when flipping a fair coin 250 times. The distribution is bell-shaped and centered around 125.</description>
+      </image>
+    </figure>
 
     <p>
       The most likely quantity in this distribution is 125:
@@ -148,6 +166,9 @@ decorate(xlabel='Number of heads (k)',
 pmf_k.max_prob()
       </input>
     </program>
+<pre>
+125
+</pre>
 
     <p>
       But even though it is the most likely quantity, the probability that we get exactly 125 heads is only about 5%.
@@ -158,6 +179,9 @@ pmf_k.max_prob()
 pmf_k[125]
       </input>
     </program>
+<pre>
+0.050412213147309655
+</pre>
 
     <p>
       In MacKay's example, we got 140 heads, which is even less likely than 125:
@@ -168,6 +192,9 @@ pmf_k[125]
 pmf_k[140]
       </input>
     </program>
+<pre>
+0.008357181724918204
+</pre>
 
     <p>
       In the article MacKay quotes, the statistician says, "If the coin were unbiased the chance of getting a result as extreme as that would be less than 7%."
@@ -195,6 +222,9 @@ def prob_ge(pmf, threshold):
 prob_ge(pmf_k, 140)
       </input>
     </program>
+<pre>
+0.03321057562002167
+</pre>
 
     <p>
       <c>Pmf</c> provides a method that does the same computation.
@@ -205,6 +235,9 @@ prob_ge(pmf_k, 140)
 pmf_k.prob_ge(140)
       </input>
     </program>
+<pre>
+0.03321057562002167
+</pre>
 
     <p>
       The result is about 3.3%, which is less than the quoted 7%.  The reason for the difference is that the statistician includes all outcomes "as extreme as" 140, which includes outcomes less than or equal to 110.
@@ -236,6 +269,12 @@ decorate(xlabel='Number of heads (k)',
          title='Binomial distribution')
       </input>
     </program>
+    <figure xml:id="fig-ch04-binomial-tails">
+      <caption>Binomial distribution showing the two tails corresponding to outcomes as extreme as 140 heads out of 250.</caption>
+      <image source="ch04/fig-cell15.png" width="80%">
+        <description>A plot of the binomial distribution with the two tails (k ≥ 140 and k ≤ 110) shaded, illustrating the probability of outcomes as extreme as 140 heads.</description>
+      </image>
+    </figure>
 
     <p>
       Here's how we compute the total probability of the left tail.
@@ -246,6 +285,9 @@ decorate(xlabel='Number of heads (k)',
 pmf_k.prob_le(110)
       </input>
     </program>
+<pre>
+0.03321057562002166
+</pre>
 
     <p>
       The probability of outcomes less than or equal to 110 is also 3.3%,
@@ -380,6 +422,12 @@ posterior.plot(label='140 heads out of 250', color='C4')
 decorate_euro(title='Posterior distribution of x')
       </input>
     </program>
+    <figure xml:id="fig-ch04-posterior-euro">
+      <caption>Posterior distribution of <m>x</m>, the proportion of heads for the Belgian Euro coin, after observing 140 heads out of 250 spins.</caption>
+      <image source="ch04/fig-cell24.png" width="80%">
+        <description>A plot of the posterior distribution of the probability of heads for the Belgian Euro coin, showing that values between 0.5 and 0.6 are most likely.</description>
+      </image>
+    </figure>
 
     <p>
       This figure shows the posterior distribution of <c>x</c>, which is the proportion of heads for the coin we observed.
@@ -397,6 +445,9 @@ It indicates that values less than 0.4 and greater than 0.7 are unlikely; values
 posterior.max_prob()
       </input>
     </program>
+<pre>
+0.56
+</pre>
 
   </section>
 
@@ -456,6 +507,12 @@ triangle.plot()
 decorate_euro(title='Uniform and triangle prior distributions')
       </input>
     </program>
+    <figure xml:id="fig-ch04-priors">
+      <caption>Uniform and triangle prior distributions for the proportion of heads.</caption>
+      <image source="ch04/fig-cell28.png" width="80%">
+        <description>A plot comparing the uniform and triangle-shaped prior distributions for the probability of heads.</description>
+      </image>
+    </figure>
 
     <p>
       Now we can update both priors with the same data:
@@ -479,6 +536,12 @@ triangle.plot()
 decorate_euro(title='Posterior distributions')
       </input>
     </program>
+    <figure xml:id="fig-ch04-posteriors-triangle">
+      <caption>Posterior distributions for the uniform and triangle priors after observing 140 heads out of 250 spins.</caption>
+      <image source="ch04/fig-cell30.png" width="80%">
+        <description>A plot comparing the posterior distributions obtained from the uniform and triangle priors, showing they are nearly identical.</description>
+      </image>
+    </figure>
 
     <p>
       The differences between the posterior distributions are barely visible, and so small they would hardly matter in practice.
@@ -513,9 +576,9 @@ For each hypothetical value of <c>x</c>, we have to compute the probability of g
     </p>
     <p>
       Well, we know how to do that; this is the question the binomial distribution answers.
-If the probability of heads is $p$, the probability of $k$ heads in $n$ spins is:
+If the probability of heads is <m>p</m>, the probability of <m>k</m> heads in <m>n</m> spins is:
     </p>
-    <p>$$\binom{n}{k} p^k (1-p)^{n-k}$$</p>
+    <p><me>\binom{n}{k} p^k (1-p)^{n-k}</me></p>
     <p>
       And we can use SciPy to compute it.
 The following function takes a <c>Pmf</c> that represents a prior distribution and a tuple of integers that represent the data:
@@ -548,6 +611,20 @@ update_binomial(uniform2, data)
       </input>
     </program>
 
+    <program language="python">
+      <input>
+uniform.plot()
+uniform2.plot()
+decorate_euro(title='Posterior distributions computed two ways')
+      </input>
+    </program>
+    <figure xml:id="fig-ch04-posteriors-two-ways">
+      <caption>Posterior distributions computed two ways: updating one spin at a time vs. using the binomial distribution.</caption>
+      <image source="ch04/fig-cell33.png" width="80%">
+        <description>A plot showing that the posterior distributions computed by updating one spin at a time and by using the binomial likelihood function are identical.</description>
+      </image>
+    </figure>
+
     <p>
       We can use <c>allclose</c> to confirm that the result is the same as in the previous section except for a small floating-point round-off.
     </p>
@@ -557,6 +634,9 @@ update_binomial(uniform2, data)
 np.allclose(uniform, uniform2)
       </input>
     </program>
+<pre>
+True
+</pre>
 
     <p>
       But this way of doing the computation is much more efficient.
@@ -655,85 +735,93 @@ I'm going to leave this question hanging a little longer; we'll come back to it 
   <section xml:id="sec-ch04-exercises">
     <title>Exercises</title>
 
+    <exercise xml:id="ex-batting-average">
+      <statement>
+        <p>
+          In Major League Baseball, most players have a batting average between .200 and .330, which means that their probability of getting a hit is between 0.2 and 0.33.
+        </p>
+        <p>
+          Suppose a player appearing in their first game gets 3 hits out of 3 attempts.  What is the posterior distribution for their probability of getting a hit?
+        </p>
 
-    <p>
-      <em>Exercise:</em> In Major League Baseball, most players have a batting average between .200 and .330, which means that their probability of getting a hit is between 0.2 and 0.33.
-    </p>
-    <p>
-      Suppose a player appearing in their first game gets 3 hits out of 3 attempts.  What is the posterior distribution for their probability of getting a hit?
-    </p>
+        <p>
+          For this exercise, I'll construct the prior distribution by starting with a uniform distribution and updating it with imaginary data until it has a shape that reflects my background knowledge of batting averages.
+        </p>
+        <p>
+          Here's the uniform prior:
+        </p>
 
-    <p>
-      For this exercise, I'll construct the prior distribution by starting with a uniform distribution and updating it with imaginary data until it has a shape that reflects my background knowledge of batting averages.
-    </p>
-    <p>
-      Here's the uniform prior:
-    </p>
-
-    <program language="python">
-      <input>
+        <program language="python">
+          <input>
 hypos = np.linspace(0.1, 0.4, 101)
 prior = Pmf(1, hypos)
-      </input>
-    </program>
+          </input>
+        </program>
 
-    <p>
-      And here is a dictionary of likelihoods, with <c>Y</c> for getting a hit and <c>N</c> for not getting a hit.
-    </p>
+        <p>
+          And here is a dictionary of likelihoods, with <c>Y</c> for getting a hit and <c>N</c> for not getting a hit.
+        </p>
 
-    <program language="python">
-      <input>
+        <program language="python">
+          <input>
 likelihood = {
     'Y': hypos,
     'N': 1-hypos
 }
-      </input>
-    </program>
+          </input>
+        </program>
 
-    <p>
-      Here's a dataset that yields a reasonable prior distribution.
-    </p>
+        <p>
+          Here's a dataset that yields a reasonable prior distribution.
+        </p>
 
-    <program language="python">
-      <input>
+        <program language="python">
+          <input>
 dataset = 'Y' * 25 + 'N' * 75
-      </input>
-    </program>
+          </input>
+        </program>
 
-    <p>
-      And here's the update with the imaginary data.
-    </p>
+        <p>
+          And here's the update with the imaginary data.
+        </p>
 
-    <program language="python">
-      <input>
+        <program language="python">
+          <input>
 for data in dataset:
     prior *= likelihood[data]
 
 prior.normalize()
-      </input>
-    </program>
+          </input>
+        </program>
 
-    <p>
-      Finally, here's what the prior looks like.
-    </p>
+        <p>
+          Finally, here's what the prior looks like.
+        </p>
 
-    <program language="python">
-      <input>
+        <program language="python">
+          <input>
 prior.plot(label='prior')
 decorate(xlabel='Probability of getting a hit',
          ylabel='PMF')
-      </input>
-    </program>
+          </input>
+        </program>
+        <figure xml:id="fig-ch04-batting-prior">
+          <caption>Prior distribution for the probability of getting a hit, based on historical batting averages.</caption>
+          <image source="ch04/fig-cell39.png" width="80%">
+            <description>A plot of the prior distribution of batting averages, showing a bell-shaped distribution centered around 0.25.</description>
+          </image>
+        </figure>
 
-    <p>
-      This distribution indicates that most players have a batting average near 250, with only a few players below 175 or above 350.  I'm not sure how accurately this prior reflects the distribution of batting averages in Major League Baseball, but it is good enough for this exercise.
-    </p>
-    <p>
-      Now update this distribution with the data and plot the posterior.  What is the most likely quantity in the posterior distribution?
-    </p>
-
-    <program language="python">
-      <input>
+        <p>
+          This distribution indicates that most players have a batting average near 250, with only a few players below 175 or above 350.  I'm not sure how accurately this prior reflects the distribution of batting averages in Major League Baseball, but it is good enough for this exercise.
+        </p>
+        <p>
+          Now update this distribution with the data and plot the posterior.  What is the most likely quantity in the posterior distribution?
+        </p>
+      </statement>
+      <solution>
+        <program language="python">
+          <input>
 # Solution
 
 posterior = prior.copy()
@@ -742,61 +830,64 @@ for data in 'YYY':
     posterior *= likelihood[data]
 
 posterior.normalize()
-      </input>
-    </program>
+          </input>
+        </program>
 
-    <program language="python">
-      <input>
+        <program language="python">
+          <input>
 # Solution
 
 prior.plot(label='prior')
 posterior.plot(label='posterior ')
 decorate(xlabel='Probability of getting a hit',
          ylabel='PMF')
-      </input>
-    </program>
+          </input>
+        </program>
 
-    <program language="python">
-      <input>
+        <program language="python">
+          <input>
 # Solution
 
 prior.max_prob()
-      </input>
-    </program>
+          </input>
+        </program>
 
-    <program language="python">
-      <input>
+        <program language="python">
+          <input>
 # Solution
 
 posterior.max_prob()
-      </input>
-    </program>
+          </input>
+        </program>
+      </solution>
+    </exercise>
 
-    <p>
-      <em>Exercise:</em> Whenever you survey people about sensitive issues, you have to deal with <url href="https://en.wikipedia.org/wiki/Social_desirability_bias">social desirability bias</url>, which is the tendency of people to adjust their answers to show themselves in the most positive light.
+    <exercise xml:id="ex-randomized-response">
+      <statement>
+        <p>
+          Whenever you survey people about sensitive issues, you have to deal with <url href="https://en.wikipedia.org/wiki/Social_desirability_bias">social desirability bias</url>, which is the tendency of people to adjust their answers to show themselves in the most positive light.
 One way to improve the accuracy of the results is <url href="https://en.wikipedia.org/wiki/Randomized_response">randomized response</url>.
-    </p>
-    <p>
-      As an example, suppose you want to know how many people cheat on their taxes.
+        </p>
+        <p>
+          As an example, suppose you want to know how many people cheat on their taxes.
 If you ask them directly, it is likely that some of the cheaters will lie.
 You can get a more accurate estimate if you ask them indirectly, like this: Ask each person to flip a coin and, without revealing the outcome,
-    </p>
-    <ul>
-      <li>If they get heads, they report YES.</li>
-    </ul>
-    <ul>
-      <li>If they get tails, they honestly answer the question "Do you cheat on your taxes?"</li>
-    </ul>
-    <p>
-      If someone says YES, we don't know whether they actually cheat on their taxes; they might have flipped heads.
+        </p>
+        <ul>
+          <li>If they get heads, they report YES.</li>
+          <li>If they get tails, they honestly answer the question "Do you cheat on your taxes?"</li>
+        </ul>
+        <p>
+          If someone says YES, we don't know whether they actually cheat on their taxes; they might have flipped heads.
 Knowing this, people might be more willing to answer honestly.
-    </p>
-    <p>
-      Suppose you survey 100 people this way and get 80 YESes and 20 NOs.  Based on this data, what is the posterior distribution for the fraction of people who cheat on their taxes?  What is the most likely quantity in the posterior distribution?
-    </p>
-
-    <program language="python">
-      <input>
+        </p>
+        <p>
+          Suppose you survey 100 people this way and get 80 YESes and 20 NOs.  Based on this data, what is the posterior distribution for the fraction of people who cheat on their taxes?  What is the most likely quantity in the posterior distribution?
+        </p>
+      </statement>
+      <solution>
+        <program language="python">
+          <input>
 # Solution
 
 # I'll use a uniform distribution again, although there might
@@ -805,11 +896,11 @@ Knowing this, people might be more willing to answer honestly.
 
 hypos = np.linspace(0, 1, 101)
 prior = Pmf(1, hypos)
-      </input>
-    </program>
+          </input>
+        </program>
 
-    <program language="python">
-      <input>
+        <program language="python">
+          <input>
 # Solution
 
 # If the actual fraction of cheaters is `x`, the number of
@@ -819,11 +910,11 @@ likelihood = {
     'Y': 0.5 + hypos/2,
     'N': (1-hypos)/2
 }
-      </input>
-    </program>
+          </input>
+        </program>
 
-    <program language="python">
-      <input>
+        <program language="python">
+          <input>
 # Solution
 
 dataset = 'Y' * 80 + 'N' * 20
@@ -834,41 +925,46 @@ for data in dataset:
     posterior *= likelihood[data]
 
 posterior.normalize()
-      </input>
-    </program>
+          </input>
+        </program>
 
-    <program language="python">
-      <input>
+        <program language="python">
+          <input>
 # Solution
 
 posterior.plot(label='80 YES, 20 NO')
 decorate(xlabel='Proportion of cheaters',
          ylabel='PMF')
-      </input>
-    </program>
+          </input>
+        </program>
 
-    <program language="python">
-      <input>
+        <program language="python">
+          <input>
 # Solution
 
 posterior.idxmax()
-      </input>
-    </program>
+          </input>
+        </program>
+      </solution>
+    </exercise>
 
-    <p>
-      <em>Exercise:</em> Suppose you want to test whether a coin is fair, but you don't want to spin it hundreds of times.
+    <exercise xml:id="ex-unreliable-machine">
+      <statement>
+        <p>
+          Suppose you want to test whether a coin is fair, but you don't want to spin it hundreds of times.
 So you make a machine that spins the coin automatically and uses computer vision to determine the outcome.
-    </p>
-    <p>
-      However, you discover that the machine is not always accurate.  Specifically, suppose the probability is <c>y=0.2</c> that an actual heads is reported as tails, or actual tails reported as heads.
-    </p>
-    <p>
-      If we spin a coin 250 times and the machine reports 140 heads, what is the posterior distribution of <c>x</c>?
+        </p>
+        <p>
+          However, you discover that the machine is not always accurate.  Specifically, suppose the probability is <c>y=0.2</c> that an actual heads is reported as tails, or actual tails reported as heads.
+        </p>
+        <p>
+          If we spin a coin 250 times and the machine reports 140 heads, what is the posterior distribution of <c>x</c>?
 What happens as you vary the value of <c>y</c>?
-    </p>
-
-    <program language="python">
-      <input>
+        </p>
+      </statement>
+      <solution>
+        <program language="python">
+          <input>
 # Solution
 
 def update_unreliable(pmf, dataset, y):
@@ -881,11 +977,11 @@ def update_unreliable(pmf, dataset, y):
         pmf *= likelihood[data]
 
     pmf.normalize()
-      </input>
-    </program>
+          </input>
+        </program>
 
-    <program language="python">
-      <input>
+        <program language="python">
+          <input>
 # Solution
 
 hypos = np.linspace(0, 1, 101)
@@ -900,11 +996,11 @@ update_unreliable(posterior02, dataset, 0.2)
 
 posterior04 = prior.copy()
 update_unreliable(posterior04, dataset, 0.4)
-      </input>
-    </program>
+          </input>
+        </program>
 
-    <program language="python">
-      <input>
+        <program language="python">
+          <input>
 # Solution
 
 posterior00.plot(label='y = 0.0')
@@ -912,47 +1008,52 @@ posterior02.plot(label='y = 0.2')
 posterior04.plot(label='y = 0.4')
 decorate(xlabel='Proportion of heads',
          ylabel='PMF')
-      </input>
-    </program>
+          </input>
+        </program>
 
-    <program language="python">
-      <input>
+        <program language="python">
+          <input>
 # Solution
 
 posterior00.idxmax(), posterior02.idxmax(), posterior04.idxmax()
-      </input>
-    </program>
+          </input>
+        </program>
+      </solution>
+    </exercise>
 
-    <p>
-      <em>Exercise:</em> In preparation for an alien invasion, the Earth Defense League (EDL) has been working on new missiles to shoot down space invaders.  Of course, some missile designs are better than others; let's assume that each design has some probability of hitting an alien ship, <c>x</c>.
-    </p>
-    <p>
-      Based on previous tests, the distribution of <c>x</c> in the population of designs is approximately uniform between 0.1 and 0.4.
-    </p>
-    <p>
-      Now suppose the new ultra-secret Alien Blaster 9000 is being tested.  In a press conference, an EDL general reports that the new design has been tested twice, taking two shots during each test.  The results of the test are confidential, so the general won't say how many targets were hit, but they report: "The same number of targets were hit in the two tests, so we have reason to think this new design is consistent."
-    </p>
-    <p>
-      Is this data good or bad? 
+    <exercise xml:id="ex-alien-blaster">
+      <statement>
+        <p>
+          In preparation for an alien invasion, the Earth Defense League (EDL) has been working on new missiles to shoot down space invaders.  Of course, some missile designs are better than others; let's assume that each design has some probability of hitting an alien ship, <c>x</c>.
+        </p>
+        <p>
+          Based on previous tests, the distribution of <c>x</c> in the population of designs is approximately uniform between 0.1 and 0.4.
+        </p>
+        <p>
+          Now suppose the new ultra-secret Alien Blaster 9000 is being tested.  In a press conference, an EDL general reports that the new design has been tested twice, taking two shots during each test.  The results of the test are confidential, so the general won't say how many targets were hit, but they report: "The same number of targets were hit in the two tests, so we have reason to think this new design is consistent."
+        </p>
+        <p>
+          Is this data good or bad? 
 That is, does it increase or decrease your estimate of <c>x</c> for the Alien Blaster 9000?
-    </p>
+        </p>
 
-    <p>
-      Hint: If the probability of hitting each target is $x$, the probability of hitting one target in both tests
-is $\left[2x(1-x)\right]^2$.
-    </p>
-
-    <program language="python">
-      <input>
+        <p>
+          Hint: If the probability of hitting each target is <m>x</m>, the probability of hitting one target in both tests
+is <m>\left[2x(1-x)\right]^2</m>.
+        </p>
+      </statement>
+      <solution>
+        <program language="python">
+          <input>
 # Solution
 
 hypos = np.linspace(0.1, 0.4, 101)
 prior = Pmf(1, hypos)
-      </input>
-    </program>
+          </input>
+        </program>
 
-    <program language="python">
-      <input>
+        <program language="python">
+          <input>
 # Solution
 
 # Here's a specific version for n=2 shots per test
@@ -960,11 +1061,11 @@ prior = Pmf(1, hypos)
 x = hypos
 likes = [(1-x)**4, (2*x*(1-x))**2, x**4]
 likelihood = np.sum(likes, axis=0)
-      </input>
-    </program>
+          </input>
+        </program>
 
-    <program language="python">
-      <input>
+        <program language="python">
+          <input>
 # Solution
 
 # Here's a more general version for any n shots per test
@@ -974,11 +1075,11 @@ from scipy.stats import binom
 n = 2
 likes2 = [binom.pmf(k, n, x)**2 for k in range(n+1)]
 likelihood2 = np.sum(likes2, axis=0)
-      </input>
-    </program>
+          </input>
+        </program>
 
-    <program language="python">
-      <input>
+        <program language="python">
+          <input>
 # Solution
 
 # Here are the likelihoods, computed both ways
@@ -990,20 +1091,20 @@ plt.plot(x, likelihood2, label='general formula')
 decorate(xlabel='Probability of hitting the target',
          ylabel='Likelihood',
          title='Likelihood of getting the same result')
-      </input>
-    </program>
+          </input>
+        </program>
 
-    <program language="python">
-      <input>
+        <program language="python">
+          <input>
 # Solution
 
 posterior = prior * likelihood
 posterior.normalize()
-      </input>
-    </program>
+          </input>
+        </program>
 
-    <program language="python">
-      <input>
+        <program language="python">
+          <input>
 # Solution
 
 posterior.plot(label='Two tests, two shots, same outcome',
@@ -1012,11 +1113,11 @@ decorate(xlabel='Probability of hitting the target',
          ylabel='PMF',
          title='Posterior distribution',
          ylim=[0, 0.015])
-      </input>
-    </program>
+          </input>
+        </program>
 
-    <program language="python">
-      <input>
+        <program language="python">
+          <input>
 # Solution
 
 # Getting the same result in both tests is more likely for 
@@ -1026,8 +1127,10 @@ decorate(xlabel='Probability of hitting the target',
 # and the update gives more weight to extreme values.
 
 # So the dataset makes lower values of `x` more likely.
-      </input>
-    </program>
+          </input>
+        </program>
+      </solution>
+    </exercise>
 
     <p>
       <em>Think Bayes</em>, Second Edition
