@@ -140,6 +140,50 @@ df = pd.concat([df2011, df2012], ignore_index=True)
 df.head(3)
       </input>
     </program>
+<table xml:id="tbl-showcases-sample">
+  <title>Sample of showcase price data.</title>
+  <tabular>
+    <row header="yes">
+      <cell></cell>
+      <cell>Showcase 1</cell>
+      <cell>Showcase 2</cell>
+      <cell>Bid 1</cell>
+      <cell>Bid 2</cell>
+      <cell>Difference 1</cell>
+      <cell>Difference 2</cell>
+    </row>
+
+    <row>
+      <cell>0</cell>
+      <cell>50969.0</cell>
+      <cell>45429.0</cell>
+      <cell>42000.0</cell>
+      <cell>34000.0</cell>
+      <cell>8969.0</cell>
+      <cell>11429.0</cell>
+    </row>
+
+    <row>
+      <cell>1</cell>
+      <cell>21901.0</cell>
+      <cell>34061.0</cell>
+      <cell>14000.0</cell>
+      <cell>59900.0</cell>
+      <cell>7901.0</cell>
+      <cell>-25839.0</cell>
+    </row>
+
+    <row>
+      <cell>2</cell>
+      <cell>32815.0</cell>
+      <cell>53186.0</cell>
+      <cell>32000.0</cell>
+      <cell>45000.0</cell>
+      <cell>815.0</cell>
+      <cell>8186.0</cell>
+    </row>
+  </tabular>
+</table>
 
     <p>
       The first two columns, <c>Showcase 1</c> and <c>Showcase 2</c>, are the values of the showcases in dollars.
@@ -197,8 +241,24 @@ prior1 = kde_from_sample(df['Showcase 1'], qs)
       </input>
     </program>
 
+    <program language="python">
+      <input>
+from utils import decorate
+
+def decorate_value(title=''):
+    decorate(xlabel='Showcase value ($)',
+        ylabel='PMF',
+        title=title)
+      </input>
+    </program>
+    <program language="python">
+      <input>
+prior1.plot(label='Prior 1')
+decorate_value('Prior distribution of showcase value')
+      </input>
+    </program>
+    <image source="images/ch09_decision_analysis_46e80379.png" width="80%"/>
     <p>
-      <!-- Figure fig09-01: Prior distribution of showcase value -->
       Here's what it looks like.
       The most common price is around
       $28,000, but there might be a second mode near $50,000.
@@ -270,8 +330,18 @@ kde_diff2 = kde_from_sample(sample_diff2, qs)
       </input>
     </program>
 
+    <program language="python">
+      <input>
+kde_diff1.plot(label='Diff 1', color='C8')
+kde_diff2.plot(label='Diff 2', color='C4')
+
+decorate(xlabel='Difference in value ($)',
+        ylabel='PMF',
+        title='Difference between bid and actual value')
+      </input>
+    </program>
+    <image source="images/ch09_decision_analysis_f95ef026.png" width="80%"/>
     <p>
-      <!-- Figure fig09-02: Distribution of differences for the two contestants. -->
       Here's what these distributions look like.
     </p>
 
@@ -300,7 +370,9 @@ std_diff1 = sample_diff1.std()
 print(mean_diff1, std_diff1)
       </input>
     </program>
-
+<pre>
+-4116.3961661341855 6899.909806377117
+</pre>
     <p>
       Now we can use these differences to model the contestant's distribution of errors.
       This step is a little tricky because we don't actually know the contestant's guesses; we only know what they bid.
@@ -339,6 +411,9 @@ error = -100
 error_dist1.pdf(error)
       </input>
     </program>
+<pre>
+5.781240564008691e-05
+</pre>
 
     <p>
       By itself, this number doesn't mean very much, because probability densities are not probabilities.
@@ -400,8 +475,16 @@ posterior1.normalize()
       </input>
     </program>
 
+    <program language="python">
+      <input>
+prior1.plot(color='C5', label='Prior 1')
+posterior1.plot(color='C4', label='Posterior 1')
+
+decorate_value('Prior and posterior distribution of showcase value')
+      </input>
+    </program>
+    <image source="images/ch09_decision_analysis_b7a19d92.png" width="80%"/>
     <p>
-      <!-- Figure fig09-03: Prior and posterior distributions for Player 1. -->
       Here's what the posterior distribution looks like.
       Because your initial guess is in the lower end of the range, the posterior distribution has shifted to the left.
       We can compute the posterior mean to see by how much.
@@ -412,6 +495,9 @@ posterior1.normalize()
 prior1.mean(), posterior1.mean()
       </input>
     </program>
+<pre>
+(30299.488817891375, 26192.024002392536)
+</pre>
 
     <p>
       Before you saw the prizes, you expected to see a showcase with a value close to $30,000.
@@ -474,7 +560,9 @@ def prob_overbid(sample_diff):
 prob_overbid(sample_diff2)
       </input>
     </program>
-
+<pre>
+0.29073482428115016
+</pre>
     <p>
       Now suppose Player 1 underbids by $5000.
       What is the probability that Player 2 underbids by more?
@@ -501,7 +589,9 @@ def prob_worse_than(diff, sample_diff):
 prob_worse_than(-5000, sample_diff2)
       </input>
     </program>
-
+<pre>
+0.38338658146964855
+</pre>
     <p>
       And here's the probability they underbid by more than $10,000.
     </p>
@@ -511,6 +601,9 @@ prob_worse_than(-5000, sample_diff2)
 prob_worse_than(-10000, sample_diff2)
       </input>
     </program>
+<pre>
+0.14376996805111822
+</pre>
 
     <p>
       We can combine these functions to compute the probability that Player 1 wins, given the difference between their bid and the actual price:
@@ -544,7 +637,9 @@ def compute_prob_win(diff, sample_diff):
 compute_prob_win(-5000, sample_diff2)
       </input>
     </program>
-
+<pre>
+0.6741214057507987
+</pre>
     <p>
       Now let's look at the probability of winning for a range of possible differences.
     </p>
@@ -557,8 +652,19 @@ ys = [compute_prob_win(x, sample_diff2)
       </input>
     </program>
 
+    <program language="python">
+      <input>
+import matplotlib.pyplot as plt
+
+plt.plot(xs, ys)
+
+decorate(xlabel='Difference between bid and actual price ($)',
+         ylabel='Probability of winning',
+         title='Player 1')
+      </input>
+    </program>
+    <image source="images/ch09_decision_analysis_d64d1dcb.png" width="80%"/>
     <p>
-      <!-- Figure fig09-04: For Player 1, the probability of winning as a function of the difference between their bid and the actual price. -->
       Here's what it looks like.
     </p>
 
@@ -651,7 +757,9 @@ def total_prob_win(bid, posterior, sample_diff):
 total_prob_win(25000, posterior1, sample_diff2)
       </input>
     </program>
-
+<pre>
+0.4842210945439812
+</pre>
     <p>
       Now we can loop through a series of possible bids and compute the probability of winning for each one.
     </p>
@@ -667,8 +775,17 @@ prob_win_series = pd.Series(probs, index=bids)
       </input>
     </program>
 
+    <program language="python">
+      <input>
+prob_win_series.plot(label='Player 1', color='C1')
+
+decorate(xlabel='Bid ($)',
+         ylabel='Probability of winning',
+         title='Optimal bid: probability of winning')
+      </input>
+    </program>
+    <image source="images/ch09_decision_analysis_a0c9f9b4.png" width="80%"/>
     <p>
-      <!-- Figure fig09-05: For Player 1, the probability of winning as a function of their bid. -->
       Here are the results.
     </p>
 
@@ -681,12 +798,17 @@ prob_win_series = pd.Series(probs, index=bids)
 prob_win_series.idxmax()
       </input>
     </program>
-
+<pre>
+21000.0
+</pre>
     <program language="python">
       <input>
 prob_win_series.max()
       </input>
     </program>
+<pre>
+0.6136807192359474
+</pre>
 
     <p>
       Recall that your guess was $23,000.
@@ -748,6 +870,9 @@ def compute_gain(bid, price, sample_diff):
 compute_gain(30000, 35000, sample_diff2)
       </input>
     </program>
+<pre>
+23594.249201277955
+</pre>
 
     <p>
       In reality we don't know the actual price, but we have a posterior distribution that represents what we know about it.
@@ -780,6 +905,9 @@ def expected_gain(bid, posterior, sample_diff):
 expected_gain(21000, posterior1, sample_diff2)
       </input>
     </program>
+<pre>
+16923.59933856512
+</pre>
 
     <p>
       But can we do any better?
@@ -796,8 +924,17 @@ expected_gain_series = pd.Series(gains, index=bids)
       </input>
     </program>
 
+    <program language="python">
+      <input>
+expected_gain_series.plot(label='Player 1', color='C2')
+
+decorate(xlabel='Bid ($)',
+         ylabel='Expected gain ($)',
+         title='Optimal bid: expected gain')
+      </input>
+    </program>
+    <image source="images/ch09_decision_analysis_2ccd6e6f.png" width="80%"/>
     <p>
-      <!-- Figure fig09-06: Expected gain for a range of possible bids. -->
       Here are the results.
     </p>
 
@@ -810,7 +947,9 @@ expected_gain_series = pd.Series(gains, index=bids)
 expected_gain_series.idxmax()
       </input>
     </program>
-
+<pre>
+22000.0
+</pre>
     <p>
       With that bid, the expected gain is about $17,400.
     </p>
@@ -820,6 +959,9 @@ expected_gain_series.idxmax()
 expected_gain_series.max()
       </input>
     </program>
+<pre>
+17384.899584430797
+</pre>
 
     <p>
       Recall that your initial guess was $23,000.

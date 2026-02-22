@@ -83,7 +83,9 @@ dist = poisson(lam)
 type(dist)
       </input>
     </program>
-
+<pre>
+scipy.stats._distn_infrastructure.rv_discrete_frozen
+</pre>
     <p>
       The result is an object that represents a <q>frozen</q> random variable and provides <c>pmf</c>, which evaluates the probability mass function of the Poisson distribution.
     </p>
@@ -94,7 +96,9 @@ k = 4
 dist.pmf(k)
       </input>
     </program>
-
+<pre>
+0.039471954028253146
+</pre>
     <p>
       This result implies that if the average goal-scoring rate is 1.4 goals per game, the probability of scoring 4 goals in a game is about 4%.
     </p>
@@ -138,8 +142,25 @@ pmf_goals = make_poisson_pmf(lam, goals)
       And here's what it looks like.
     </p>
 
+    <program language="python">
+      <input>
+from utils import decorate
+
+def decorate_goals(title=''):
+    decorate(xlabel='Number of goals',
+        ylabel='PMF',
+        title=title)
+      </input>
+    </program>
+    <program language="python">
+      <input>
+pmf_goals.bar(label=r'Poisson distribution with $\lambda=1.4$')
+
+decorate_goals('Distribution of goals scored')
+      </input>
+    </program>
+    <image source="images/ch08_poisson_processes_65236711.png" width="80%"/>
     <p>
-      <!-- Figure fig07-01: Poisson distribution with lambda=1.4. -->
       The most likely outcomes are 0, 1, and 2; higher values are possible but increasingly unlikely.
       Values above 7 are negligible.
       This distribution shows that if we know the goal scoring rate, we can predict the number of goals.
@@ -220,8 +241,22 @@ prior.normalize()
       Here's what it looks like.
     </p>
 
+    <program language="python">
+      <input>
+def decorate_rate(title=''):
+    decorate(xlabel='Goal scoring rate (lam)',
+        ylabel='PMF',
+        title=title)
+      </input>
+    </program>
+    <program language="python">
+      <input>
+prior.plot(ls='--', label='prior', color='C5')
+decorate_rate(r'Prior distribution of $\lambda$')
+      </input>
+    </program>
+    <image source="images/ch08_poisson_processes_e767aa34.png" width="80%"/>
     <p>
-      <!-- Figure fig07-02: A gamma prior distribution of goal-scoring rate. -->
       This distribution represents our prior knowledge about goal scoring: <c>lam</c> is usually less than 2, occasionally as high as 6, and seldom higher than that.
     </p>
 
@@ -229,6 +264,14 @@ prior.normalize()
       And we can confirm that the mean is about 1.4.
     </p>
 
+    <program language="python">
+      <input>
+prior.mean()
+      </input>
+    </program>
+<pre>
+1.4140818156118378
+</pre>
     <p>
       As usual, reasonable people could disagree about the details of the prior, but this is good enough to get started.
       Let's do an update.
@@ -253,7 +296,9 @@ k = 4
 poisson(lam).pmf(4)
       </input>
     </program>
-
+<pre>
+0.039471954028253146
+</pre>
     <p>
       Now suppose we have an array of possible values for <m>\lambda</m>; we can compute the likelihood of the data for each hypothetical value of <c>lam</c>, like this:
     </p>
@@ -304,6 +349,15 @@ update_poisson(france, 4)
       The data, <c>k=4</c>, makes us think higher values of <c>lam</c> are more likely and lower values are less likely.  So the posterior distribution is shifted to the right.
     </p>
 
+    <program language="python">
+      <input>
+prior.plot(ls='--', label='prior', color='C5')
+france.plot(label='France posterior', color='C3')
+
+decorate_rate('Posterior distribution for France')
+      </input>
+    </program>
+    <image source="images/ch08_poisson_processes_6c29fe83.png" width="80%"/>
     <p>
       Let's do the same for Croatia:
     </p>
@@ -315,8 +369,16 @@ update_poisson(croatia, 2)
       </input>
     </program>
 
+    <program language="python">
+      <input>
+prior.plot(ls='--', label='prior', color='C5')
+croatia.plot(label='Croatia posterior', color='C0')
+
+decorate_rate('Posterior distribution for Croatia')
+      </input>
+    </program>
+    <image source="images/ch08_poisson_processes_d826e87d.png" width="80%"/>
     <p>
-      <!-- Figure fig07-03: Posterior distributions for France and Croatia. -->
       Here are the posterior means for these distributions.
     </p>
 
@@ -325,7 +387,9 @@ update_poisson(croatia, 2)
 print(croatia.mean(), france.mean())
       </input>
     </program>
-
+<pre>
+1.6999765866755225 2.699772393342308
+</pre>
     <p>
       The mean of the prior distribution is about 1.4.
       After Croatia scores 2 goals, their posterior mean is 1.7, which is near the midpoint of the prior and the data.
@@ -376,7 +440,9 @@ def prob_gt(pmf1, pmf2):
 prob_gt(france, croatia)
       </input>
     </program>
-
+<pre>
+0.7499366290930155
+</pre>
     <p>
       <c>Pmf</c> provides a function that does the same thing.
     </p>
@@ -386,6 +452,9 @@ prob_gt(france, croatia)
 Pmf.prob_gt(france, croatia)
       </input>
     </program>
+<pre>
+0.7499366290930174
+</pre>
 
     <p>
       The results are slightly different because <c>Pmf.prob_gt</c> uses array operators rather than <c>for</c> loops.
@@ -433,6 +502,19 @@ pmf_seq = [make_poisson_pmf(lam, goals)
       The following figure shows what these distributions look like for a few values of <c>lam</c>.
     </p>
 
+    <program language="python">
+      <input>
+import matplotlib.pyplot as plt
+
+for i, index in enumerate([10, 20, 30, 40]):
+    plt.subplot(2, 2, i+1)
+    lam = prior.qs[index]
+    pmf = pmf_seq[index]
+    pmf.bar(label=f'$\lambda$ = {lam}', color='C3')
+    decorate_goals()
+      </input>
+    </program>
+    <image source="images/ch08_poisson_processes_bf82ae24.png" width="80%"/>
     <p>
       The predictive distribution is a mixture of these <c>Pmf</c> objects, weighted with the posterior probabilities.
       We can use <c>make_mixture</c> from <xref ref="sec-min-max-mixture-mixtures"/> to compute this mixture.
@@ -443,15 +525,34 @@ pmf_seq = [make_poisson_pmf(lam, goals)
 from utils import make_mixture
 
 pred_france = make_mixture(france, pmf_seq)
-pred_croatia = make_mixture(croatia, pmf_seq)
       </input>
     </program>
 
+    <program language="python">
+      <input>
+pred_france.bar(color='C3', label='France')
+decorate_goals('Posterior predictive distribution')
+      </input>
+    </program>
+    <image source="images/ch08_poisson_processes_bf7a855f.png" width="80%"/>
     <p>
       Here's the predictive distribution for the number of goals France would score in a rematch.
       This distribution represents two sources of uncertainty: we don't know the actual value of <c>lam</c>, and even if we did, we would not know the number of goals in the next game.
     </p>
 
+    <program language="python">
+      <input>
+pred_croatia = make_mixture(croatia, pmf_seq)
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+pred_croatia.bar(color='C0', label='Croatia')
+decorate_goals('Posterior predictive distribution')
+      </input>
+    </program>
+    <image source="images/ch08_poisson_processes_bfe5a287.png" width="80%"/>
     <p>
       We can use these distributions to compute the probability that France wins, loses, or ties the rematch.
     </p>
@@ -464,6 +565,14 @@ tie = Pmf.prob_eq(pred_france, pred_croatia)
       </input>
     </program>
 
+    <program language="python">
+      <input>
+win + tie/2
+      </input>
+    </program>
+<pre>
+0.6529592395105466
+</pre>
     <p>
       Assuming that France wins half of the ties, their chance of winning the rematch is about 65%.
     </p>
@@ -541,8 +650,23 @@ pmf_time.normalize()
       And here's what it looks like.
     </p>
 
+    <program language="python">
+      <input>
+def decorate_time(title=''):
+    decorate(xlabel='Time between goals (games)',
+             ylabel='PMF',
+             title=title)
+      </input>
+    </program>
+    <program language="python">
+      <input>
+pmf_time.plot(label='exponential with $\lambda$ = 1.4')
+
+decorate_time('Distribution of time between goals')
+      </input>
+    </program>
+    <image source="images/ch08_poisson_processes_42a921a4.png" width="80%"/>
     <p>
-      <!-- Figure fig07-05: An exponential distribution with lambda = 1.4. -->
       It is counterintuitive, but true, that the most likely time to score a goal is immediately.  After that, the probability of each successive interval is a little lower.
     </p>
 

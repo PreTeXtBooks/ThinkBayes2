@@ -126,7 +126,7 @@ pmf.plot(label='PMF')
 decorate_euro(title='Posterior distribution for the Euro problem')
   </input>
 </program>
-<!-- Figure fig07-01: Posterior distribution from the Euro problem represented as a PMF and CDF. -->
+<image source="images/ch07_min_max_mixture_3208b523.png" width="80%"/>
 <p>
   The range of the CDF is always from 0 to 1, in contrast with the PMF, where the maximum can be any probability.
 </p>
@@ -310,7 +310,7 @@ pmf_3d6.plot()
 decorate_dice('Distribution of attributes')
   </input>
 </program>
-<!-- Figure fig07-02: Distribution of the sum of three dice. -->
+<image source="images/ch07_min_max_mixture_3508b1a2.png" width="80%"/>
 <p>
   If we roll four dice and add up the best three, computing the distribution of the sum is a bit more complicated.
   I'll estimate the distribution by simulating 10,000 rolls.
@@ -360,7 +360,7 @@ pmf_best3.plot(label='best 3 of 4', ls='--')
 decorate_dice('Distribution of attributes')
   </input>
 </program>
-<!-- Figure fig07-03: Distributions of the sum of three dice and the best three of four. -->
+<image source="images/ch07_min_max_mixture_c2e7ff43.png" width="80%"/>
 <p>
   As you might expect, choosing the best three out of four tends to yield higher values.
 </p>
@@ -424,7 +424,7 @@ pmf_max6.plot(label='max of 6 attributes')
 decorate_dice('Distribution of attributes')
   </input>
 </program>
-<!-- Figure fig07-04: Distribution of the maximum of six attributes. -->
+<image source="images/ch07_min_max_mixture_8a3b9300.png" width="80%"/>
 <p>
   Most characters have at least one attribute greater than 12; almost 10% of them have an 18.
 </p>
@@ -447,7 +447,7 @@ decorate_dice('Distribution of attributes')
 plt.ylabel('CDF');
   </input>
 </program>
-<!-- Figure fig07-05: CDFs for the distribution of three dice, best three of four, and maximum of six. -->
+<image source="images/ch07_min_max_mixture_e4422ad7.png" width="80%"/>
 <p>
   <c>Cdf</c> provides <c>max_dist</c>, which does the same computation, so we can also compute the <c>Cdf</c> of the maximum like this:
 </p>
@@ -526,7 +526,7 @@ decorate_dice('Minimum and maximum of six attributes')
 plt.ylabel('CDF');
   </input>
 </program>
-<!-- Figure fig07-06: Minimum and maximum of six attributes. -->
+<image source="images/ch07_min_max_mixture_c32afe8c.png" width="80%"/>
 <p>
   <c>Cdf</c> provides <c>min_dist</c>, which does the same computation, so we can also compute the <c>Cdf</c> of the minimum like this:
 </p>
@@ -635,7 +635,7 @@ mix1.bar(alpha=0.7)
 decorate_dice('Mixture of one 4-sided and one 6-sided die')
   </input>
 </program>
-<!-- Figure fig07-07: Mixture of one 4-sided and one 6-sided die. -->
+<image source="images/ch07_min_max_mixture_678cf672.png" width="80%"/>
 <p>
   Now suppose you are fighting three monsters:
 </p>
@@ -665,7 +665,7 @@ mix2.bar(alpha=0.7)
 decorate_dice('Mixture of one 4-sided and two 6-sided die')
   </input>
 </program>
-<!-- Figure fig07-08: Mixture of one 4-sided and two 6-sided dice. -->
+<image source="images/ch07_min_max_mixture_1543a486.png" width="80%"/>
 <p>
   In this section we used the <c>+</c> operator, which adds the probabilities in the distributions, not to be confused with <c>Pmf.add_dist</c>, which computes the distribution of the sum of the distributions.
 </p>
@@ -686,7 +686,7 @@ total_damage.bar(alpha=0.7)
 decorate_dice('Total damage inflicted by both parties')
   </input>
 </program>
-<!-- Figure fig07-09: Total damage inflicted by both parties. -->
+<image source="images/ch07_min_max_mixture_80588683.png" width="80%"/>
   </section>
 
   <section xml:id="sec-min-max-mixture-general-mixtures">
@@ -832,7 +832,7 @@ mix.bar(label='mixture', alpha=0.6)
 decorate_dice('Distribution of damage with three different weapons')
   </input>
 </program>
-<!-- Figure fig07-10: Mixture of uniform distributions from three kinds of dice. -->
+<image source="images/ch07_min_max_mixture_01faa6f6.png" width="80%"/>
 <p>
   In this section I used Pandas so that <c>make_mixture</c> is concise, efficient, and hopefully not too hard to understand.
   In the exercises at the end of the chapter, you'll have a chance to practice with mixtures, and we will use <c>make_mixture</c> again in the next chapter.
@@ -904,7 +904,7 @@ decorate_dice('Distribution of attributes')
 plt.ylabel('CDF');
           </input>
         </program>
-        <!-- Figure fig07-11: Distribution of attributes from standard array and best three of four. -->
+        <image source="images/ch07_min_max_mixture_4bc31561.png" width="80%"/>
         <p>
           I plotted <c>cdf_standard</c> as a step function to show more clearly that it contains only a few quantities.
         </p>
