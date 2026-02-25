@@ -231,6 +231,8 @@ ps = gamma(alpha).pdf(qs)
 
     <program language="python">
       <input>
+from empiricaldist import Pmf
+
 prior = Pmf(ps, qs)
 prior.normalize()
       </input>
@@ -560,8 +562,21 @@ decorate_goals('Posterior predictive distribution')
     <program language="python">
       <input>
 win = Pmf.prob_gt(pred_france, pred_croatia)
+win
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
 lose = Pmf.prob_lt(pred_france, pred_croatia)
+lose
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
 tie = Pmf.prob_eq(pred_france, pred_croatia)
+tie
       </input>
     </program>
 
@@ -738,6 +753,103 @@ decorate_time('Distribution of time between goals')
           <li><p>Compute the probability of scoring 5 or more goals during the remaining time.</p></li>
         </ol>
       </statement>
+      <solution>
+        <program language="python">
+          <input>
+# Here's a function that updates the distribution of lam
+# with the given time between goals
+
+def update_expo(pmf, data):
+    """Update based on an observed interval
+
+    pmf: prior PMF
+    data: time between goals in minutes
+    """
+    t = data / 90
+    lams = pmf.qs
+    likelihood = expo_pdf(t, lams)
+    pmf *= likelihood
+    pmf.normalize()
+          </input>
+        </program>
+
+        <program language="python">
+          <input>
+# Here are the updates for the first and second goals
+
+germany = prior.copy()
+update_expo(germany, 11)
+
+germany2 = germany.copy()
+update_expo(germany2, 12)
+          </input>
+        </program>
+
+        <program language="python">
+          <input>
+# Here are the mean values of `lam` after each update
+
+germany.mean(), germany2.mean()
+          </input>
+        </program>
+
+        <program language="python">
+          <input>
+# Here's what the posterior distributions look like
+
+prior.plot(ls='--', label='prior', color='C5')
+germany.plot(color='C3', label='Posterior after 1 goal')
+germany2.plot(color='C16', label='Posterior after 2 goals')
+
+decorate_rate('Prior and posterior distributions')
+          </input>
+        </program>
+
+        <program language="python">
+          <input>
+# Here's the predictive distribution for each possible value of `lam`
+
+t = (90-23) / 90
+
+pmf_seq = [make_poisson_pmf(lam*t, goals)
+           for lam in germany2.qs]
+          </input>
+        </program>
+
+        <program language="python">
+          <input>
+# And here's the mixture of predictive distributions,
+# weighted by the probabilities in the posterior distribution.
+
+pred_germany2 = make_mixture(germany2, pmf_seq)
+          </input>
+        </program>
+
+        <program language="python">
+          <input>
+# Here's what the predictive distribution looks like
+
+pred_germany2.bar(color='C1', label='germany')
+decorate_goals('Posterior predictive distribution')
+          </input>
+        </program>
+
+        <program language="python">
+          <input>
+# Here's the probability of scoring exactly 5 more goals
+
+pred_germany2[5]
+          </input>
+        </program>
+
+        <program language="python">
+          <input>
+# And the probability of 5 or more
+
+pred_germany2.prob_ge(5)
+          </input>
+        </program>
+      </solution>
     </exercise>
 
     <exercise xml:id="ex-poisson-france-scores-first">
@@ -768,6 +880,44 @@ def make_expo_pmf(lam, high):
           </input>
         </program>
       </statement>
+      <solution>
+        <program language="python">
+          <input>
+# Here are the predictive distributions for the
+# time until the first goal
+
+pmf_seq = [make_expo_pmf(lam, high=4) for lam in prior.qs]
+          </input>
+        </program>
+
+        <program language="python">
+          <input>
+# And here are the mixtures based on the two posterior distributions
+
+pred_france = make_mixture(france, pmf_seq)
+pred_croatia = make_mixture(croatia, pmf_seq)
+          </input>
+        </program>
+
+        <program language="python">
+          <input>
+# Here's what the posterior predictive distributions look like
+
+pred_france.plot(label='France', color='C3')
+pred_croatia.plot(label='Croatia', color='C0')
+
+decorate_time('Posterior predictive distribution')
+          </input>
+        </program>
+
+        <program language="python">
+          <input>
+# And here's the probability France scores first
+
+Pmf.prob_lt(pred_france, pred_croatia)
+          </input>
+        </program>
+      </solution>
     </exercise>
 
     <exercise xml:id="ex-poisson-hockey">
@@ -784,6 +934,133 @@ def make_expo_pmf(lam, high):
           In what ways do you think the outcome of these games might violate the assumptions of the Poisson model?  How would these violations affect your predictions?
         </p>
       </statement>
+      <solution>
+        <program language="python">
+          <input>
+# When a team is winning or losing by an insurmountable margin,
+# they might remove their best players from the game, which
+# would affect their goal-scoring rate, violating the assumption
+# that the goal scoring rate is constant.
+
+# In this example, Boston won the third game 8-1, but scoring
+# eight goals in a game might not reflect their true long-term
+# goal-scoring rate.
+
+# As a result, the analysis below might overestimate the chance
+# that Boston wins.
+
+# As it turned out, they did not.
+          </input>
+        </program>
+
+        <program language="python">
+          <input>
+from scipy.stats import gamma
+
+alpha = 2.8
+qs = np.linspace(0, 15, 101)
+ps = gamma.pdf(qs, alpha)
+prior_hockey = Pmf(ps, qs)
+prior_hockey.normalize()
+          </input>
+        </program>
+
+        <program language="python">
+          <input>
+prior_hockey.plot(ls='--', color='C5')
+decorate_rate('Prior distribution for hockey')
+prior_hockey.mean()
+          </input>
+        </program>
+
+        <program language="python">
+          <input>
+bruins = prior_hockey.copy()
+for data in [0, 2, 8, 4]:
+    update_poisson(bruins, data)
+
+bruins.mean()
+          </input>
+        </program>
+
+        <program language="python">
+          <input>
+canucks = prior_hockey.copy()
+for data in [1, 3, 1, 0]:
+    update_poisson(canucks, data)
+
+canucks.mean()
+          </input>
+        </program>
+
+        <program language="python">
+          <input>
+canucks.plot(label='Canucks')
+bruins.plot(label='Bruins')
+
+decorate_rate('Posterior distributions')
+          </input>
+        </program>
+
+        <program language="python">
+          <input>
+goals = np.arange(15)
+pmf_seq = [make_poisson_pmf(lam, goals) for lam in bruins.qs]
+          </input>
+        </program>
+
+        <program language="python">
+          <input>
+pred_bruins = make_mixture(bruins, pmf_seq)
+
+pred_bruins.bar(label='Bruins', color='C1')
+decorate_goals('Posterior predictive distribution')
+          </input>
+        </program>
+
+        <program language="python">
+          <input>
+pred_canucks = make_mixture(canucks, pmf_seq)
+
+pred_canucks.bar(label='Canucks')
+decorate_goals('Posterior predictive distribution')
+          </input>
+        </program>
+
+        <program language="python">
+          <input>
+win = Pmf.prob_gt(pred_bruins, pred_canucks)
+lose = Pmf.prob_lt(pred_bruins, pred_canucks)
+tie = Pmf.prob_eq(pred_bruins, pred_canucks)
+
+win, lose, tie
+          </input>
+        </program>
+
+        <program language="python">
+          <input>
+# Assuming the Bruins win half of the ties,
+# their chance of winning the next game is...
+
+p = win + tie/2
+p
+          </input>
+        </program>
+
+        <program language="python">
+          <input>
+# Their chance of winning the series is their
+# chance of winning k=2 or k=3 of the remaining
+# n=3 games.
+
+from scipy.stats import binom
+
+n = 3
+a = binom.pmf([2,3], n, p)
+a.sum()
+          </input>
+        </program>
+      </solution>
     </exercise>
   </exercises>
 </chapter>
