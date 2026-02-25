@@ -757,11 +757,6 @@ pd.DataFrame(dice)
   Not all rows are the same length, so Pandas fills the extra spaces with the special value <c>NaN</c>, which stands for <q>not a number</q>.
   We can use <c>fillna</c> to replace the <c>NaN</c> values with 0.
 </p>
-<program language="python">
-  <input>
-pd.DataFrame(dice).fillna(0)
-  </input>
-</program>
 <p>
   The next step is to multiply each row by the probabilities in <c>pmf_dice</c>, which turns out to be easier if we transpose the matrix so the distributions run down the columns rather than across the rows:
 </p>
@@ -912,26 +907,52 @@ plt.ylabel('CDF');
       <solution>
         <program language="python">
           <input>
+# Solution
+
+# Here are the means
+cdf_best3.mean(), cdf_standard.mean()
           </input>
         </program>
         <program language="python">
           <input>
+# Solution
+
+# And the standard deviations
+cdf_best3.std(), cdf_standard.std()
           </input>
         </program>
         <program language="python">
           <input>
+# Solution
+
+# Here's the probability that a single attribute is less than 8
+cdf_best3.lt_dist(8)
           </input>
         </program>
         <program language="python">
           <input>
+# Solution
+
+# And the probability that a single attribute is greater than 15
+cdf_best3.gt_dist(15)
           </input>
         </program>
         <program language="python">
           <input>
+# Solution
+
+# Here are two ways to compute the probability that at
+# least one attribute is less than 8
+cdf_min6.lt_dist(8), 1 - (1-cdf_best3.lt_dist(8))**6
           </input>
         </program>
         <program language="python">
           <input>
+# Solution
+
+# And two ways to compute the probability that at least
+# one attribute is greater than 15
+cdf_max6.gt_dist(15), 1 - (1-cdf_best3.gt_dist(15))**6
           </input>
         </program>
       </solution>
@@ -971,18 +992,50 @@ plt.ylabel('CDF');
       <solution>
         <program language="python">
           <input>
+# Solution
+
+# Here's what we believe about the dice after seeing the data
+
+hypos = [6, 8, 10]
+prior = Pmf(1, hypos)
+likelihood = 1/prior.qs
+posterior = prior * likelihood
+posterior.normalize()
+posterior
           </input>
         </program>
         <program language="python">
           <input>
+# Solution
+
+# Here's a sequence that represents the three dice
+
+d6 = make_die(6)
+d8 = make_die(8)
+d10 = make_die(10)
+
+dice = d6, d8, d10
           </input>
         </program>
         <program language="python">
           <input>
+# Solution
+
+# And here's a mixture of the three dice, weighting
+# each one with the probability from the posterior distribution
+
+mix3 = make_mixture(posterior, dice)
+mix3.bar()
           </input>
         </program>
         <program language="python">
           <input>
+# Solution
+
+# From the mixture, we can pull out the probability of
+# rolling a 6.
+
+mix3[6]
           </input>
         </program>
       </solution>
@@ -1027,10 +1080,33 @@ sample = np.random.normal(mean, std, size=365)
       <solution>
         <program language="python">
           <input>
+# Solution
+
+# Here's the mean of the maximum of `n` loaves,
+# for a range of values of `n`
+
+cdf = Cdf.from_seq(sample)
+
+for n in range(2, 6):
+    cdf_max = cdf.max_dist(n)
+    print(n, cdf_max.mean())
           </input>
         </program>
         <program language="python">
           <input>
+# Solution
+
+# It looks like hefting 4 loaves is enough to get the mean over 1000,
+# so the story is not entirely implausible.
+
+# Here's what the distribution of the maximum looks like, compared
+# to the actual distribution of weights.
+
+cdf.plot(label='one loaf')
+cdf.max_dist(4).plot(label='maximum of four loaves')
+
+decorate(xlabel='Weight in grams',
+         ylabel='CDF')
           </input>
         </program>
       </solution>
