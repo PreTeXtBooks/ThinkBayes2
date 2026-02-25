@@ -355,10 +355,14 @@ that factor of two makes the difference.
 <solution>
 <program language="python">
   <input>
+post_odds = odds(0.9) * like1 / like2
+prob(post_odds)
   </input>
 </program>
 <program language="python">
   <input>
+post_odds = odds(0.1) * like1 / like2
+prob(post_odds)
   </input>
 </program>
 </solution>

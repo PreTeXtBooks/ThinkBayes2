@@ -131,6 +131,12 @@ df = pd.concat([df2011, df2012], ignore_index=True)
       </input>
     </program>
 
+    <program language="python">
+      <input>
+print(df2011.shape, df2012.shape, df.shape)
+      </input>
+    </program>
+
     <p>
       Here's what the dataset looks like:
     </p>
@@ -276,6 +282,22 @@ decorate_value('Prior distribution of showcase value')
           Use this function to make a <c>Pmf</c> that represents the prior distribution for Showcase 2, and plot it.
         </p>
       </statement>
+      <solution>
+        <program language="python">
+          <input>
+qs = np.linspace(0, 80000, 81)
+prior2 = kde_from_sample(df['Showcase 2'], qs)
+          </input>
+        </program>
+        <program language="python">
+          <input>
+prior1.plot(label='Prior 1')
+prior2.plot(label='Prior 2')
+
+decorate_value('Prior distributions of showcase value')
+          </input>
+        </program>
+      </solution>
     </exercise>
   </section>
 
@@ -524,6 +546,48 @@ prior1.mean(), posterior1.mean()
           Based on the prior and your guess, what do you expect the actual price of the showcase to be?
         </p>
       </statement>
+      <solution>
+        <program language="python">
+          <input>
+mean_diff2 = sample_diff2.mean()
+std_diff2 = sample_diff2.std()
+
+print(mean_diff2, std_diff2)
+          </input>
+        </program>
+        <program language="python">
+          <input>
+error_dist2 = norm(0, std_diff2)
+          </input>
+        </program>
+        <program language="python">
+          <input>
+guess2 = 38000
+error2 = guess2 - prior2.qs
+
+likelihood2 = error_dist2.pdf(error2)
+          </input>
+        </program>
+        <program language="python">
+          <input>
+posterior2 = prior2 * likelihood2
+posterior2.normalize()
+          </input>
+        </program>
+        <program language="python">
+          <input>
+prior2.plot(color='C5', label='Prior 2')
+posterior2.plot(color='C15', label='Posterior 2')
+
+decorate_value('Prior and posterior distribution of showcase value')
+          </input>
+        </program>
+        <program language="python">
+          <input>
+print(prior2.mean(), posterior2.mean())
+          </input>
+        </program>
+      </solution>
     </exercise>
   </section>
 
@@ -699,6 +763,38 @@ decorate(xlabel='Difference between bid and actual price ($)',
           Then plot the probability that Player 2 wins for a range of possible differences between their bid and the actual price.
         </p>
       </statement>
+      <solution>
+        <program language="python">
+          <input>
+prob_overbid(sample_diff1)
+          </input>
+        </program>
+        <program language="python">
+          <input>
+prob_worse_than(-5000, sample_diff1)
+          </input>
+        </program>
+        <program language="python">
+          <input>
+compute_prob_win(-5000, sample_diff1)
+          </input>
+        </program>
+        <program language="python">
+          <input>
+xs = np.linspace(-30000, 5000, 121)
+ys = [compute_prob_win(x, sample_diff1) for x in xs]
+          </input>
+        </program>
+        <program language="python">
+          <input>
+plt.plot(xs, ys)
+
+decorate(xlabel='Difference between bid and actual price ($)',
+         ylabel='Probability of winning',
+         title='Player 2')
+          </input>
+        </program>
+      </solution>
     </exercise>
   </section>
 
@@ -822,6 +918,37 @@ prob_win_series.max()
           Do the same analysis for Player 2.
         </p>
       </statement>
+      <solution>
+        <program language="python">
+          <input>
+bids = posterior2.qs
+
+probs = [total_prob_win(bid, posterior2, sample_diff1)
+         for bid in bids]
+
+prob_win_series = pd.Series(probs, index=bids)
+          </input>
+        </program>
+        <program language="python">
+          <input>
+prob_win_series.plot(label='Player 2', color='C1')
+
+decorate(xlabel='Bid ($)',
+         ylabel='Probability of winning',
+         title='Optimal bid: probability of winning')
+          </input>
+        </program>
+        <program language="python">
+          <input>
+prob_win_series.idxmax()
+          </input>
+        </program>
+        <program language="python">
+          <input>
+prob_win_series.max()
+          </input>
+        </program>
+      </solution>
     </exercise>
   </section>
 
@@ -975,6 +1102,36 @@ expected_gain_series.max()
           Do the same analysis for Player 2.
         </p>
       </statement>
+      <solution>
+        <program language="python">
+          <input>
+bids = posterior2.qs
+
+gains = [expected_gain(bid, posterior2, sample_diff1) for bid in bids]
+
+expected_gain_series = pd.Series(gains, index=bids)
+          </input>
+        </program>
+        <program language="python">
+          <input>
+expected_gain_series.plot(label='Player 2', color='C2')
+
+decorate(xlabel='Bid ($)',
+    ylabel='Expected gain ($)',
+    title='Optimal bid: expected gain')
+          </input>
+        </program>
+        <program language="python">
+          <input>
+expected_gain_series.idxmax()
+          </input>
+        </program>
+        <program language="python">
+          <input>
+expected_gain_series.max()
+          </input>
+        </program>
+      </solution>
     </exercise>
   </section>
 
@@ -1271,6 +1428,55 @@ def compute_profit(printed, orders):
 
         <program language="python">
           <input>
+always_10 = [10] * 8
+always_10
+          </input>
+        </program>
+        <program language="python">
+          <input>
+compute_profit(60, always_10)
+          </input>
+        </program>
+        <program language="python">
+          <input>
+compute_profit(100, always_10)
+          </input>
+        </program>
+        <program language="python">
+          <input>
+from scipy.stats import gamma
+
+alpha = 9
+qs = np.linspace(0, 25, 101)
+ps = gamma.pdf(qs, alpha)
+pmf = Pmf(ps, qs)
+pmf.normalize()
+pmf.mean()
+          </input>
+        </program>
+        <program language="python">
+          <input>
+pmf.plot(color='C1')
+decorate(xlabel=r'Book ordering rate ($\lambda$)',
+        ylabel='PMF')
+          </input>
+        </program>
+        <program language="python">
+          <input>
+rates = pmf.choice(1000)
+np.mean(rates)
+          </input>
+        </program>
+        <program language="python">
+          <input>
+np.random.seed(17)
+order_array = np.random.poisson(rates, size=(8, 1000)).transpose()
+order_array[:5, :]
+          </input>
+        </program>
+
+        <program language="python">
+          <input>
 def compute_expected_profits(printed, order_array):
     """Compute profits averaged over a sample of orders.
 
@@ -1280,6 +1486,42 @@ def compute_expected_profits(printed, order_array):
     profits = [compute_profit(printed, orders)
                for orders in order_array]
     return np.mean(profits)
+          </input>
+        </program>
+        <program language="python">
+          <input>
+compute_expected_profits(70, order_array)
+          </input>
+        </program>
+        <program language="python">
+          <input>
+compute_expected_profits(80, order_array)
+          </input>
+        </program>
+        <program language="python">
+          <input>
+compute_expected_profits(90, order_array)
+          </input>
+        </program>
+        <program language="python">
+          <input>
+printed_array = np.arange(70, 110)
+t = [compute_expected_profits(printed, order_array)
+                    for printed in printed_array]
+expected_profits = pd.Series(t, printed_array)
+          </input>
+        </program>
+        <program language="python">
+          <input>
+expected_profits.plot(label='')
+
+decorate(xlabel='Number of books printed',
+         ylabel='Expected profit ($)')
+          </input>
+        </program>
+        <program language="python">
+          <input>
+expected_profits.idxmax(), expected_profits.max()
           </input>
         </program>
 
@@ -1299,6 +1541,13 @@ def compute_expected_profits(printed, order_array):
 qs = np.logspace(0, 2, 101)
 prior = Pmf(1, qs)
 prior.normalize()
+          </input>
+        </program>
+        <program language="python">
+          <input>
+prior.make_cdf().plot(color='C1')
+decorate(xlabel=r'Book ordering rate ($\lambda$)',
+         ylabel='CDF')
           </input>
         </program>
         <p>Create an update function based on one week of orders:</p>
@@ -1324,16 +1573,30 @@ def update_book(pmf, data):
           <input>
 posterior1 = prior.copy()
 update_book(posterior1, 10)
-
+          </input>
+        </program>
+        <program language="python">
+          <input>
 posterior2 = posterior1.copy()
 update_book(posterior2, 9)
+          </input>
+        </program>
+        <program language="python">
+          <input>
+prior.mean(), posterior1.mean(), posterior2.mean()
           </input>
         </program>
         <p>Generate sample of 1000 values from the posterior and simulate 8 weeks:</p>
         <program language="python">
           <input>
 rates = posterior2.choice(1000)
+np.mean(rates)
+          </input>
+        </program>
+        <program language="python">
+          <input>
 order_array = np.random.poisson(rates, size=(8, 1000)).transpose()
+order_array[:5, :]
           </input>
         </program>
         <p>Compute expected profits for different order quantities:</p>
@@ -1343,8 +1606,18 @@ printed_array = np.arange(70, 110)
 t = [compute_expected_profits(printed, order_array)
                     for printed in printed_array]
 expected_profits = pd.Series(t, printed_array)
+          </input>
+        </program>
+        <program language="python">
+          <input>
+expected_profits.plot(label='')
 
-# Find the optimal order
+decorate(xlabel='Number of books printed',
+         ylabel='Expected profit ($)')
+          </input>
+        </program>
+        <program language="python">
+          <input>
 expected_profits.idxmax()
           </input>
         </program>

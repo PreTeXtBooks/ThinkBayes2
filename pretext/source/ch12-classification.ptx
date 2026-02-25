@@ -24,6 +24,35 @@
 
     <program language="python">
       <input>
+from utils import Or70, Pu50, Gr30
+
+color_list3 = [Or70, Pu50, Gr30]
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+import matplotlib.pyplot as plt
+from cycler import cycler
+
+marker_cycle = cycler(marker=['s', 'o', '^'])
+color_cycle = cycler(color=color_list3)
+line_cycle = cycler(linestyle=['-', '--', ':'])
+
+plt.rcParams['axes.prop_cycle'] = (color_cycle + 
+                                   marker_cycle + 
+                                   line_cycle)
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+download('https://github.com/allisonhorst/palmerpenguins/raw/main/inst/extdata/penguins_raw.csv')
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
 import pandas as pd
 
 df = pd.read_csv('penguins_raw.csv').dropna(subset=['Body Mass (g)'])
@@ -106,6 +135,15 @@ studyName  Sample Number                              Species  Region  \
     <p>
       It returns a dictionary that maps from each species name to a <c>Cdf</c> of the values in the column named <c>colname</c>.
     </p>
+
+    <program language="python">
+      <input>
+def shorten(species):
+    return species.split()[0]
+
+df['Species2'] = df['Species'].apply(shorten)
+      </input>
+    </program>
 
     <program language="python">
       <input>
