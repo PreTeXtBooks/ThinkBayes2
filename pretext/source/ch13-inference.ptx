@@ -41,6 +41,11 @@
     </p>
     <program language="python">
       <input>
+download('https://github.com/AllenDowney/ThinkBayes2/raw/master/data/drp_scores.csv')
+      </input>
+    </program>
+    <program language="python">
+      <input>
     import pandas as pd
     
     df = pd.read_csv('drp_scores.csv', skiprows=21, delimiter='\t')

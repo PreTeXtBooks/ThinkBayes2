@@ -317,6 +317,30 @@ decorate(xlabel='Proportion of heads (x)',
       </input>
     </program>
     <image source="images/ch10_testing_1d53dfac.png" width="80%"/>
+    <p>
+      Now compute the total probability of the data under this definition of "biased" and compute the Bayes factor, compared with the fair hypothesis.
+      Is the data evidence that the coin is biased, or in favor of the fair hypothesis?
+    </p>
+    <solution>
+      <program language="python">
+        <input>
+like_triangle = np.sum(biased_triangle * likelihood)
+like_triangle
+        </input>
+      </program>
+      <program language="python">
+        <input>
+K = like_fair / like_triangle
+K
+        </input>
+      </program>
+      <program language="python">
+        <input>
+# For this definition of "biased", the data are 
+# very slightly in favor of the fair hypothesis.
+        </input>
+      </program>
+    </solution>
   </section>
 
   <section xml:id="sec-ch10-bayesian-hypothesis-testing">
@@ -1261,6 +1285,16 @@ sample_800 = sample_posterior(800, iters=100)
     </p>
     <program language="python">
       <input>
+from empiricaldist import Cdf
+
+cdf_500 = Cdf.from_seq(sample_500)
+cdf_600 = Cdf.from_seq(sample_600)
+cdf_700 = Cdf.from_seq(sample_700)
+cdf_800 = Cdf.from_seq(sample_800)
+      </input>
+    </program>
+    <program language="python">
+      <input>
 cdf_500.plot(label='ability=500', color='C1',
             linestyle='dashed')
 cdf_600.plot(label='ability=600', color='C3')
@@ -1320,6 +1354,8 @@ np.mean(sample_800 &gt; sample_700)
         <p>For the second version, what is the adaptive strategy that maximizes the precision of the test over the range of abilities?</p>
       </statement>
 <solution>
+  <program language="python">
+    <input>
 # I don't know what the optimal distribution of questions
 # is, but my guess is that it would follow the distribution
 # of ability.
@@ -1342,8 +1378,12 @@ def choose(i, belief):
     returns: difficulty
     """
     return difficulties[i]
+    </input>
+  </program>
 </solution>
 <solution>
+  <program language="python">
+    <input>
 # I suspect that the optimal strategy is to choose
 # a question so that the test-taker has a 50% chance
 # of getting it right.
@@ -1363,6 +1403,8 @@ def choose(i, belief):
     returns: difficulty
     """
     return belief.mean()
+    </input>
+  </program>
 </solution>
     </exercise>
   </section>

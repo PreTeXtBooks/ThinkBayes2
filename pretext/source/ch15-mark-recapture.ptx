@@ -795,8 +795,7 @@ decorate(xlabel='Number of bugs (N)',
     </program>
     <program language="python">
       <input>
-print(posterior_N.mean(), 
-      posterior_N.credible_interval(0.9))
+print(posterior_N.mean(), posterior_N.credible_interval(0.9))
       </input>
     </program>
 <pre>
