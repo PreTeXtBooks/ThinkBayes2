@@ -50,6 +50,8 @@ CHAPTER_MAP = {
     "chap20": "ch20-abc",
 }
 
+CHAPTER_COPYRIGHT_MARKER = "Copyright 2020 Allen B. Downey"
+
 
 def get_notebook_code_cells(path):
     """Extract Python code cells from a Jupyter notebook."""
@@ -198,6 +200,19 @@ def check_chapter(repo_root, nb_name, ptx_name):
     return issues
 
 
+def check_chapter_reference_boilerplate(repo_root):
+    """Verify chapter PTX files do not include duplicated copyright boilerplate."""
+    source_dir = repo_root / "pretext" / "source"
+    issues = []
+
+    for path in sorted(source_dir.glob("ch*.ptx")):
+        content = path.read_text()
+        if CHAPTER_COPYRIGHT_MARKER in content:
+            issues.append(f"  Duplicated copyright boilerplate found in {path.name}")
+
+    return issues
+
+
 def main():
     repo_root = Path(__file__).parent.parent
 
@@ -212,6 +227,16 @@ def main():
             print()
         else:
             print(f"PASS: {nb_name} <-> {ptx_name}")
+
+    chapter_issues = check_chapter_reference_boilerplate(repo_root)
+    if chapter_issues:
+        all_passed = False
+        print("FAIL: chapter reference boilerplate")
+        for issue in chapter_issues:
+            print(issue)
+        print()
+    else:
+        print("PASS: chapter reference boilerplate")
 
     if all_passed:
         print("\nAll chapters passed quality control check.")
