@@ -562,6 +562,9 @@ p = mean/N1
 p
       </input>
     </program>
+<pre>
+0.15217391304347827
+</pre>
     <p>
       With these parameters, how much variability do you expect in the number of bears from one trial to the next?  We can quantify that by computing the standard deviation of the binomial distribution with these parameters.
     </p>
@@ -572,6 +575,9 @@ from scipy.stats import binom
 binom(N1, p).std()
       </input>
     </program>
+<pre>
+4.219519857292647
+</pre>
     <p>
       Now let's consider a second scenario where <c>N</c> is 173, the posterior mean of the one-parameter model.  The corresponding value of <c>p</c> is lower.
     </p>
@@ -582,6 +588,9 @@ p = mean/N2
 p
       </input>
     </program>
+<pre>
+0.12138728323699421
+</pre>
     <p>
       In this scenario, the variation we expect to see from one trial to the next is higher.
     </p>
@@ -590,6 +599,9 @@ p
 binom(N2, p).std()
       </input>
     </program>
+<pre>
+4.2954472470306415
+</pre>
     <p>
       So if the number of bears we observe is the same in both trials, that would be evidence for lower values of <c>N</c>, where we expect more consistency.
       If the number of bears is substantially different between the two trials, that would be evidence for higher values of <c>N</c>.
@@ -779,6 +791,9 @@ posterior_N.normalize()
       </input>
     </program>
 <pre>
+0.0003425201572557094
+</pre>
+<pre>
 0.07755224277106798
 </pre>
     <p>
@@ -798,6 +813,9 @@ decorate(xlabel='Number of bugs (N)',
 print(posterior_N.mean(), posterior_N.credible_interval(0.9))
       </input>
     </program>
+<pre>
+102.1249999999998 [ 77. 127.]
+</pre>
 <pre>
 102.2100122100122 [ 77. 127.]
 </pre>
@@ -980,6 +998,9 @@ posterior_N.mean()
       </input>
     </program>
 <pre>
+105.76561732196238
+</pre>
+<pre>
 105.54726368159204
 </pre>
     <p>
@@ -1006,11 +1027,17 @@ decorate(xlabel='Probability of finding a bug',
 posterior_p1.mean(), posterior_p1.credible_interval(0.9)
       </input>
     </program>
+<pre>
+(0.2297065971677734, array([0.1, 0.4]))
+</pre>
     <program language="python">
       <input>
 posterior_p2.mean(), posterior_p2.credible_interval(0.9)
       </input>
     </program>
+<pre>
+(0.17501172155925765, array([0.06, 0.32]))
+</pre>
 <pre>
 (0.2297065971677734, array([0.1, 0.4]))
 </pre>
@@ -1185,6 +1212,9 @@ posterior_pmf = prior_pmf * likelihood
 posterior_pmf.normalize()
         </input>
       </program>
+<pre>
+1.266226682238907e-06
+</pre>
       <program language="python">
         <input>
 
@@ -1216,6 +1246,9 @@ decorate(xlabel='Number of cases (N)',
 marginal_N.mean(), marginal_N.credible_interval(0.9)
         </input>
       </program>
+<pre>
+(342.1317040018937, array([295., 400.]))
+</pre>
     </solution>
     </exercise>
 
@@ -1409,6 +1442,9 @@ posterior_pmf = prior_pmf * likelihood
 posterior_pmf.normalize()
         </input>
       </program>
+<pre>
+2.6359517829553705e-16
+</pre>
       <program language="python">
         <input>
 
@@ -1446,12 +1482,18 @@ decorate(xlabel='Number of cases (N)',
 marginal_N.mean(), marginal_N.credible_interval(0.9)
         </input>
       </program>
+<pre>
+(342.1317040018937, array([295., 400.]))
+</pre>
       <program language="python">
         <input>
 
 marginal3_N.mean(), marginal3_N.credible_interval(0.9)
         </input>
       </program>
+<pre>
+(391.0050140750373, array([360., 430.]))
+</pre>
     </solution>
     </exercise>
 

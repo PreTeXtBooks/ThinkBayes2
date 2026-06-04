@@ -194,6 +194,9 @@ pmf_k[140]
       </input>
     </program>
 <pre>
+0.008357181724918188
+</pre>
+<pre>
 0.008357181724918204
 </pre>
 
@@ -224,6 +227,9 @@ prob_ge(pmf_k, 140)
       </input>
     </program>
 <pre>
+0.03321057562002166
+</pre>
+<pre>
 0.03321057562002167
 </pre>
 
@@ -236,6 +242,9 @@ prob_ge(pmf_k, 140)
 pmf_k.prob_ge(140)
       </input>
     </program>
+<pre>
+0.03321057562002166
+</pre>
 <pre>
 0.03321057562002167
 </pre>
@@ -286,6 +295,9 @@ decorate(xlabel='Number of heads (k)',
 pmf_k.prob_le(110)
       </input>
     </program>
+<pre>
+0.033210575620021665
+</pre>
 <pre>
 0.03321057562002166
 </pre>
@@ -807,6 +819,9 @@ prior.normalize()
       1.3596964206970507e-23
       </pre>
     </program>
+<pre>
+1.3596964206970507e-23
+</pre>
 
         <p>
           Finally, here's what the prior looks like.
@@ -956,6 +971,9 @@ decorate(xlabel='Proportion of cheaters',
 posterior.idxmax()
           </input>
         </program>
+<pre>
+0.6
+</pre>
       </solution>
     </exercise>
 
@@ -1022,6 +1040,9 @@ decorate(xlabel='Proportion of heads',
 posterior00.idxmax(), posterior02.idxmax(), posterior04.idxmax()
           </input>
         </program>
+<pre>
+(0.56, 0.6, 0.8)
+</pre>
       </solution>
     </exercise>
 

@@ -400,6 +400,9 @@ For example, we have already computed the probability that a respondent is a ban
     prob(banker &amp; democrat)
       </input>
     </program>
+<pre>
+0.004686548995739501
+</pre>
     <p>
       As we should expect, <c>prob(banker &amp; democrat)</c> is less than <c>prob(banker)</c>, because not all bankers are Democrats.
     </p>
@@ -411,6 +414,9 @@ For example, we have already computed the probability that a respondent is a ban
     prob(democrat &amp; banker)
       </input>
     </program>
+<pre>
+0.004686548995739501
+</pre>
     <p>
       As expected, they are the same.
     </p>
@@ -478,6 +484,9 @@ We can interpret that to mean, &quot;Of all respondents who are bankers, what fr
     prob(selected)
       </input>
     </program>
+<pre>
+0.7706043956043956
+</pre>
     <p>
       About 77% of the bankers in this dataset are female.
     </p>
@@ -561,6 +570,9 @@ I'll define <c>conditional</c> to take two Boolean series, <c>proposition</c> an
     conditional(female, given=liberal &amp; democrat)
       </input>
     </program>
+<pre>
+0.576085409252669
+</pre>
     <p>
       About 57% of liberal Democrats are female.
     </p>
@@ -572,6 +584,9 @@ I'll define <c>conditional</c> to take two Boolean series, <c>proposition</c> an
     conditional(liberal &amp; female, given=banker)
       </input>
     </program>
+<pre>
+0.17307692307692307
+</pre>
     <p>
       About 17% of bankers are liberal women.
     </p>
@@ -655,6 +670,9 @@ Here's how we compute this ratio.
       prob(female &amp; banker) / prob(banker)
         </input>
       </program>
+<pre>
+0.7706043956043956
+</pre>
       <p>
         The result is the same.  This example demonstrates a general rule that relates conditional probability and conjunction.  Here's what it looks like in math notation:
       </p>
@@ -686,6 +704,9 @@ Here's how we compute this ratio.
       prob(liberal &amp; democrat)
         </input>
       </program>
+<pre>
+0.1425238385067965
+</pre>
       <p>
         And here's the result using Theorem 2:
       </p>
@@ -817,6 +838,9 @@ Here's the complementary <c>Series</c> for male respondents.
     prob(male &amp; banker) + prob(female &amp; banker)
       </input>
     </program>
+<pre>
+0.014769730168391155
+</pre>
     <p>
       Because <c>male</c> and <c>female</c> are mutually exclusive and collectively exhaustive (MECE), we get the same result we got by computing the probability of <c>banker</c> directly.
     </p>
@@ -959,12 +983,18 @@ In the next chapter, we'll see how.
 conditional(liberal, given=democrat)
       </input>
     </program>
+<pre>
+0.3891320002215698
+</pre>
 
     <program language="python">
       <input>
 conditional(democrat, given=liberal)
       </input>
     </program>
+<pre>
+0.5206403320240125
+</pre>
   </solution>
     </exercise>
     <exercise xml:id="ex-104">
@@ -1001,6 +1031,9 @@ conditional(banker, given=female)
 conditional(banker &amp; liberal &amp; democrat, given=female)
       </input>
     </program>
+<pre>
+0.0023009316887329786
+</pre>
   </solution>
     </exercise>
     <exercise xml:id="ex-107">
@@ -1024,6 +1057,9 @@ Rather than use the specific ages 25 and 35, let's define <c>young</c> and <c>ol
     prob(young)
       </input>
     </program>
+<pre>
+0.19435991073240008
+</pre>
     <p>For the old conservative questions:</p>
     <program language="python">
       <input>
@@ -1036,6 +1072,9 @@ prob(old &amp; conservative)
     prob(old)
       </input>
     </program>
+<pre>
+0.17328058429701765
+</pre>
 </solution>
     </exercise>
 
@@ -1054,6 +1093,9 @@ prob(old &amp; conservative)
     prob(conservative)
       </input>
     </program>
+<pre>
+0.3419354838709677
+</pre>
     <p>
       Use <c>prob</c> and <c>conditional</c> to compute the following probabilities.
     </p>

@@ -499,6 +499,9 @@ posterior2 = update_gamma(posterior1, data)
 prior_gamma.mean(), posterior1.mean(), posterior2.mean()
         </input>
       </program>
+<pre>
+(1.4, 2.1386138613861387, 2.7079646017699113)
+</pre>
       <program language="python">
         <input>
 
@@ -641,6 +644,9 @@ posterior_beta = update_beta(prior_beta, data)
 posterior_beta.mean()
         </input>
       </program>
+<pre>
+0.5595238095238095
+</pre>
       <program language="python">
         <input>
 
@@ -664,6 +670,9 @@ decorate(xlabel='Proportion of heads (x)',
 np.allclose(posterior, posterior_conjugate)
         </input>
     </program>
+<pre>
+False
+</pre>
 <pre>
 True
 </pre>
@@ -745,6 +754,9 @@ decorate(xlabel='Probability of positive rating',
 seller1.mean(), seller2.mean(), seller3.mean()
         </input>
       </program>
+<pre>
+(0.9, 0.9333333333333333, 0.9238095238095239)
+</pre>
       <program language="python">
         <input>
 
@@ -799,6 +811,9 @@ marginal_bear = marginal_beta(posterior_alpha, 2)
 marginal_bear.mean()
         </input>
       </program>
+<pre>
+0.2222222222222222
+</pre>
       <program language="python">
         <input>
 

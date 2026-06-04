@@ -1228,6 +1228,9 @@ socks = np.append(np.arange(n_pairs),
 print(socks)
         </input>
       </program>
+<pre>
+[ 0  1  2  3  4  5  6  7  8  0  1  2  3  4  5  6  7  8  9 10 11 12 13]
+</pre>
       <program language="python">
         <input>
 
@@ -1235,6 +1238,9 @@ picked_socks = np.random.choice(socks, size=11, replace=False)
 picked_socks
         </input>
       </program>
+<pre>
+array([ 6,  5,  1,  2,  2,  4,  1,  5,  7, 12,  8])
+</pre>
       <program language="python">
         <input>
 
@@ -1242,12 +1248,18 @@ values, counts = np.unique(picked_socks, return_counts=True)
 values
         </input>
       </program>
+<pre>
+array([ 1,  2,  4,  5,  6,  7,  8, 12])
+</pre>
       <program language="python">
         <input>
 
 counts
         </input>
       </program>
+<pre>
+array([2, 2, 1, 2, 1, 1, 1, 1])
+</pre>
       <program language="python">
         <input>
 
@@ -1257,6 +1269,9 @@ pairs = np.sum(counts==2)
 solo, pairs
         </input>
       </program>
+<pre>
+(np.int64(5), np.int64(3))
+</pre>
       <program language="python">
         <input>
 
@@ -1281,6 +1296,9 @@ def pick_socks(n_pairs, n_odds, n_pick):
 pick_socks(n_pairs, n_odds, 11)
         </input>
       </program>
+<pre>
+(np.int64(1), np.int64(9))
+</pre>
       <program language="python">
         <input>
 
@@ -1300,6 +1318,9 @@ for i in range(10000):
 len(res)
         </input>
       </program>
+<pre>
+1149
+</pre>
       <program language="python">
         <input>
 
@@ -1317,6 +1338,9 @@ print(posterior_n_socks.median(),
       posterior_n_socks.credible_interval(0.9))
         </input>
       </program>
+<pre>
+44.0 [27. 74.]
+</pre>
       <program language="python">
         <input>
 

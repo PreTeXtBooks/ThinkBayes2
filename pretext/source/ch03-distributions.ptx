@@ -711,6 +711,9 @@ posterior2 = posterior1 * likelihood_vanilla
 posterior2.normalize()
         </input>
       </program>
+<pre>
+0.6699999999999999
+</pre>
     </listing>
 <pre>
 0.67
@@ -1274,6 +1277,9 @@ posterior
 posterior['BlackWhite'] / 2
           </input>
         </program>
+<pre>
+0.30000000000000004
+</pre>
       </solution>
     </exercise>
 

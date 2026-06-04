@@ -328,12 +328,18 @@ like_triangle = np.sum(biased_triangle * likelihood)
 like_triangle
         </input>
       </program>
+<pre>
+0.0069813254648578805
+</pre>
       <program language="python">
         <input>
 K = like_fair / like_triangle
 K
         </input>
       </program>
+<pre>
+1.1970766535647133
+</pre>
       <program language="python">
         <input>
 # For this definition of "biased", the data are 
@@ -1322,6 +1328,9 @@ decorate(xlabel='Test score',
 np.mean(sample_600 &gt; sample_500)
       </input>
     </program>
+<pre>
+0.98
+</pre>
     <p>
       Between people with abilities <c>600</c> and <c>700</c>, it is less certain.
     </p>
@@ -1330,6 +1339,9 @@ np.mean(sample_600 &gt; sample_500)
 np.mean(sample_700 &gt; sample_600)
       </input>
     </program>
+<pre>
+0.95
+</pre>
     <p>
       And between people with abilities <c>700</c> and <c>800</c>, it is not certain at all.
     </p>
@@ -1338,6 +1350,9 @@ np.mean(sample_700 &gt; sample_600)
 np.mean(sample_800 &gt; sample_700)
       </input>
     </program>
+<pre>
+0.85
+</pre>
     <p>
       But remember that these results are based on a test where all questions are equally difficult. If you do the exercises at the end of the chapter, you'll see that the performance of the test is better if it includes questions with a range of difficulties, and even better if the test it is adaptive.
     </p>

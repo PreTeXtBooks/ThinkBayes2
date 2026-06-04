@@ -913,6 +913,9 @@ plt.ylabel('CDF');
 cdf_best3.mean(), cdf_standard.mean()
           </input>
         </program>
+<pre>
+(12.2203, 12.0)
+</pre>
         <program language="python">
           <input>
 # Solution
@@ -921,6 +924,9 @@ cdf_best3.mean(), cdf_standard.mean()
 cdf_best3.std(), cdf_standard.std()
           </input>
         </program>
+<pre>
+(2.8883503786763822, 2.3804761428476167)
+</pre>
         <program language="python">
           <input>
 # Solution
@@ -929,6 +935,9 @@ cdf_best3.std(), cdf_standard.std()
 cdf_best3.lt_dist(8)
           </input>
         </program>
+<pre>
+0.0581
+</pre>
         <program language="python">
           <input>
 # Solution
@@ -937,6 +946,9 @@ cdf_best3.lt_dist(8)
 cdf_best3.gt_dist(15)
           </input>
         </program>
+<pre>
+0.13160000000000005
+</pre>
         <program language="python">
           <input>
 # Solution
@@ -946,6 +958,9 @@ cdf_best3.gt_dist(15)
 cdf_min6.lt_dist(8), 1 - (1-cdf_best3.lt_dist(8))**6
           </input>
         </program>
+<pre>
+(0.3017213214200759, 0.3017213214200759)
+</pre>
         <program language="python">
           <input>
 # Solution
@@ -955,6 +970,9 @@ cdf_min6.lt_dist(8), 1 - (1-cdf_best3.lt_dist(8))**6
 cdf_max6.gt_dist(15), 1 - (1-cdf_best3.gt_dist(15))**6
           </input>
         </program>
+<pre>
+(0.5711366944317103, 0.5711366944317103)
+</pre>
       </solution>
     </exercise>
 
@@ -1039,6 +1057,9 @@ mix3.bar()
 mix3[6]
           </input>
         </program>
+<pre>
+0.13634751773049647
+</pre>
       </solution>
     </exercise>
 

@@ -237,6 +237,9 @@ prior = Pmf(ps, qs)
 prior.normalize()
       </input>
     </program>
+<pre>
+9.889360237140306
+</pre>
 
     <p>
       The result is a discrete approximation of a gamma distribution.
@@ -565,6 +568,9 @@ win = Pmf.prob_gt(pred_france, pred_croatia)
 win
       </input>
     </program>
+<pre>
+0.5703522415934519
+</pre>
 
     <program language="python">
       <input>
@@ -572,6 +578,9 @@ lose = Pmf.prob_lt(pred_france, pred_croatia)
 lose
       </input>
     </program>
+<pre>
+0.26443376257235873
+</pre>
 
     <program language="python">
       <input>
@@ -579,6 +588,9 @@ tie = Pmf.prob_eq(pred_france, pred_croatia)
 tie
       </input>
     </program>
+<pre>
+0.16521399583418947
+</pre>
 
     <program language="python">
       <input>
@@ -660,6 +672,9 @@ pmf_time = Pmf(ps, qs)
 pmf_time.normalize()
       </input>
     </program>
+<pre>
+25.616650745459093
+</pre>
 
     <p>
       And here's what it looks like.
@@ -792,6 +807,9 @@ update_expo(germany2, 12)
 germany.mean(), germany2.mean()
           </input>
         </program>
+<pre>
+(2.1358882653086892, 2.703059034926364)
+</pre>
 
         <program language="python">
           <input>
@@ -843,6 +861,9 @@ decorate_goals('Posterior predictive distribution')
 pred_germany2[5]
           </input>
         </program>
+<pre>
+0.047109658706113416
+</pre>
 
         <program language="python">
           <input>
@@ -851,6 +872,9 @@ pred_germany2[5]
 pred_germany2.prob_ge(5)
           </input>
         </program>
+<pre>
+0.09286200122834538
+</pre>
       </solution>
     </exercise>
 
@@ -920,6 +944,9 @@ decorate_time('Posterior predictive distribution')
 Pmf.prob_lt(pred_france, pred_croatia)
           </input>
         </program>
+<pre>
+0.5904596116867543
+</pre>
       </solution>
     </exercise>
 
@@ -967,6 +994,9 @@ prior_hockey = Pmf(ps, qs)
 prior_hockey.normalize()
           </input>
         </program>
+<pre>
+6.666325137469514
+</pre>
 
         <program language="python">
           <input>
@@ -975,6 +1005,9 @@ decorate_rate('Prior distribution for hockey')
 prior_hockey.mean()
           </input>
         </program>
+<pre>
+2.7997400090376567
+</pre>
         <image source="images/ch08_poisson_processes_c018dc90.png" width="80%"/>
 
         <program language="python">
@@ -986,6 +1019,9 @@ for data in [0, 2, 8, 4]:
 bruins.mean()
           </input>
         </program>
+<pre>
+3.3599999999999985
+</pre>
 
         <program language="python">
           <input>
@@ -996,6 +1032,9 @@ for data in [1, 3, 1, 0]:
 canucks.mean()
           </input>
         </program>
+<pre>
+1.5599999606443666
+</pre>
 
         <program language="python">
           <input>
@@ -1043,6 +1082,9 @@ tie = Pmf.prob_eq(pred_bruins, pred_canucks)
 win, lose, tie
           </input>
         </program>
+<pre>
+(0.7038631514645926, 0.16111690750716465, 0.1350199410282429)
+</pre>
 
         <program language="python">
           <input>
@@ -1053,6 +1095,9 @@ p = win + tie/2
 p
           </input>
         </program>
+<pre>
+0.771373121978714
+</pre>
 
         <program language="python">
           <input>
@@ -1067,6 +1112,9 @@ a = binom.pmf([2,3], n, p)
 a.sum()
           </input>
         </program>
+<pre>
+0.8670900197850085
+</pre>
       </solution>
     </exercise>
   </exercises>

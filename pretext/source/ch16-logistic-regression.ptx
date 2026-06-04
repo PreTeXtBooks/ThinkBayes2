@@ -70,6 +70,9 @@ table.fillna('--')
 np.log(1/3)
       </input>
     </program>
+<pre>
+-1.0986122886681098
+</pre>
   </section>
 
   <section xml:id="sec-ch16-space-shuttle">
@@ -120,6 +123,9 @@ data.head()
 len(data), data['Damage'].sum()
       </input>
     </program>
+<pre>
+(23, 7)
+</pre>
     <p>
       The following figure shows the relationship between damage and temperature.
     </p>
@@ -156,6 +162,9 @@ data['x'] = data['Temperature'] - offset
 offset
       </input>
     </program>
+<pre>
+70.0
+</pre>
     <p>
       And for consistency I'll create a copy of the <c>Damage</c> column called <c>y</c>.
     </p>
@@ -209,6 +218,9 @@ ps = odds / (odds + 1)
 ps.mean()
       </input>
     </program>
+<pre>
+0.4155141126966854
+</pre>
     <p>
       Converting log odds to probabilities is a common enough operation that it has a name,
       the logistic function, or expit.
@@ -225,6 +237,9 @@ ps = expit(inter + slope * xs)
 ps.mean()
       </input>
     </program>
+<pre>
+0.4155141126966854
+</pre>
     <p>
       Here's what the logistic model looks like with these estimated parameters.
     </p>
@@ -334,6 +349,9 @@ likes
 likes.prod()
       </input>
     </program>
+<pre>
+0.0004653644508250075
+</pre>
     <p>
       That's how we compute the likelihood of the data for a particular pair of parameters.
       The following loop computes it for all pairs.
@@ -361,6 +379,9 @@ posterior_pmf = joint_pmf * likelihood
 posterior_pmf.normalize()
       </input>
     </program>
+<pre>
+3.508992289655618e-05
+</pre>
     <p>
       Because we used a uniform prior, the parameter pair with the highest likelihood
       also has the highest posterior probability.
@@ -508,6 +529,9 @@ mean_prob = marginal_probs.mean()
 mean_prob
       </input>
     </program>
+<pre>
+0.2201937884647988
+</pre>
     <p>
       Now let's look more closely at the estimated slope. In the logistic model, the slope
       is the log of the likelihood ratio corresponding to a one degree increase in temperature.
@@ -536,6 +560,9 @@ mean_lr = marginal_lr.mean()
 mean_lr
       </input>
     </program>
+<pre>
+0.7542914170110268
+</pre>
     <p>
       Notice that the posterior mean of the probability is not the same as the probability
       computed from the posterior mean of the parameter. The right way is to transform first,
@@ -546,11 +573,17 @@ mean_lr
 expit(marginal_inter.mean()), marginal_probs.mean()
       </input>
     </program>
+<pre>
+(0.2016349762400815, 0.2201937884647988)
+</pre>
     <program language="python">
       <input>
 np.exp(marginal_slope.mean()), marginal_lr.mean()
       </input>
     </program>
+<pre>
+(0.7484167954660071, 0.7542914170110268)
+</pre>
   </section>
 
   <section xml:id="sec-ch16-predictive">
@@ -579,16 +612,25 @@ sample = posterior_pmf.choice(101)
 sample.shape
       </input>
     </program>
+<pre>
+(101,)
+</pre>
     <program language="python">
       <input>
 sample.dtype
       </input>
     </program>
+<pre>
+dtype(&#x27;O&#x27;)
+</pre>
     <program language="python">
       <input>
 type(sample[0])
       </input>
     </program>
+<pre>
+tuple
+</pre>
     <p>
       To generate predictions, I'll use a range of temperatures from 31 degrees F (the
       temperature on the morning of the Challenger launch) to 82 degrees.
@@ -661,18 +703,27 @@ t = 80
 print(median[t], (low[t], high[t]))
       </input>
     </program>
+<pre>
+0.016956535510200765 (0.000563939208692237, 0.1335417225332125)
+</pre>
     <program language="python">
       <input>
 t = 60
 print(median[t], (low[t], high[t]))
       </input>
     </program>
+<pre>
+0.7738185742694538 (0.45512110762641983, 0.9654437697137236)
+</pre>
     <program language="python">
       <input>
 t = 31
 print(median[t], (low[t], high[t]))
       </input>
     </program>
+<pre>
+0.9998129598124814 (0.97280101769455, 0.999999987740933)
+</pre>
   </section>
 
   <section xml:id="sec-ch16-exercises">
@@ -719,6 +770,9 @@ prior_log_odds = np.log(4)
 prior_log_odds
       </input>
     </program>
+<pre>
+1.3862943611198906
+</pre>
     <program language="python">
       <input>
 # Solution
@@ -730,6 +784,9 @@ lr3 = np.log(9/5)
 lr1, lr2, lr3
       </input>
     </program>
+<pre>
+(0.3364722366212129, -0.5108256237659907, 0.5877866649021191)
+</pre>
     <program language="python">
       <input>
 # Solution
@@ -742,6 +799,9 @@ posterior_log_odds = prior_log_odds + lr1 + lr2 + lr3
 posterior_log_odds
       </input>
     </program>
+<pre>
+1.7997276388772319
+</pre>
       </solution>
     </exercise>
 
@@ -890,6 +950,9 @@ for slope, inter in joint_pmf.index:
 likelihood1.sum()
       </input>
     </program>
+<pre>
+3.543685818699967e-14
+</pre>
     <program language="python">
       <input>
 # Solution
@@ -911,6 +974,9 @@ for slope, inter in joint_pmf.index:
 likelihood2.sum()
       </input>
     </program>
+<pre>
+1905.3511925074408
+</pre>
     <program language="python">
       <input>
 # Solution
@@ -919,6 +985,9 @@ posterior_pmf = joint_pmf * likelihood1
 posterior_pmf.normalize()
       </input>
     </program>
+<pre>
+1.3624320717800717e-17
+</pre>
     <program language="python">
       <input>
 # Solution
@@ -926,6 +995,9 @@ posterior_pmf.normalize()
 posterior_pmf.max_prob()
       </input>
     </program>
+<pre>
+(0.0448, -4.996)
+</pre>
     <program language="python">
       <input>
 # Solution
@@ -934,6 +1006,9 @@ posterior_pmf = joint_pmf * likelihood1 * likelihood2
 posterior_pmf.normalize()
       </input>
     </program>
+<pre>
+1.3403142132512741e-17
+</pre>
     <program language="python">
       <input>
 # Solution
@@ -941,6 +1016,9 @@ posterior_pmf.normalize()
 posterior_pmf.max_prob()
       </input>
     </program>
+<pre>
+(0.0448, -4.996)
+</pre>
     <program language="python">
       <input>
 # Solution
@@ -961,6 +1039,9 @@ marginal_slope = marginal(joint_posterior, 1)
 marginal_inter.mean(), marginal_slope.mean()
       </input>
     </program>
+<pre>
+(-4.999322906782618, 0.04460761677198374)
+</pre>
     <program language="python">
       <input>
 # Solution
@@ -996,6 +1077,9 @@ for i, (slope, inter) in enumerate(sample):
 ps.shape
       </input>
     </program>
+<pre>
+(101, 12)
+</pre>
     <program language="python">
       <input>
 # Solution

@@ -1,5 +1,6 @@
-"""Quality control check: verify that Python code in PreTeXt files matches
-the corresponding Jupyter notebooks (solution versions) for all chapters.
+"""Quality control check: verify that Python code and simple text outputs in
+PreTeXt files match the corresponding Jupyter notebooks (solution versions)
+for all chapters.
 
 Usage:
     python pretext/check_quality.py
@@ -20,6 +21,13 @@ NOTEBOOK_BOILERPLATE_PREFIXES = (
     "# install empiricaldist if necessary",
     "# Get utils.py",
     "from utils import set_pyplot_params",
+)
+
+IGNORED_OUTPUT_PREFIXES = (
+    "<Figure size",
+    "Output()",
+    "Sampling ",
+    "<IPython.core.display.HTML object>",
 )
 
 # Code that appears in exercise statement blocks as a student placeholder.
@@ -119,6 +127,14 @@ def normalize_nb_code(code):
     return result
 
 
+def normalize_output(text):
+    """Normalize notebook or PTX output text for comparison."""
+    text = textwrap.dedent(text).strip()
+    text = html.unescape(text)
+    lines = [line.rstrip() for line in text.split("\n")]
+    return "\n".join(lines).strip()
+
+
 def strip_leading_comments(code):
     """Return the code with any leading comment block removed.
 
@@ -135,6 +151,89 @@ def strip_leading_comments(code):
     if first_code and first_code > 0 and lines[0].startswith("#"):
         return "\n".join(lines[first_code:]).strip()
     return code
+
+
+def get_notebook_cells(path):
+    """Extract normalized notebook code cells and comparable simple outputs."""
+    with open(path) as f:
+        nb = json.load(f)
+
+    cells = []
+    for cell in nb["cells"]:
+        if cell["cell_type"] != "code":
+            continue
+
+        code = normalize_nb_code("".join(cell["source"]))
+        if any(code.startswith(prefix) for prefix in NOTEBOOK_BOILERPLATE_PREFIXES):
+            continue
+
+        outputs = []
+        for output in cell.get("outputs", []):
+            if output.get("output_type") == "stream":
+                text = "".join(output.get("text", []))
+            elif output.get("output_type") in ("execute_result", "display_data"):
+                text = "".join(output.get("data", {}).get("text/plain", []))
+            else:
+                continue
+
+            text = normalize_output(text)
+            if (
+                text
+                and "\n" not in text
+                and not any(text.startswith(prefix) for prefix in IGNORED_OUTPUT_PREFIXES)
+            ):
+                outputs.append(text)
+
+        cells.append(
+            {
+                "code": code,
+                "code_stripped": strip_leading_comments(code),
+                "outputs": outputs,
+            }
+        )
+
+    return cells
+
+
+def get_ptx_programs(path):
+    """Extract normalized PTX programs with source spans."""
+    with open(path) as f:
+        content = f.read()
+
+    programs = []
+    for m in re.finditer(
+        r'<program[^>]*language=["\']python["\'][^>]*>.*?<input>(.*?)</input>.*?</program>',
+        content,
+        re.DOTALL,
+    ):
+        code = normalize_ptx_code(m.group(1))
+        if (
+            not code
+            or code == EXERCISE_PLACEHOLDER
+            or any(code.startswith(prefix) for prefix in NOTEBOOK_BOILERPLATE_PREFIXES)
+        ):
+            continue
+
+        programs.append(
+            {
+                "code": code,
+                "code_stripped": strip_leading_comments(code),
+                "start": m.start(),
+                "end": m.end(),
+            }
+        )
+
+    return content, programs
+
+
+def codes_match(nb_cell, ptx_program):
+    """Whether a notebook cell and PTX program contain the same code."""
+    return (
+        nb_cell["code"] == ptx_program["code"]
+        or nb_cell["code_stripped"] == ptx_program["code"]
+        or nb_cell["code"] == ptx_program["code_stripped"]
+        or nb_cell["code_stripped"] == ptx_program["code_stripped"]
+    )
 
 
 def check_chapter(repo_root, nb_name, ptx_name):
@@ -212,6 +311,56 @@ def check_chapter(repo_root, nb_name, ptx_name):
         for block in sorted(extra_in_ptx):
             preview = block.replace("\n", "\\n")[:80]
             issues.append(f"    + {repr(preview)}")
+
+    return issues
+
+
+def check_chapter_output_blocks(repo_root, nb_name, ptx_name):
+    """Verify comparable simple notebook outputs are present near matching PTX code."""
+    nb_path = repo_root / "soln" / f"{nb_name}.ipynb"
+    ptx_path = repo_root / "pretext" / "source" / f"{ptx_name}.ptx"
+
+    issues = []
+
+    if not nb_path.exists():
+        issues.append(f"  Notebook not found: {nb_path}")
+        return issues
+    if not ptx_path.exists():
+        issues.append(f"  PreTeXt file not found: {ptx_path}")
+        return issues
+
+    nb_cells = get_notebook_cells(nb_path)
+    content, programs = get_ptx_programs(ptx_path)
+
+    program_index = 0
+    for cell in nb_cells:
+        matched_program = None
+        matched_program_index = None
+
+        while program_index < len(programs):
+            candidate = programs[program_index]
+            program_index += 1
+            if codes_match(cell, candidate):
+                matched_program = candidate
+                matched_program_index = program_index - 1
+                break
+
+        if not matched_program or not cell["outputs"]:
+            continue
+
+        next_start = (
+            programs[matched_program_index + 1]["start"]
+            if matched_program_index + 1 < len(programs)
+            else len(content)
+        )
+        local_chunk = normalize_output(content[matched_program["end"]:next_start])
+
+        for output in cell["outputs"]:
+            if output not in local_chunk:
+                preview = cell["code"].split("\n", 1)[0]
+                issues.append(
+                    f"  Missing output for {preview!r} in {ptx_path.name}: {output!r}"
+                )
 
     return issues
 
@@ -312,6 +461,18 @@ def main():
         print()
     else:
         print("PASS: chapter image assets")
+
+    output_issues = []
+    for nb_name, ptx_name in CHAPTER_MAP.items():
+        output_issues.extend(check_chapter_output_blocks(repo_root, nb_name, ptx_name))
+    if output_issues:
+        all_passed = False
+        print("FAIL: chapter output blocks")
+        for issue in output_issues:
+            print(issue)
+        print()
+    else:
+        print("PASS: chapter output blocks")
 
     if all_passed:
         print("\nAll chapters passed quality control check.")

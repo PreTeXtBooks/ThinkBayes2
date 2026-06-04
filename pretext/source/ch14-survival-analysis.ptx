@@ -1165,6 +1165,9 @@ rained = weather['PRCP'] &gt; 0
 rained.sum()
       </input>
     </program>
+<pre>
+14
+</pre>
     <p>
       And select the total rainfall on the days it rained.
     </p>
