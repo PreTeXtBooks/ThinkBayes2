@@ -521,7 +521,7 @@ np.float64(0.9900990099009901)
       * To convert from linear measure to volume, we assume that tumors are approximately spherical.
     </p>
     <p>
-      In additional experiments, I implemented a simulation that chooses growth rates with serial correlation; the effect is that the fast-growing tumors grow faster and the slow-growing tumors grow slower.
+      In additional experiments, I implemented a simulation that chooses growth rates with serial correlation using a generator<fn>If you are not familiar with Python generators, see <url href="http://wiki.python.org/moin/Generators">wiki.python.org/moin/Generators</url>.</fn>; the effect is that the fast-growing tumors grow faster and the slow-growing tumors grow slower.
 Nevertheless, with moderate correlation (0.5), the probability that a 15 cm tumor is less than 9 years old is only about 1%.
     </p>
     <p>

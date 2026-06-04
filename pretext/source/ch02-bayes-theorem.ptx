@@ -22,7 +22,7 @@
     <title>The Cookie Problem</title>
     
     <p>
-      We'll start with a thinly disguised version of an urn problem:
+      We'll start with a thinly disguised version of an urn problem<fn>Based on an example from <url href="https://en.wikipedia.org/wiki/Bayes%27_theorem">Wikipedia</url> that is no longer there.</fn>:
     </p>
     
     <blockquote>
