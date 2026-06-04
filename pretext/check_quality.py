@@ -243,14 +243,14 @@ def check_chapter_image_assets(repo_root):
     asset_dir = repo_root / "pretext" / "assets" / "images"
 
     chapter_asset_names = {
-        path.name for path in asset_dir.glob("ch*.png")
+        path.name for path in asset_dir.glob("ch[0-9][0-9]_*.png")
     }
     referenced_asset_names = set()
     issues = []
 
     for path in sorted(source_dir.glob("ch*.ptx")):
         content = path.read_text()
-        references = re.findall(r'<image[^>]*source="([^"]+)"', content)
+        references = re.findall(r"""<image[^>]*source=['"]([^'"]+)['"]""", content)
         for reference in references:
             if not reference.startswith("images/"):
                 continue
