@@ -250,12 +250,19 @@ def check_chapter_image_assets(repo_root):
 
     for path in sorted(source_dir.glob("ch*.ptx")):
         content = path.read_text()
-        references = re.findall(r'<image[^>]*source="images/([^"]+)"', content)
+        references = re.findall(r'<image[^>]*source="([^"]+)"', content)
         for reference in references:
-            referenced_asset_names.add(reference)
-            if not (asset_dir / reference).exists():
+            if not reference.startswith("images/"):
+                continue
+
+            asset_name = Path(reference).name
+            if not asset_name.startswith("ch"):
+                continue
+
+            referenced_asset_names.add(asset_name)
+            if not (asset_dir / asset_name).exists():
                 issues.append(
-                    f"  Missing chapter image asset referenced in {path.name}: {reference}"
+                    f"  Missing chapter image asset referenced in {path.name}: {asset_name}"
                 )
 
     unreferenced_assets = sorted(chapter_asset_names - referenced_asset_names)
