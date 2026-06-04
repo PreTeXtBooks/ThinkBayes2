@@ -237,6 +237,34 @@ def check_chapter_reference_boilerplate(repo_root):
     return issues
 
 
+def check_chapter_image_assets(repo_root):
+    """Verify chapter image assets and PTX references stay in sync."""
+    source_dir = repo_root / "pretext" / "source"
+    asset_dir = repo_root / "pretext" / "assets" / "images"
+
+    chapter_asset_names = {
+        path.name for path in asset_dir.glob("ch*.png")
+    }
+    referenced_asset_names = set()
+    issues = []
+
+    for path in sorted(source_dir.glob("ch*.ptx")):
+        content = path.read_text()
+        references = re.findall(r'<image[^>]*source="images/([^"]+)"', content)
+        for reference in references:
+            referenced_asset_names.add(reference)
+            if not (asset_dir / reference).exists():
+                issues.append(
+                    f"  Missing chapter image asset referenced in {path.name}: {reference}"
+                )
+
+    unreferenced_assets = sorted(chapter_asset_names - referenced_asset_names)
+    for asset_name in unreferenced_assets:
+        issues.append(f"  Unreferenced chapter image asset: {asset_name}")
+
+    return issues
+
+
 def main():
     repo_root = Path(__file__).parent.parent
 
@@ -261,6 +289,16 @@ def main():
         print()
     else:
         print("PASS: chapter reference boilerplate")
+
+    image_issues = check_chapter_image_assets(repo_root)
+    if image_issues:
+        all_passed = False
+        print("FAIL: chapter image assets")
+        for issue in image_issues:
+            print(issue)
+        print()
+    else:
+        print("PASS: chapter image assets")
 
     if all_passed:
         print("\nAll chapters passed quality control check.")

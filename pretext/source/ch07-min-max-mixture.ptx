@@ -1028,6 +1028,7 @@ mix3 = make_mixture(posterior, dice)
 mix3.bar()
           </input>
         </program>
+        <image source="images/ch07_min_max_mixture_ab9e2557.png" width="80%"/>
         <program language="python">
           <input>
 # Solution
@@ -1109,6 +1110,7 @@ decorate(xlabel='Weight in grams',
          ylabel='CDF')
           </input>
         </program>
+        <image source="images/ch07_min_max_mixture_51b923c4.png" width="80%"/>
       </solution>
     </exercise>
 

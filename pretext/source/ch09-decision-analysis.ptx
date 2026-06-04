@@ -297,6 +297,7 @@ prior2.plot(label='Prior 2')
 decorate_value('Prior distributions of showcase value')
           </input>
         </program>
+        <image source="images/ch09_decision_analysis_2f71c9a3.png" width="80%"/>
       </solution>
     </exercise>
   </section>
@@ -582,6 +583,7 @@ posterior2.plot(color='C15', label='Posterior 2')
 decorate_value('Prior and posterior distribution of showcase value')
           </input>
         </program>
+        <image source="images/ch09_decision_analysis_88fc025f.png" width="80%"/>
         <program language="python">
           <input>
 print(prior2.mean(), posterior2.mean())
@@ -794,6 +796,7 @@ decorate(xlabel='Difference between bid and actual price ($)',
          title='Player 2')
           </input>
         </program>
+        <image source="images/ch09_decision_analysis_eafef102.png" width="80%"/>
       </solution>
     </exercise>
   </section>
@@ -938,6 +941,7 @@ decorate(xlabel='Bid ($)',
          title='Optimal bid: probability of winning')
           </input>
         </program>
+        <image source="images/ch09_decision_analysis_9be79dbc.png" width="80%"/>
         <program language="python">
           <input>
 prob_win_series.idxmax()
@@ -1121,6 +1125,7 @@ decorate(xlabel='Bid ($)',
     title='Optimal bid: expected gain')
           </input>
         </program>
+        <image source="images/ch09_decision_analysis_84e00bce.png" width="80%"/>
         <program language="python">
           <input>
 expected_gain_series.idxmax()
@@ -1461,6 +1466,7 @@ decorate(xlabel=r'Book ordering rate ($\lambda$)',
         ylabel='PMF')
           </input>
         </program>
+        <image source="images/ch09_decision_analysis_1699c363.png" width="80%"/>
         <program language="python">
           <input>
 rates = pmf.choice(1000)
@@ -1519,6 +1525,7 @@ decorate(xlabel='Number of books printed',
          ylabel='Expected profit ($)')
           </input>
         </program>
+        <image source="images/ch09_decision_analysis_86b6ccfe.png" width="80%"/>
         <program language="python">
           <input>
 expected_profits.idxmax(), expected_profits.max()
@@ -1550,6 +1557,7 @@ decorate(xlabel=r'Book ordering rate ($\lambda$)',
          ylabel='CDF')
           </input>
         </program>
+        <image source="images/ch09_decision_analysis_1f4e0b52.png" width="80%"/>
         <p>Create an update function based on one week of orders:</p>
         <program language="python">
           <input>
@@ -1616,6 +1624,7 @@ decorate(xlabel='Number of books printed',
          ylabel='Expected profit ($)')
           </input>
         </program>
+        <image source="images/ch09_decision_analysis_6305a262.png" width="80%"/>
         <program language="python">
           <input>
 expected_profits.idxmax()

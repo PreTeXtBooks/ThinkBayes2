@@ -150,6 +150,7 @@ decorate(xlabel='Number of heads (k)',
          title='Binomial distribution')
       </input>
     </program>
+    <image source="images/ch04_estimating_proportions_74dab07f.png" width="80%"/>
     <figure xml:id="fig-ch04-binomial-distribution">
       <caption>Binomial distribution with <m>n=250</m> and <m>p=0.5</m>.</caption>
       <image source="ch04/fig-cell8.png" width="80%">
@@ -422,6 +423,7 @@ posterior.plot(label='140 heads out of 250', color='C4')
 decorate_euro(title='Posterior distribution of x')
       </input>
     </program>
+    <image source="images/ch04_estimating_proportions_4c5170f6.png" width="80%"/>
     <figure xml:id="fig-ch04-posterior-euro">
       <caption>Posterior distribution of <m>x</m>, the proportion of heads for the Belgian Euro coin, after observing 140 heads out of 250 spins.</caption>
       <image source="ch04/fig-cell24.png" width="80%">
@@ -513,6 +515,7 @@ triangle.plot()
 decorate_euro(title='Uniform and triangle prior distributions')
       </input>
     </program>
+    <image source="images/ch04_estimating_proportions_7383a632.png" width="80%"/>
     <figure xml:id="fig-ch04-priors">
       <caption>Uniform and triangle prior distributions for the proportion of heads.</caption>
       <image source="ch04/fig-cell28.png" width="80%">
@@ -542,6 +545,7 @@ triangle.plot()
 decorate_euro(title='Posterior distributions')
       </input>
     </program>
+    <image source="images/ch04_estimating_proportions_26f9ef9a.png" width="80%"/>
     <figure xml:id="fig-ch04-posteriors-triangle">
       <caption>Posterior distributions for the uniform and triangle priors after observing 140 heads out of 250 spins.</caption>
       <image source="ch04/fig-cell30.png" width="80%">
@@ -815,6 +819,7 @@ decorate(xlabel='Probability of getting a hit',
          ylabel='PMF')
           </input>
         </program>
+        <image source="images/ch04_estimating_proportions_ed333b3f.png" width="80%"/>
         <figure xml:id="fig-ch04-batting-prior">
           <caption>Prior distribution for the probability of getting a hit, based on historical batting averages.</caption>
           <image source="ch04/fig-cell39.png" width="80%">
