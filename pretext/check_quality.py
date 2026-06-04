@@ -50,7 +50,23 @@ CHAPTER_MAP = {
     "chap20": "ch20-abc",
 }
 
-CHAPTER_COPYRIGHT_MARKER = "Copyright 2020 Allen B. Downey"
+CHAPTER_REFERENCE_BOILERPLATE_MARKERS = {
+    "copyright/license boilerplate": (
+        "Think Bayes, Second Edition",
+        "Copyright 2020 Allen B. Downey",
+        "creativecommons.org/licenses/by-nc-sa/4.0",
+    ),
+    "shared frontmatter references": (
+        'This is a <url href="https://pretextbook.org" visual="pretextbook.org">PreTeXt</url> adaptation of',
+        "The original book and its Jupyter notebooks are freely available at",
+        '<url href="https://allendowney.github.io/ThinkBayes2" visual="allendowney.github.io/ThinkBayes2">',
+        '<url href="https://github.com/AllenDowney" visual="github.com/AllenDowney">Allen B. Downey</url>.',
+        "All credit for the content of this book belongs to Allen B. Downey.",
+        "This PreTeXt edition is maintained at",
+        '<url href="https://github.com/PreTeXtBooks/ThinkBayes2" visual="github.com/PreTeXtBooks/ThinkBayes2">',
+        "If you find errors or issues specific to this PreTeXt version, please open an issue there.",
+    ),
+}
 
 
 def get_notebook_code_cells(path):
@@ -201,14 +217,22 @@ def check_chapter(repo_root, nb_name, ptx_name):
 
 
 def check_chapter_reference_boilerplate(repo_root):
-    """Verify chapter PTX files do not include duplicated copyright boilerplate."""
+    """Verify chapter PTX files do not include duplicated shared boilerplate."""
     source_dir = repo_root / "pretext" / "source"
     issues = []
 
     for path in sorted(source_dir.glob("ch*.ptx")):
         content = path.read_text()
-        if CHAPTER_COPYRIGHT_MARKER in content:
-            issues.append(f"  Duplicated copyright boilerplate found in {path.name}")
+        matches = [
+            description
+            for description, markers in CHAPTER_REFERENCE_BOILERPLATE_MARKERS.items()
+            if any(marker in content for marker in markers)
+        ]
+        if matches:
+            issues.append(
+                f"  Duplicated chapter boilerplate found in {path.name}: "
+                f"{', '.join(matches)}"
+            )
 
     return issues
 
