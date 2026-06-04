@@ -1053,6 +1053,9 @@ results.resid.std()
       </input>
     </program>
 <pre>
+0.041399612201932
+</pre>
+<pre>
 25.385680731210623
 </pre>
     <p>
@@ -1126,6 +1129,9 @@ posterior.normalize()
       </input>
     </program>
 <pre>
+654100803618.6724
+</pre>
+<pre>
 6.769832641515688e-107
 </pre>
     <p>
@@ -1184,6 +1190,9 @@ decorate(xlabel='Slope',
 summarize(posterior_slope)
       </input>
     </program>
+<pre>
+0.015 [0.01428 0.01668]
+</pre>
 <pre>
 0.512 [0.1 0.9]
 </pre>
@@ -1470,6 +1479,9 @@ results.resid.std()
           </input>
     </program>
 <pre>
+1.041705765390206
+</pre>
+<pre>
 25.385680731210623
 </pre>
         <p>
@@ -1680,6 +1692,9 @@ posterior.normalize()
         </input>
     </program>
 <pre>
+6.471589606597477e-36
+</pre>
+<pre>
 6.769832641515688e-107
 </pre>
       <program language="python">
@@ -1705,6 +1720,9 @@ decorate(xlabel='intercept (inches)',
 posterior_inter.mean(), posterior_inter.credible_interval(0.9)
         </input>
       </program>
+<pre>
+(49.430172755332116, array([49.2, 49.7]))
+</pre>
       <program language="python">
         <input>
 
@@ -1720,6 +1738,9 @@ decorate(xlabel='Slope (inches per year)',
 posterior_slope.mean(), posterior_slope.credible_interval(0.9)
         </input>
       </program>
+<pre>
+(0.04425308067803314, array([0.028, 0.06 ]))
+</pre>
       <program language="python">
         <input>
 
@@ -1735,6 +1756,9 @@ for i, (slope, inter, sigma) in enumerate(sample):
 pred.shape
         </input>
       </program>
+<pre>
+(101, 50)
+</pre>
       <program language="python">
         <input>
 
@@ -1742,6 +1766,9 @@ low, median, high = np.percentile(pred, [5, 50, 95], axis=0)
 median.shape
         </input>
       </program>
+<pre>
+(50,)
+</pre>
       <program language="python">
         <input>
 
@@ -1760,18 +1787,11 @@ decorate(xlabel='Year',
 median[-1] - median[0]
         </input>
       </program>
+<pre>
+4.264154393858554
+</pre>
     </solution>
     </exercise>
-
-    <p>
-      <em>Think Bayes</em>, Second Edition
-    </p>
-    <p>
-      Copyright 2020 Allen B. Downey
-    </p>
-    <p>
-      License: <url href="https://creativecommons.org/licenses/by-nc-sa/4.0/">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)</url>
-    </p>
 
   </section>
 

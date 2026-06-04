@@ -359,12 +359,18 @@ post_odds = odds(0.9) * like1 / like2
 prob(post_odds)
   </input>
 </program>
+<pre>
+0.8823529411764706
+</pre>
 <program language="python">
   <input>
 post_odds = odds(0.1) * like1 / like2
 prob(post_odds)
   </input>
 </program>
+<pre>
+0.0847457627118644
+</pre>
 </solution>
 </exercise>
   </section>
@@ -1077,6 +1083,9 @@ for sides in hypos:
 likelihood
         </input>
       </program>
+<pre>
+[0.1111111111111111, 0.0625, 0.041666666666666664]
+</pre>
       <program language="python">
         <input>
 # And here's the update
@@ -1121,12 +1130,18 @@ pmfs['Longfellow'] = add_dist_seq([die]*5)
 pmfs['Zostra'](4)
         </input>
       </program>
+<pre>
+0.2345679012345679
+</pre>
       <program language="python">
         <input>
 
 pmfs['Zostra']([3,4,5]).prod()
         </input>
       </program>
+<pre>
+0.00915247412224499
+</pre>
       <program language="python">
         <input>
 
@@ -1185,6 +1200,9 @@ for n_honest in ns:
 table.shape
         </input>
       </program>
+<pre>
+(539, 539)
+</pre>
       <program language="python">
         <input>
 
@@ -1193,6 +1211,9 @@ likelihood = table.loc[312]
 len(likelihood)
         </input>
       </program>
+<pre>
+539
+</pre>
       <program language="python">
         <input>
 
@@ -1201,6 +1222,9 @@ prior = Pmf(1, hypos)
 len(prior)
         </input>
       </program>
+<pre>
+539
+</pre>
       <program language="python">
         <input>
 
@@ -1209,6 +1233,9 @@ posterior.normalize()
 posterior.mean()
         </input>
       </program>
+<pre>
+431.4882114501996
+</pre>
       <program language="python">
         <input>
 
@@ -1223,22 +1250,20 @@ decorate(xlabel='Number of honest members of Congress',
 posterior.max_prob()
         </input>
       </program>
+<pre>
+430
+</pre>
       <program language="python">
         <input>
 
 posterior.credible_interval(0.9)
         </input>
       </program>
+<pre>
+array([388., 477.])
+</pre>
     </solution>
     </exercise>
-      <p>
-        <em>Think Bayes</em>, Second Edition
-      </p>
-      <p>
-        Copyright 2020 Allen B. Downey
-      </p>
-      <p>
-        License: <url href="https://creativecommons.org/licenses/by-nc-sa/4.0/">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)</url>
-      </p>
+
   </exercises>
 </chapter>

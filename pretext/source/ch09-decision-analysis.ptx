@@ -136,6 +136,9 @@ df = pd.concat([df2011, df2012], ignore_index=True)
 print(df2011.shape, df2012.shape, df.shape)
       </input>
     </program>
+<pre>
+(191, 6) (122, 6) (313, 6)
+</pre>
 
     <p>
       Here's what the dataset looks like:
@@ -297,6 +300,7 @@ prior2.plot(label='Prior 2')
 decorate_value('Prior distributions of showcase value')
           </input>
         </program>
+        <image source="images/ch09_decision_analysis_2f71c9a3.png" width="80%"/>
       </solution>
     </exercise>
   </section>
@@ -496,6 +500,9 @@ posterior1 = prior1 * likelihood1
 posterior1.normalize()
       </input>
     </program>
+<pre>
+3.3889812097254624e-05
+</pre>
 
     <program language="python">
       <input>
@@ -555,6 +562,9 @@ std_diff2 = sample_diff2.std()
 print(mean_diff2, std_diff2)
           </input>
         </program>
+<pre>
+-3675.891373801917 6886.260711323408
+</pre>
         <program language="python">
           <input>
 error_dist2 = norm(0, std_diff2)
@@ -574,6 +584,9 @@ posterior2 = prior2 * likelihood2
 posterior2.normalize()
           </input>
         </program>
+<pre>
+2.697812321910702e-05
+</pre>
         <program language="python">
           <input>
 prior2.plot(color='C5', label='Prior 2')
@@ -582,11 +595,15 @@ posterior2.plot(color='C15', label='Posterior 2')
 decorate_value('Prior and posterior distribution of showcase value')
           </input>
         </program>
+        <image source="images/ch09_decision_analysis_88fc025f.png" width="80%"/>
         <program language="python">
           <input>
 print(prior2.mean(), posterior2.mean())
           </input>
         </program>
+<pre>
+31047.62371912251 34305.20161642469
+</pre>
       </solution>
     </exercise>
   </section>
@@ -769,16 +786,25 @@ decorate(xlabel='Difference between bid and actual price ($)',
 prob_overbid(sample_diff1)
           </input>
         </program>
+<pre>
+0.24600638977635783
+</pre>
         <program language="python">
           <input>
 prob_worse_than(-5000, sample_diff1)
           </input>
         </program>
+<pre>
+0.3993610223642173
+</pre>
         <program language="python">
           <input>
 compute_prob_win(-5000, sample_diff1)
           </input>
         </program>
+<pre>
+0.6453674121405751
+</pre>
         <program language="python">
           <input>
 xs = np.linspace(-30000, 5000, 121)
@@ -794,6 +820,7 @@ decorate(xlabel='Difference between bid and actual price ($)',
          title='Player 2')
           </input>
         </program>
+        <image source="images/ch09_decision_analysis_eafef102.png" width="80%"/>
       </solution>
     </exercise>
   </section>
@@ -938,16 +965,23 @@ decorate(xlabel='Bid ($)',
          title='Optimal bid: probability of winning')
           </input>
         </program>
+        <image source="images/ch09_decision_analysis_9be79dbc.png" width="80%"/>
         <program language="python">
           <input>
 prob_win_series.idxmax()
           </input>
         </program>
+<pre>
+29000.0
+</pre>
         <program language="python">
           <input>
 prob_win_series.max()
           </input>
         </program>
+<pre>
+0.5171370053364229
+</pre>
       </solution>
     </exercise>
   </section>
@@ -1121,16 +1155,23 @@ decorate(xlabel='Bid ($)',
     title='Optimal bid: expected gain')
           </input>
         </program>
+        <image source="images/ch09_decision_analysis_84e00bce.png" width="80%"/>
         <program language="python">
           <input>
 expected_gain_series.idxmax()
           </input>
         </program>
+<pre>
+30000.0
+</pre>
         <program language="python">
           <input>
 expected_gain_series.max()
           </input>
         </program>
+<pre>
+19404.164188501607
+</pre>
       </solution>
     </exercise>
   </section>
@@ -1432,16 +1473,25 @@ always_10 = [10] * 8
 always_10
           </input>
         </program>
+<pre>
+[10, 10, 10, 10, 10, 10, 10, 10]
+</pre>
         <program language="python">
           <input>
 compute_profit(60, always_10)
           </input>
         </program>
+<pre>
+200
+</pre>
         <program language="python">
           <input>
 compute_profit(100, always_10)
           </input>
         </program>
+<pre>
+310.0
+</pre>
         <program language="python">
           <input>
 from scipy.stats import gamma
@@ -1454,6 +1504,9 @@ pmf.normalize()
 pmf.mean()
           </input>
         </program>
+<pre>
+8.998788382371902
+</pre>
         <program language="python">
           <input>
 pmf.plot(color='C1')
@@ -1461,12 +1514,16 @@ decorate(xlabel=r'Book ordering rate ($\lambda$)',
         ylabel='PMF')
           </input>
         </program>
+        <image source="images/ch09_decision_analysis_1699c363.png" width="80%"/>
         <program language="python">
           <input>
 rates = pmf.choice(1000)
 np.mean(rates)
           </input>
         </program>
+<pre>
+9.0135
+</pre>
         <program language="python">
           <input>
 np.random.seed(17)
@@ -1493,16 +1550,25 @@ def compute_expected_profits(printed, order_array):
 compute_expected_profits(70, order_array)
           </input>
         </program>
+<pre>
+190.474
+</pre>
         <program language="python">
           <input>
 compute_expected_profits(80, order_array)
           </input>
         </program>
+<pre>
+190.774
+</pre>
         <program language="python">
           <input>
 compute_expected_profits(90, order_array)
           </input>
         </program>
+<pre>
+164.484
+</pre>
         <program language="python">
           <input>
 printed_array = np.arange(70, 110)
@@ -1519,11 +1585,15 @@ decorate(xlabel='Number of books printed',
          ylabel='Expected profit ($)')
           </input>
         </program>
+        <image source="images/ch09_decision_analysis_86b6ccfe.png" width="80%"/>
         <program language="python">
           <input>
 expected_profits.idxmax(), expected_profits.max()
           </input>
         </program>
+<pre>
+(75, 194.444)
+</pre>
 
         <p>
           Now it's your turn.
@@ -1543,6 +1613,9 @@ prior = Pmf(1, qs)
 prior.normalize()
           </input>
         </program>
+<pre>
+101
+</pre>
         <program language="python">
           <input>
 prior.make_cdf().plot(color='C1')
@@ -1550,6 +1623,7 @@ decorate(xlabel=r'Book ordering rate ($\lambda$)',
          ylabel='CDF')
           </input>
         </program>
+        <image source="images/ch09_decision_analysis_1f4e0b52.png" width="80%"/>
         <p>Create an update function based on one week of orders:</p>
         <program language="python">
           <input>
@@ -1586,6 +1660,9 @@ update_book(posterior2, 9)
 prior.mean(), posterior1.mean(), posterior2.mean()
           </input>
         </program>
+<pre>
+(21.78849107458653, 10.000000817984526, 9.500000000003652)
+</pre>
         <p>Generate sample of 1000 values from the posterior and simulate 8 weeks:</p>
         <program language="python">
           <input>
@@ -1593,6 +1670,9 @@ rates = posterior2.choice(1000)
 np.mean(rates)
           </input>
         </program>
+<pre>
+9.568378334655758
+</pre>
         <program language="python">
           <input>
 order_array = np.random.poisson(rates, size=(8, 1000)).transpose()
@@ -1616,11 +1696,15 @@ decorate(xlabel='Number of books printed',
          ylabel='Expected profit ($)')
           </input>
         </program>
+        <image source="images/ch09_decision_analysis_6305a262.png" width="80%"/>
         <program language="python">
           <input>
 expected_profits.idxmax()
           </input>
         </program>
+<pre>
+79
+</pre>
       </solution>
     </exercise>
   </exercises>
