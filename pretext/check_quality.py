@@ -245,7 +245,7 @@ def check_chapter_image_assets(repo_root):
     chapter_asset_names = {
         path.name
         for path in asset_dir.glob("*.png")
-        if re.fullmatch(r"ch\d+_.*\.png", path.name)
+        if re.fullmatch(r"ch\d+_[a-z0-9_]+\.png", path.name)
     }
     referenced_asset_names = set()
     issues = []
@@ -253,8 +253,9 @@ def check_chapter_image_assets(repo_root):
     for path in sorted(source_dir.glob("ch*.ptx")):
         content = path.read_text()
         references = re.findall(
-            r"""<image[\s\S]*?source=['"]([^'"]+)['"]""",
+            r"""<image[^>]*?source=['"]([^'"]+)['"]""",
             content,
+            re.DOTALL,
         )
         for reference in references:
             if not reference.startswith("images/"):
