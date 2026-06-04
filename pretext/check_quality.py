@@ -245,7 +245,7 @@ def check_chapter_image_assets(repo_root):
     chapter_asset_names = {
         path.name
         for path in asset_dir.glob("*.png")
-        if re.fullmatch(r"ch\d+_[a-z0-9_]+\.png", path.name)
+        if re.fullmatch(r"ch\d+_[a-z_]+_[0-9a-f]+\.png", path.name)
     }
     referenced_asset_names = set()
     issues = []
