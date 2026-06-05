@@ -95,11 +95,7 @@ FRONTMATTER_REFERENCE_MARKERS = {
         """,
     ),
     "frontmatter license reference": (
-        """
-        <url href="https://creativecommons.org/licenses/by-nc-sa/4.0/"
-             visual="creativecommons.org/licenses/by-nc-sa/4.0">
-          CreativeCommons.org</url>
-        """,
+        '<url href="https://creativecommons.org/licenses/by-nc-sa/4.0/" visual="creativecommons.org/licenses/by-nc-sa/4.0"> CreativeCommons.org</url>',
     ),
     "frontmatter source reference": (
         """

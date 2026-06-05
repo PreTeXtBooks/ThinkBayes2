@@ -84,6 +84,41 @@ def test_frontmatter_reference_boilerplate_reports_missing_external_refs(tmp_pat
     assert "frontmatter website reference" not in issues[0]
 
 
+def test_frontmatter_reference_boilerplate_reports_missing_shared_refs(tmp_path):
+    source_dir = tmp_path / "pretext" / "source"
+    source_dir.mkdir(parents=True)
+    (source_dir / "meta_frontmatter.ptx").write_text(
+        """
+        <frontmatter>
+          <colophon>
+            <website>
+              <name>Think Bayes 2</name>
+              <address>https://allendowney.github.io/ThinkBayes2</address>
+            </website>
+            <copyright>
+              <shortlicense>
+                <url href="https://creativecommons.org/licenses/by-nc-sa/4.0/" visual="creativecommons.org/licenses/by-nc-sa/4.0"> CreativeCommons.org</url>
+              </shortlicense>
+            </copyright>
+          </colophon>
+          <preface>
+            <p>
+              This PreTeXt edition is maintained at
+              <url href="https://github.com/PreTeXtBooks/ThinkBayes2" visual="github.com/PreTeXtBooks/ThinkBayes2">github.com/PreTeXtBooks/ThinkBayes2</url>.
+              If you find errors or issues specific to this PreTeXt version, please open an issue there.
+            </p>
+          </preface>
+        </frontmatter>
+        """
+    )
+
+    issues = check_quality.check_frontmatter_reference_boilerplate(tmp_path)
+
+    assert issues
+    assert "shared frontmatter references" in issues[0]
+    assert "frontmatter website reference" not in issues[0]
+
+
 def test_chapter_cross_references_pass_on_repo():
     repo_root = Path(__file__).resolve().parents[1]
     assert check_quality.check_chapter_cross_references(repo_root) == []
