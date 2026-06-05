@@ -79,19 +79,42 @@ CHAPTER_REFERENCE_BOILERPLATE_MARKERS = {
 # ThinkBayes2-specific frontmatter references that should remain in the book.
 FRONTMATTER_REFERENCE_MARKERS = (
     'This is a <url href="https://pretextbook.org" visual="pretextbook.org">PreTeXt</url> adaptation of',
-    "The original book and its Jupyter notebooks are freely available at",
-    '<url href="https://allendowney.github.io/ThinkBayes2" visual="allendowney.github.io/ThinkBayes2">',
+    'The original book and its Jupyter notebooks are freely available at '
+    '<url href="https://allendowney.github.io/ThinkBayes2" '
+    'visual="allendowney.github.io/ThinkBayes2">allendowney.github.io/ThinkBayes2</url>,',
     '<url href="https://github.com/AllenDowney" visual="github.com/AllenDowney">Allen B. Downey</url>.',
     "All credit for the content of this book belongs to Allen B. Downey.",
-    "This PreTeXt edition is maintained at",
-    '<url href="https://github.com/PreTeXtBooks/ThinkBayes2" visual="github.com/PreTeXtBooks/ThinkBayes2">',
+    'This PreTeXt edition is maintained at '
+    '<url href="https://github.com/PreTeXtBooks/ThinkBayes2" '
+    'visual="github.com/PreTeXtBooks/ThinkBayes2">github.com/PreTeXtBooks/ThinkBayes2</url>.',
     "If you find errors or issues specific to this PreTeXt version, please open an issue there.",
 )
 
 
-def normalize_qc_text(text):
-    """Collapse whitespace so XML-formatted prose can be matched robustly."""
+def normalize_whitespace(text):
+    """Collapse whitespace in text.
+
+    Args:
+        text: A string.
+
+    Returns:
+        A string with consecutive whitespace collapsed to single spaces.
+
+    Example:
+        ``"  hello\n\tworld  "`` becomes ``"hello world"``.
+    """
     return re.sub(r"\s+", " ", text).strip()
+
+
+NORMALIZED_FRONTMATTER_REFERENCE_MARKERS = tuple(
+    normalize_whitespace(marker) for marker in FRONTMATTER_REFERENCE_MARKERS
+)
+
+
+def contains_normalized_phrase(content, phrase):
+    """Check whether a normalized phrase appears as its own text span."""
+    pattern = rf"(?<!\S){re.escape(phrase)}(?!\S)"
+    return re.search(pattern, content) is not None
 
 
 def get_notebook_code_cells(path):
@@ -404,19 +427,26 @@ def check_chapter_reference_boilerplate(repo_root):
 
 
 def check_frontmatter_reference_boilerplate(repo_root):
-    """Verify the shared frontmatter keeps the canonical book URLs and references."""
+    """Verify the shared frontmatter keeps the canonical book URLs and references.
+
+    Args:
+        repo_root: Repository root path.
+
+    Returns:
+        A list of issue strings describing missing frontmatter references.
+    """
     path = repo_root / "pretext" / "source" / "meta_frontmatter.ptx"
-    content = normalize_qc_text(path.read_text())
+    content = normalize_whitespace(path.read_text())
     issues = []
 
     missing = [
-        marker for marker in FRONTMATTER_REFERENCE_MARKERS
-        if normalize_qc_text(marker) not in content
+        marker for marker in NORMALIZED_FRONTMATTER_REFERENCE_MARKERS
+        if not contains_normalized_phrase(content, marker)
     ]
     if missing:
         issues.append(
             f"  Missing frontmatter references in {path.name}: "
-            f"{', '.join(repr(m) for m in missing)}"
+            f"{'; '.join(missing)}"
         )
 
     return issues
