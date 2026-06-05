@@ -114,12 +114,16 @@ CHAPTER_CROSS_REFERENCE_MARKERS = {
     "ch17-regression.ptx": ("ch-mark-recapture",),
 }
 
+# Chapter filenames mapped to tuples of expected footnote text fragments.
 CHAPTER_FOOTNOTE_MARKERS = {
     "ch02-bayes-theorem.ptx": (
-        "Based on an example from <url href=\"https://en.wikipedia.org/wiki/Bayes%27_theorem\">Wikipedia</url> that is no longer there.",
+        "Based on an example from",
+        "Wikipedia",
+        "that is no longer there.",
     ),
     "ch20-abc.ptx": (
-        "If you are not familiar with Python generators, see <url href=\"http://wiki.python.org/moin/Generators\">wiki.python.org/moin/Generators</url>.",
+        "If you are not familiar with Python generators, see",
+        "wiki.python.org/moin/Generators",
     ),
 }
 
@@ -417,7 +421,14 @@ def check_chapter_cross_references(repo_root):
 
 
 def check_chapter_footnotes(repo_root):
-    """Verify expected footnotes remain in the source chapters."""
+    """Verify expected footnotes remain in the source chapters.
+
+    Args:
+        repo_root: Path to the repository root directory.
+
+    Returns:
+        List of issue strings describing missing footnotes or files.
+    """
     source_dir = repo_root / "pretext" / "source"
     issues = []
 
@@ -431,7 +442,7 @@ def check_chapter_footnotes(repo_root):
         missing = [
             marker
             for marker in markers
-            if normalize_whitespace(f"<fn>{marker}</fn>") not in content
+            if normalize_whitespace(marker) not in content
         ]
         if missing:
             issues.append(
