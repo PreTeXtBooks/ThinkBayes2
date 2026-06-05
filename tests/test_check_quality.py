@@ -48,6 +48,37 @@ def test_frontmatter_reference_boilerplate_reports_missing_markers(tmp_path):
     assert "Missing frontmatter references" in issues[0]
 
 
+def test_chapter_cross_references_pass_on_repo():
+    repo_root = Path(__file__).resolve().parents[1]
+    assert check_quality.check_chapter_cross_references(repo_root) == []
+
+
+def test_chapter_cross_references_reports_missing_refs(tmp_path):
+    source_dir = tmp_path / "pretext" / "source"
+    source_dir.mkdir(parents=True)
+    (source_dir / "ch03-distributions.ptx").write_text("<chapter>missing xref</chapter>")
+
+    issues = check_quality.check_chapter_cross_references(tmp_path)
+
+    assert issues
+    assert "Missing chapter cross-references" in issues[0]
+
+
+def test_chapter_cross_references_reports_missing_files(tmp_path):
+    source_dir = tmp_path / "pretext" / "source"
+    source_dir.mkdir(parents=True)
+
+    issues = check_quality.check_chapter_cross_references(tmp_path)
+
+    assert issues
+    assert "Chapter file not found" in issues[0]
+
+
+def test_contains_xref_reference_handles_whitespace():
+    content = 'before <xref\n  ref="ch-bayes-theorem"\n/> after'
+    assert check_quality.contains_xref_reference(content, "ch-bayes-theorem") is True
+
+
 @pytest.mark.parametrize(
     "content, phrase, expected",
     [

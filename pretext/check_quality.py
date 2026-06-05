@@ -76,6 +76,13 @@ CHAPTER_REFERENCE_BOILERPLATE_MARKERS = {
     ),
 }
 
+# Cross-chapter references that should remain in their current locations.
+CHAPTER_CROSS_REFERENCE_MARKERS = {
+    "ch03-distributions.ptx": ("ch-bayes-theorem",),
+    "ch08-poisson-processes.ptx": ("ch-conjugate-priors",),
+    "ch17-regression.ptx": ("ch-mark-recapture",),
+}
+
 # ThinkBayes2-specific frontmatter references that should remain in the book.
 FRONTMATTER_REFERENCE_MARKERS = (
     'This is a <url href="https://pretextbook.org" visual="pretextbook.org">PreTeXt</url> adaptation of',
@@ -114,6 +121,12 @@ NORMALIZED_FRONTMATTER_REFERENCE_MARKERS = tuple(
 def contains_normalized_phrase(content, phrase):
     """Check whether a normalized phrase appears as its own text span."""
     pattern = rf"(?<!\S){re.escape(phrase)}(?!\S)"
+    return re.search(pattern, content) is not None
+
+
+def contains_xref_reference(content, ref):
+    """Check whether a chapter cross-reference to ref is present."""
+    pattern = rf'<xref\b[^>]*\bref=["\']{re.escape(ref)}["\'][^>]*\/?>'
     return re.search(pattern, content) is not None
 
 
@@ -355,6 +368,28 @@ def check_chapter(repo_root, nb_name, ptx_name):
     return issues
 
 
+def check_chapter_cross_references(repo_root):
+    """Verify chapter-to-chapter references remain in their expected chapters."""
+    source_dir = repo_root / "pretext" / "source"
+    issues = []
+
+    for filename, refs in CHAPTER_CROSS_REFERENCE_MARKERS.items():
+        path = source_dir / filename
+        if not path.exists():
+            issues.append(f"  Chapter file not found: {path}")
+            continue
+        content = normalize_whitespace(path.read_text())
+
+        missing = [ref for ref in refs if not contains_xref_reference(content, ref)]
+        if missing:
+            issues.append(
+                f"  Missing chapter cross-references in {path.name}: "
+                f"{'; '.join(missing)}"
+            )
+
+    return issues
+
+
 def check_chapter_output_blocks(repo_root, nb_name, ptx_name):
     """Verify comparable simple notebook outputs are present near matching PTX code."""
     nb_path = repo_root / "soln" / f"{nb_name}.ipynb"
@@ -527,6 +562,16 @@ def main():
         print()
     else:
         print("PASS: frontmatter reference boilerplate")
+
+    chapter_reference_issues = check_chapter_cross_references(repo_root)
+    if chapter_reference_issues:
+        all_passed = False
+        print("FAIL: chapter cross-references")
+        for issue in chapter_reference_issues:
+            print(issue)
+        print()
+    else:
+        print("PASS: chapter cross-references")
 
     image_issues = check_chapter_image_assets(repo_root)
     if image_issues:
