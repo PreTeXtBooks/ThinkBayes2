@@ -76,26 +76,32 @@ CHAPTER_REFERENCE_BOILERPLATE_MARKERS = {
     ),
 }
 
+# Frontmatter references that should remain in the shared book metadata and
+# preface.
+FRONTMATTER_REFERENCE_MARKERS = {
+    "shared frontmatter references": (
+        'This is a <url href="https://pretextbook.org" visual="pretextbook.org">PreTeXt</url> adaptation of',
+        "The original book and its Jupyter notebooks are freely available at",
+        '<url href="https://allendowney.github.io/ThinkBayes2" visual="allendowney.github.io/ThinkBayes2">',
+        '<url href="https://github.com/AllenDowney" visual="github.com/AllenDowney">Allen B. Downey</url>.',
+        "All credit for the content of this book belongs to Allen B. Downey.",
+        "This PreTeXt edition is maintained at",
+        '<url href="https://github.com/PreTeXtBooks/ThinkBayes2" visual="github.com/PreTeXtBooks/ThinkBayes2">',
+        "If you find errors or issues specific to this PreTeXt version, please open an issue there.",
+    ),
+    "frontmatter external references": (
+        "<website> <name>Think Bayes 2</name> <address>https://allendowney.github.io/ThinkBayes2</address> </website>",
+        '<url href="http://creativecommons.org/licenses/by-nc-sa/4.0/" visual="creativecommons.org/licenses/by-nc-sa/4.0">CreativeCommons.org</url>',
+        '<url href="https://github.com/AllenDowney/ThinkBayes2" visual="github.com/AllenDowney/ThinkBayes2">GitHub</url>.',
+    ),
+}
+
 # Cross-chapter references that are easy to lose when chapter prose is edited.
 CHAPTER_CROSS_REFERENCE_MARKERS = {
     "ch03-distributions.ptx": ("ch-bayes-theorem",),
     "ch08-poisson-processes.ptx": ("ch-conjugate-priors",),
     "ch17-regression.ptx": ("ch-mark-recapture",),
 }
-
-# ThinkBayes2-specific frontmatter references that should remain in the book.
-FRONTMATTER_REFERENCE_MARKERS = (
-    'This is a <url href="https://pretextbook.org" visual="pretextbook.org">PreTeXt</url> adaptation of',
-    'The original book and its Jupyter notebooks are freely available at '
-    '<url href="https://allendowney.github.io/ThinkBayes2" '
-    'visual="allendowney.github.io/ThinkBayes2">allendowney.github.io/ThinkBayes2</url>,',
-    '<url href="https://github.com/AllenDowney" visual="github.com/AllenDowney">Allen B. Downey</url>.',
-    "All credit for the content of this book belongs to Allen B. Downey.",
-    'This PreTeXt edition is maintained at '
-    '<url href="https://github.com/PreTeXtBooks/ThinkBayes2" '
-    'visual="github.com/PreTeXtBooks/ThinkBayes2">github.com/PreTeXtBooks/ThinkBayes2</url>.',
-    "If you find errors or issues specific to this PreTeXt version, please open an issue there.",
-)
 
 
 def normalize_whitespace(text):
@@ -111,11 +117,6 @@ def normalize_whitespace(text):
         ``"  hello\n\tworld  "`` becomes ``"hello world"``.
     """
     return re.sub(r"\s+", " ", text).strip()
-
-
-NORMALIZED_FRONTMATTER_REFERENCE_MARKERS = tuple(
-    normalize_whitespace(marker) for marker in FRONTMATTER_REFERENCE_MARKERS
-)
 
 
 def contains_normalized_phrase(content, phrase):
@@ -467,7 +468,7 @@ def check_chapter_reference_boilerplate(repo_root):
 
 
 def check_frontmatter_reference_boilerplate(repo_root):
-    """Verify the shared frontmatter keeps the canonical book URLs and references.
+    """Verify the shared frontmatter keeps the canonical and external references.
 
     Args:
         repo_root: Repository root path.
@@ -480,8 +481,12 @@ def check_frontmatter_reference_boilerplate(repo_root):
     issues = []
 
     missing = [
-        marker for marker in NORMALIZED_FRONTMATTER_REFERENCE_MARKERS
-        if not contains_normalized_phrase(content, marker)
+        description
+        for description, markers in FRONTMATTER_REFERENCE_MARKERS.items()
+        if not any(
+            contains_normalized_phrase(content, normalize_whitespace(marker))
+            for marker in markers
+        )
     ]
     if missing:
         issues.append(

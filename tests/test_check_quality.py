@@ -48,6 +48,39 @@ def test_frontmatter_reference_boilerplate_reports_missing_markers(tmp_path):
     assert "Missing frontmatter references" in issues[0]
 
 
+def test_frontmatter_reference_boilerplate_reports_missing_external_refs(tmp_path):
+    source_dir = tmp_path / "pretext" / "source"
+    source_dir.mkdir(parents=True)
+    (source_dir / "meta_frontmatter.ptx").write_text(
+        """
+        <frontmatter>
+          <preface>
+            <p>
+              This is a <url href="https://pretextbook.org" visual="pretextbook.org">PreTeXt</url> adaptation of
+              <em>Think Bayes 2</em> by
+              <url href="https://github.com/AllenDowney" visual="github.com/AllenDowney">Allen B. Downey</url>.
+              The original book and its Jupyter notebooks are freely available at
+              <url href="https://allendowney.github.io/ThinkBayes2" visual="allendowney.github.io/ThinkBayes2">allendowney.github.io/ThinkBayes2</url>,
+              and the source is hosted on
+              <url href="https://github.com/AllenDowney/ThinkBayes2" visual="github.com/AllenDowney/ThinkBayes2">GitHub</url>.
+              All credit for the content of this book belongs to Allen B. Downey.
+            </p>
+            <p>
+              This PreTeXt edition is maintained at
+              <url href="https://github.com/PreTeXtBooks/ThinkBayes2" visual="github.com/PreTeXtBooks/ThinkBayes2">github.com/PreTeXtBooks/ThinkBayes2</url>.
+              If you find errors or issues specific to this PreTeXt version, please open an issue there.
+            </p>
+          </preface>
+        </frontmatter>
+        """
+    )
+
+    issues = check_quality.check_frontmatter_reference_boilerplate(tmp_path)
+
+    assert issues
+    assert "frontmatter external references" in issues[0]
+
+
 def test_chapter_cross_references_pass_on_repo():
     repo_root = Path(__file__).resolve().parents[1]
     assert check_quality.check_chapter_cross_references(repo_root) == []
