@@ -19,7 +19,7 @@ def load_check_quality():
 check_quality = load_check_quality()
 
 
-def write_simple_output_fixture(tmp_path, include_output=True):
+def write_chapter_output_fixture(tmp_path, include_output=True):
     soln_dir = tmp_path / "soln"
     source_dir = tmp_path / "pretext" / "source"
     soln_dir.mkdir(parents=True)
@@ -225,12 +225,12 @@ def test_chapter_footnotes_reports_missing_files(tmp_path):
 
 
 def test_chapter_output_blocks_matches_simple_output(tmp_path):
-    write_simple_output_fixture(tmp_path)
+    write_chapter_output_fixture(tmp_path)
     assert check_quality.check_chapter_output_blocks(tmp_path, "chap01", "ch01-probability") == []
 
 
 def test_chapter_output_blocks_reports_missing_output(tmp_path):
-    write_simple_output_fixture(tmp_path, include_output=False)
+    write_chapter_output_fixture(tmp_path, include_output=False)
     issues = check_quality.check_chapter_output_blocks(tmp_path, "chap01", "ch01-probability")
 
     assert issues
