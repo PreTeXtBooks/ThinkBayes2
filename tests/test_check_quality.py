@@ -1,4 +1,5 @@
 from pathlib import Path
+import textwrap
 
 import pytest
 
@@ -26,7 +27,8 @@ def write_chapter_output_fixture(tmp_path, include_output=True):
     source_dir.mkdir(parents=True)
 
     (soln_dir / "chap01.ipynb").write_text(
-        """
+        textwrap.dedent(
+            """
         {
          "cells": [
           {
@@ -51,15 +53,18 @@ def write_chapter_output_fixture(tmp_path, include_output=True):
          "nbformat": 4,
          "nbformat_minor": 5
         }
-        """
+            """
+        )
     )
 
-    ptx = """
+    ptx = textwrap.dedent(
+        """
         <chapter>
           <program language="python">
             <input>print('hello')</input>
           </program>
-    """
+        """
+    )
     if include_output:
         # PTX renders the notebook output as plain text immediately after the code.
         ptx += "          hello\n"
