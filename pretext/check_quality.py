@@ -65,16 +65,106 @@ CHAPTER_REFERENCE_BOILERPLATE_MARKERS = {
         "creativecommons.org/licenses/by-nc-sa/4.0",
     ),
     "shared frontmatter references": (
-        'This is a <url href="https://pretextbook.org" visual="pretextbook.org">PreTeXt</url> adaptation of',
-        "The original book and its Jupyter notebooks are freely available at",
-        '<url href="https://allendowney.github.io/ThinkBayes2" visual="allendowney.github.io/ThinkBayes2">',
-        '<url href="https://github.com/AllenDowney" visual="github.com/AllenDowney">Allen B. Downey</url>.',
-        "All credit for the content of this book belongs to Allen B. Downey.",
+        """
+        This is a <url href="https://pretextbook.org" visual="pretextbook.org">PreTeXt</url> adaptation of
+        <em>Think Bayes 2</em> by
+        <url href="https://github.com/AllenDowney" visual="github.com/AllenDowney">Allen B. Downey</url>.
+        The original book and its Jupyter notebooks are freely available at
+        <url href="https://allendowney.github.io/ThinkBayes2" visual="allendowney.github.io/ThinkBayes2">allendowney.github.io/ThinkBayes2</url>,
+        and the source is hosted on
+        <url href="https://github.com/AllenDowney/ThinkBayes2" visual="github.com/AllenDowney/ThinkBayes2">GitHub</url>.
+        All credit for the content of this book belongs to Allen B. Downey.
+        """,
         "This PreTeXt edition is maintained at",
         '<url href="https://github.com/PreTeXtBooks/ThinkBayes2" visual="github.com/PreTeXtBooks/ThinkBayes2">',
         "If you find errors or issues specific to this PreTeXt version, please open an issue there.",
     ),
 }
+
+# Frontmatter references that should remain in the shared book metadata and
+# preface.
+FRONTMATTER_REFERENCE_MARKERS = {
+    "shared frontmatter references": (
+        """
+        This is a <url href="https://pretextbook.org" visual="pretextbook.org">PreTeXt</url> adaptation of
+        <em>Think Bayes 2</em> by
+        <url href="https://github.com/AllenDowney" visual="github.com/AllenDowney">Allen B. Downey</url>.
+        The original book and its Jupyter notebooks are freely available at
+        <url href="https://allendowney.github.io/ThinkBayes2" visual="allendowney.github.io/ThinkBayes2">allendowney.github.io/ThinkBayes2</url>,
+        and the source is hosted on
+        <url href="https://github.com/AllenDowney/ThinkBayes2" visual="github.com/AllenDowney/ThinkBayes2">GitHub</url>.
+        All credit for the content of this book belongs to Allen B. Downey.
+        """,
+    ),
+    "frontmatter website reference": (
+        """
+        <website>
+          <name>Think Bayes 2</name>
+          <address>https://allendowney.github.io/ThinkBayes2</address>
+        </website>
+        """,
+    ),
+    "frontmatter license reference": (
+        '<url href="https://creativecommons.org/licenses/by-nc-sa/4.0/" visual="creativecommons.org/licenses/by-nc-sa/4.0"> CreativeCommons.org</url>',
+    ),
+    "frontmatter source reference": (
+        """
+        This PreTeXt edition is maintained at
+        <url href="https://github.com/PreTeXtBooks/ThinkBayes2"
+             visual="github.com/PreTeXtBooks/ThinkBayes2">github.com/PreTeXtBooks/ThinkBayes2</url>.
+        If you find errors or issues specific to this PreTeXt version, please open an issue there.
+        """,
+    ),
+}
+
+# Cross-chapter references that are easy to lose when chapter prose is edited.
+CHAPTER_CROSS_REFERENCE_MARKERS = {
+    "ch03-distributions.ptx": ("ch-bayes-theorem",),
+    "ch08-poisson-processes.ptx": ("ch-conjugate-priors",),
+    "ch17-regression.ptx": ("ch-mark-recapture",),
+}
+
+# Chapter filenames mapped to tuples of expected footnote text fragments.
+CHAPTER_FOOTNOTE_MARKERS = {
+    "ch02-bayes-theorem.ptx": (
+        'Based on an example from <url href="https://en.wikipedia.org/wiki/Bayes%27_theorem">Wikipedia</url> that is no longer there.',
+    ),
+    "ch20-abc.ptx": (
+        'If you are not familiar with Python generators, see <url href="http://wiki.python.org/moin/Generators">wiki.python.org/moin/Generators</url>.',
+    ),
+}
+
+
+def normalize_whitespace(text):
+    """Collapse whitespace in text.
+
+    Args:
+        text: A string.
+
+    Returns:
+        A string with consecutive whitespace collapsed to single spaces.
+
+    Example:
+        ``"  hello\n\tworld  "`` becomes ``"hello world"``.
+    """
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def contains_normalized_phrase(content, phrase):
+    """Check whether a normalized phrase appears as its own text span."""
+    pattern = rf"(?<!\S){re.escape(phrase)}(?!\S)"
+    return matches_pattern(content, pattern)
+
+
+def contains_xref_reference(content, ref):
+    """Check whether a chapter cross-reference to ref is present."""
+    pattern = rf'<xref\s+[^>]*?ref=["\']{re.escape(ref)}["\']\s*\/?>'
+    return matches_pattern(content, pattern)
+
+
+def matches_pattern(content, pattern):
+    """Check whether a regex pattern matches the given content."""
+    return re.search(pattern, content) is not None
 
 
 def get_notebook_code_cells(path):
@@ -315,6 +405,60 @@ def check_chapter(repo_root, nb_name, ptx_name):
     return issues
 
 
+def check_chapter_cross_references(repo_root):
+    """Verify chapter-to-chapter references remain in their expected chapters."""
+    source_dir = repo_root / "pretext" / "source"
+    issues = []
+
+    for filename, refs in CHAPTER_CROSS_REFERENCE_MARKERS.items():
+        path = source_dir / filename
+        if not path.exists():
+            issues.append(f"  Chapter file not found: {path}")
+            continue
+        content = normalize_whitespace(path.read_text())
+
+        missing = [ref for ref in refs if not contains_xref_reference(content, ref)]
+        if missing:
+            issues.append(
+                f"  Missing chapter cross-references in {path.name}: "
+                f"{'; '.join(missing)}"
+            )
+
+    return issues
+
+
+def check_chapter_footnotes(repo_root):
+    """Verify expected footnotes remain in the source chapters.
+
+    Args:
+        repo_root: Path to the repository root directory.
+
+    Returns:
+        List of issue strings describing missing footnotes or files.
+    """
+    source_dir = repo_root / "pretext" / "source"
+    issues = []
+
+    for filename, markers in CHAPTER_FOOTNOTE_MARKERS.items():
+        path = source_dir / filename
+        if not path.exists():
+            issues.append(f"  Chapter file not found: {path}")
+            continue
+        content = normalize_whitespace(path.read_text())
+
+        missing = [
+            marker
+            for marker in markers
+            if normalize_whitespace(marker) not in content
+        ]
+        if missing:
+            issues.append(
+                f"  Missing footnotes in {path.name}: " + "; ".join(missing)
+            )
+
+    return issues
+
+
 def check_chapter_output_blocks(repo_root, nb_name, ptx_name):
     """Verify comparable simple notebook outputs are present near matching PTX code."""
     nb_path = repo_root / "soln" / f"{nb_name}.ipynb"
@@ -386,6 +530,36 @@ def check_chapter_reference_boilerplate(repo_root):
     return issues
 
 
+def check_frontmatter_reference_boilerplate(repo_root):
+    """Verify the shared frontmatter keeps the canonical and external references.
+
+    Args:
+        repo_root: Repository root path.
+
+    Returns:
+        A list of issue strings describing missing frontmatter references.
+    """
+    path = repo_root / "pretext" / "source" / "meta_frontmatter.ptx"
+    content = normalize_whitespace(path.read_text())
+    issues = []
+
+    missing = [
+        description
+        for description, markers in FRONTMATTER_REFERENCE_MARKERS.items()
+        if not any(
+            contains_normalized_phrase(content, normalize_whitespace(marker))
+            for marker in markers
+        )
+    ]
+    if missing:
+        issues.append(
+            f"  Missing frontmatter reference categories in {path.name}: "
+            f"{'; '.join(missing)}"
+        )
+
+    return issues
+
+
 def check_chapter_image_assets(repo_root):
     """Verify chapter image assets and PTX references stay in sync."""
     source_dir = repo_root / "pretext" / "source"
@@ -393,8 +567,11 @@ def check_chapter_image_assets(repo_root):
 
     chapter_asset_names = {
         path.name
-        for path in asset_dir.glob("*.png")
-        if re.fullmatch(r"ch\d+_[a-z_]+_[0-9a-f]+\.png", path.name)
+        for path in asset_dir.glob("ch*")
+        if path.is_file()
+        and re.fullmatch(
+            r"ch\d+_[a-z_]+_[0-9a-f]+\.(?:png|jpe?g|svg)", path.name, re.IGNORECASE
+        )
     }
     referenced_asset_names = set()
     issues = []
@@ -451,6 +628,36 @@ def main():
         print()
     else:
         print("PASS: chapter reference boilerplate")
+
+    frontmatter_issues = check_frontmatter_reference_boilerplate(repo_root)
+    if frontmatter_issues:
+        all_passed = False
+        print("FAIL: frontmatter reference boilerplate")
+        for issue in frontmatter_issues:
+            print(issue)
+        print()
+    else:
+        print("PASS: frontmatter reference boilerplate")
+
+    chapter_reference_issues = check_chapter_cross_references(repo_root)
+    if chapter_reference_issues:
+        all_passed = False
+        print("FAIL: chapter cross-references")
+        for issue in chapter_reference_issues:
+            print(issue)
+        print()
+    else:
+        print("PASS: chapter cross-references")
+
+    footnote_issues = check_chapter_footnotes(repo_root)
+    if footnote_issues:
+        all_passed = False
+        print("FAIL: chapter footnotes")
+        for issue in footnote_issues:
+            print(issue)
+        print()
+    else:
+        print("PASS: chapter footnotes")
 
     image_issues = check_chapter_image_assets(repo_root)
     if image_issues:

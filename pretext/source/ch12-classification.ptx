@@ -114,6 +114,12 @@ studyName  Sample Number                              Species  Region  \
     </p>
 
     <p>
+      These species are shown in this illustration (by Allison Horst, available under the
+      <url href="https://creativecommons.org/licenses/by/2.0/">CC-BY</url> license):
+    </p>
+    <image source="images/ch12_classification_penguins_a1b2c3d4.jpeg" width="80%"/>
+
+    <p>
       The measurements we'll use are:
     </p>
     <ul>
@@ -125,6 +131,11 @@ studyName  Sample Number                              Species  Region  \
     <p>
       If you are not familiar with the word "culmen", it refers to the <url href="https://en.wikipedia.org/wiki/Bird_measurement#Culmen">top margin of the beak</url>.
     </p>
+
+    <p>
+      The culmen is shown in the following illustration (also by Allison Horst):
+    </p>
+    <image source="images/ch12_classification_culmen_b5c6d7e8.jpeg" width="80%"/>
 
     <p>
       These measurements will be most useful for classification if there are substantial differences between species and small variation within species.  To see whether that is true, and to what degree, I'll plot cumulative distribution functions (CDFs) of each measurement for each species.
