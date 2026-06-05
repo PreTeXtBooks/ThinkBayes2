@@ -102,9 +102,12 @@ FRONTMATTER_REFERENCE_MARKERS = {
         """,
     ),
     "frontmatter source reference": (
-        "This PreTeXt edition is maintained at",
-        '<url href="https://github.com/PreTeXtBooks/ThinkBayes2" visual="github.com/PreTeXtBooks/ThinkBayes2">',
-        "If you find errors or issues specific to this PreTeXt version, please open an issue there.",
+        """
+        This PreTeXt edition is maintained at
+        <url href="https://github.com/PreTeXtBooks/ThinkBayes2"
+             visual="github.com/PreTeXtBooks/ThinkBayes2">github.com/PreTeXtBooks/ThinkBayes2</url>.
+        If you find errors or issues specific to this PreTeXt version, please open an issue there.
+        """,
     ),
 }
 
