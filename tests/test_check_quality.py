@@ -1,6 +1,5 @@
 import json
 from pathlib import Path
-import textwrap
 
 import pytest
 
@@ -21,7 +20,7 @@ def load_check_quality():
 check_quality = load_check_quality()
 
 
-def write_chapter_output_fixture(tmp_path, include_output=True):
+def create_chapter_fixture(tmp_path, include_output=True):
     soln_dir = tmp_path / "soln"
     source_dir = tmp_path / "pretext" / "source"
     soln_dir.mkdir(parents=True)
@@ -49,19 +48,17 @@ def write_chapter_output_fixture(tmp_path, include_output=True):
     }
     (soln_dir / "chap01.ipynb").write_text(json.dumps(notebook))
 
-    ptx = textwrap.dedent(
-        """
-        <chapter>
-          <program language="python">
-            <input>print('hello')</input>
-          </program>
-        """
-    )
+    ptx_lines = [
+        "<chapter>",
+        "  <program language=\"python\">",
+        "    <input>print('hello')</input>",
+        "  </program>",
+    ]
     if include_output:
         # PTX renders the notebook output as plain text immediately after the code.
-        ptx += "          hello\n"
-    ptx += "        </chapter>\n"
-    (source_dir / "ch01-probability.ptx").write_text(ptx)
+        ptx_lines.append("  hello")
+    ptx_lines.append("</chapter>")
+    (source_dir / "ch01-probability.ptx").write_text("\n".join(ptx_lines) + "\n")
 
     return tmp_path
 
@@ -222,12 +219,12 @@ def test_chapter_footnotes_reports_missing_files(tmp_path):
 
 
 def test_chapter_output_blocks_matches_simple_output(tmp_path):
-    write_chapter_output_fixture(tmp_path)
+    create_chapter_fixture(tmp_path)
     assert check_quality.check_chapter_output_blocks(tmp_path, "chap01", "ch01-probability") == []
 
 
 def test_chapter_output_blocks_reports_missing_output(tmp_path):
-    write_chapter_output_fixture(tmp_path, include_output=False)
+    create_chapter_fixture(tmp_path, include_output=False)
     issues = check_quality.check_chapter_output_blocks(tmp_path, "chap01", "ch01-probability")
 
     assert issues
