@@ -19,6 +19,56 @@ def load_check_quality():
 check_quality = load_check_quality()
 
 
+def write_simple_output_fixture(tmp_path, include_output=True):
+    soln_dir = tmp_path / "soln"
+    source_dir = tmp_path / "pretext" / "source"
+    soln_dir.mkdir(parents=True)
+    source_dir.mkdir(parents=True)
+
+    (soln_dir / "chap01.ipynb").write_text(
+        """
+        {
+         "cells": [
+          {
+           "cell_type": "code",
+           "execution_count": 1,
+           "metadata": {},
+           "outputs": [
+            {
+             "output_type": "stream",
+             "name": "stdout",
+             "text": [
+              "hello\\n"
+             ]
+            }
+           ],
+           "source": [
+            "print('hello')\\n"
+           ]
+          }
+         ],
+         "metadata": {},
+         "nbformat": 4,
+         "nbformat_minor": 5
+        }
+        """
+    )
+
+    ptx = """
+        <chapter>
+          <program language="python">
+            <input>print('hello')</input>
+          </program>
+    """
+    if include_output:
+        # PTX renders the notebook output as plain text immediately after the code.
+        ptx += "          hello\n"
+    ptx += "        </chapter>\n"
+    (source_dir / "ch01-probability.ptx").write_text(ptx)
+
+    return tmp_path
+
+
 @pytest.mark.parametrize(
     "text, expected",
     [
@@ -175,97 +225,12 @@ def test_chapter_footnotes_reports_missing_files(tmp_path):
 
 
 def test_chapter_output_blocks_matches_simple_output(tmp_path):
-    soln_dir = tmp_path / "soln"
-    source_dir = tmp_path / "pretext" / "source"
-    soln_dir.mkdir(parents=True)
-    source_dir.mkdir(parents=True)
-
-    (soln_dir / "chap01.ipynb").write_text(
-        """
-        {
-         "cells": [
-          {
-           "cell_type": "code",
-           "execution_count": 1,
-           "metadata": {},
-           "outputs": [
-            {
-             "output_type": "stream",
-             "name": "stdout",
-             "text": [
-              "hello\\n"
-             ]
-            }
-           ],
-           "source": [
-            "print('hello')\\n"
-           ]
-          }
-         ],
-         "metadata": {},
-         "nbformat": 4,
-         "nbformat_minor": 5
-        }
-        """
-    )
-    (source_dir / "ch01-probability.ptx").write_text(
-        """
-        <chapter>
-          <program language="python">
-            <input>print('hello')</input>
-          </program>
-          hello
-        </chapter>
-        """
-    )
-
+    write_simple_output_fixture(tmp_path)
     assert check_quality.check_chapter_output_blocks(tmp_path, "chap01", "ch01-probability") == []
 
 
 def test_chapter_output_blocks_reports_missing_output(tmp_path):
-    soln_dir = tmp_path / "soln"
-    source_dir = tmp_path / "pretext" / "source"
-    soln_dir.mkdir(parents=True)
-    source_dir.mkdir(parents=True)
-
-    (soln_dir / "chap01.ipynb").write_text(
-        """
-        {
-         "cells": [
-          {
-           "cell_type": "code",
-           "execution_count": 1,
-           "metadata": {},
-           "outputs": [
-            {
-             "output_type": "stream",
-             "name": "stdout",
-             "text": [
-              "hello\\n"
-             ]
-            }
-           ],
-           "source": [
-            "print('hello')\\n"
-           ]
-          }
-         ],
-         "metadata": {},
-         "nbformat": 4,
-         "nbformat_minor": 5
-        }
-        """
-    )
-    (source_dir / "ch01-probability.ptx").write_text(
-        """
-        <chapter>
-          <program language="python">
-            <input>print('hello')</input>
-          </program>
-        </chapter>
-        """
-    )
-
+    write_simple_output_fixture(tmp_path, include_output=False)
     issues = check_quality.check_chapter_output_blocks(tmp_path, "chap01", "ch01-probability")
 
     assert issues
