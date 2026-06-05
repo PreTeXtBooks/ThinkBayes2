@@ -56,7 +56,9 @@ def test_chapter_cross_references_pass_on_repo():
 def test_chapter_cross_references_reports_missing_refs(tmp_path):
     source_dir = tmp_path / "pretext" / "source"
     source_dir.mkdir(parents=True)
-    (source_dir / "ch03-distributions.ptx").write_text("<chapter>missing xref</chapter>")
+    (source_dir / "ch03-distributions.ptx").write_text(
+        '<chapter><p>See <xref ref="ch-conjugate-priors"/></p></chapter>'
+    )
 
     issues = check_quality.check_chapter_cross_references(tmp_path)
 

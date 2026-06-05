@@ -126,7 +126,7 @@ def contains_normalized_phrase(content, phrase):
 
 def contains_xref_reference(content, ref):
     """Check whether a chapter cross-reference to ref is present."""
-    pattern = rf'<xref\b[^>]*\bref=["\']{re.escape(ref)}["\'][^>]*\/?>'
+    pattern = rf'<xref\s+[^>]*ref=["\']{re.escape(ref)}["\'][^>]*\/?>'
     return re.search(pattern, content) is not None
 
 
