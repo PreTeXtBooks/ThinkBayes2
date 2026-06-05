@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 import textwrap
 
@@ -26,36 +27,27 @@ def write_chapter_output_fixture(tmp_path, include_output=True):
     soln_dir.mkdir(parents=True)
     source_dir.mkdir(parents=True)
 
-    (soln_dir / "chap01.ipynb").write_text(
-        textwrap.dedent(
-            """
-        {
-         "cells": [
-          {
-           "cell_type": "code",
-           "execution_count": 1,
-           "metadata": {},
-           "outputs": [
+    notebook = {
+        "cells": [
             {
-             "output_type": "stream",
-             "name": "stdout",
-             "text": [
-              "hello\\n"
-             ]
+                "cell_type": "code",
+                "execution_count": 1,
+                "metadata": {},
+                "outputs": [
+                    {
+                        "output_type": "stream",
+                        "name": "stdout",
+                        "text": ["hello\n"],
+                    }
+                ],
+                "source": ["print('hello')\n"],
             }
-           ],
-           "source": [
-            "print('hello')\\n"
-           ]
-          }
-         ],
-         "metadata": {},
-         "nbformat": 4,
-         "nbformat_minor": 5
-        }
-            """
-        )
-    )
+        ],
+        "metadata": {},
+        "nbformat": 4,
+        "nbformat_minor": 5,
+    }
+    (soln_dir / "chap01.ipynb").write_text(json.dumps(notebook))
 
     ptx = textwrap.dedent(
         """
