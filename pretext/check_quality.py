@@ -76,6 +76,17 @@ CHAPTER_REFERENCE_BOILERPLATE_MARKERS = {
     ),
 }
 
+FRONTMATTER_REFERENCE_MARKERS = (
+    'This is a <url href="https://pretextbook.org" visual="pretextbook.org">PreTeXt</url> adaptation of',
+    "The original book and its Jupyter notebooks are freely available at",
+    '<url href="https://allendowney.github.io/ThinkBayes2" visual="allendowney.github.io/ThinkBayes2">',
+    '<url href="https://github.com/AllenDowney" visual="github.com/AllenDowney">Allen B. Downey</url>.',
+    "All credit for the content of this book belongs to Allen B. Downey.",
+    "This PreTeXt edition is maintained at",
+    '<url href="https://github.com/PreTeXtBooks/ThinkBayes2" visual="github.com/PreTeXtBooks/ThinkBayes2">',
+    "If you find errors or issues specific to this PreTeXt version, please open an issue there.",
+)
+
 
 def get_notebook_code_cells(path):
     """Extract Python code cells from a Jupyter notebook."""
@@ -386,6 +397,22 @@ def check_chapter_reference_boilerplate(repo_root):
     return issues
 
 
+def check_frontmatter_reference_boilerplate(repo_root):
+    """Verify the shared frontmatter keeps the canonical book URLs and references."""
+    path = repo_root / "pretext" / "source" / "meta_frontmatter.ptx"
+    content = path.read_text()
+    issues = []
+
+    missing = [marker for marker in FRONTMATTER_REFERENCE_MARKERS if marker not in content]
+    if missing:
+        issues.append(
+            f"  Missing frontmatter references in {path.name}: "
+            f"{', '.join(repr(m) for m in missing)}"
+        )
+
+    return issues
+
+
 def check_chapter_image_assets(repo_root):
     """Verify chapter image assets and PTX references stay in sync."""
     source_dir = repo_root / "pretext" / "source"
@@ -451,6 +478,16 @@ def main():
         print()
     else:
         print("PASS: chapter reference boilerplate")
+
+    frontmatter_issues = check_frontmatter_reference_boilerplate(repo_root)
+    if frontmatter_issues:
+        all_passed = False
+        print("FAIL: frontmatter reference boilerplate")
+        for issue in frontmatter_issues:
+            print(issue)
+        print()
+    else:
+        print("PASS: frontmatter reference boilerplate")
 
     image_issues = check_chapter_image_assets(repo_root)
     if image_issues:
