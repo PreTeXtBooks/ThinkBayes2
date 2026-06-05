@@ -76,7 +76,7 @@ CHAPTER_REFERENCE_BOILERPLATE_MARKERS = {
     ),
 }
 
-# Cross-chapter references that should remain in their current locations.
+# Cross-chapter references that are easy to lose when chapter prose is edited.
 CHAPTER_CROSS_REFERENCE_MARKERS = {
     "ch03-distributions.ptx": ("ch-bayes-theorem",),
     "ch08-poisson-processes.ptx": ("ch-conjugate-priors",),
@@ -126,7 +126,7 @@ def contains_normalized_phrase(content, phrase):
 
 def contains_xref_reference(content, ref):
     """Check whether a chapter cross-reference to ref is present."""
-    pattern = rf'<xref\s+[^>]*ref=["\']{re.escape(ref)}["\'][^>]*\/?>'
+    pattern = rf'<xref\s+[^>]*ref=["\']{re.escape(ref)}["\']\s*\/?>'
     return re.search(pattern, content) is not None
 
 
