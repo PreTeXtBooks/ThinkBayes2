@@ -76,6 +76,7 @@ CHAPTER_REFERENCE_BOILERPLATE_MARKERS = {
     ),
 }
 
+# ThinkBayes2-specific frontmatter references that should remain in the book.
 FRONTMATTER_REFERENCE_MARKERS = (
     'This is a <url href="https://pretextbook.org" visual="pretextbook.org">PreTeXt</url> adaptation of',
     "The original book and its Jupyter notebooks are freely available at",
@@ -86,6 +87,11 @@ FRONTMATTER_REFERENCE_MARKERS = (
     '<url href="https://github.com/PreTeXtBooks/ThinkBayes2" visual="github.com/PreTeXtBooks/ThinkBayes2">',
     "If you find errors or issues specific to this PreTeXt version, please open an issue there.",
 )
+
+
+def normalize_qc_text(text):
+    """Collapse whitespace so XML-formatted prose can be matched robustly."""
+    return re.sub(r"\s+", " ", text).strip()
 
 
 def get_notebook_code_cells(path):
@@ -400,10 +406,13 @@ def check_chapter_reference_boilerplate(repo_root):
 def check_frontmatter_reference_boilerplate(repo_root):
     """Verify the shared frontmatter keeps the canonical book URLs and references."""
     path = repo_root / "pretext" / "source" / "meta_frontmatter.ptx"
-    content = path.read_text()
+    content = normalize_qc_text(path.read_text())
     issues = []
 
-    missing = [marker for marker in FRONTMATTER_REFERENCE_MARKERS if marker not in content]
+    missing = [
+        marker for marker in FRONTMATTER_REFERENCE_MARKERS
+        if normalize_qc_text(marker) not in content
+    ]
     if missing:
         issues.append(
             f"  Missing frontmatter references in {path.name}: "
