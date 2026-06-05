@@ -45,7 +45,7 @@ def test_frontmatter_reference_boilerplate_reports_missing_markers(tmp_path):
     issues = check_quality.check_frontmatter_reference_boilerplate(tmp_path)
 
     assert issues
-    assert "Missing frontmatter references" in issues[0]
+    assert "Missing frontmatter reference categories" in issues[0]
 
 
 def test_frontmatter_reference_boilerplate_reports_missing_external_refs(tmp_path):

@@ -505,7 +505,7 @@ def check_frontmatter_reference_boilerplate(repo_root):
     ]
     if missing:
         issues.append(
-            f"  Missing frontmatter references in {path.name}: "
+            f"  Missing frontmatter reference categories in {path.name}: "
             f"{'; '.join(missing)}"
         )
 
