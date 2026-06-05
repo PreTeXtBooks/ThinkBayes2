@@ -121,12 +121,17 @@ NORMALIZED_FRONTMATTER_REFERENCE_MARKERS = tuple(
 def contains_normalized_phrase(content, phrase):
     """Check whether a normalized phrase appears as its own text span."""
     pattern = rf"(?<!\S){re.escape(phrase)}(?!\S)"
-    return re.search(pattern, content) is not None
+    return matches_pattern(content, pattern)
 
 
 def contains_xref_reference(content, ref):
     """Check whether a chapter cross-reference to ref is present."""
-    pattern = rf'<xref\s+[^>]*ref=["\']{re.escape(ref)}["\']\s*\/?>'
+    pattern = rf'<xref\s+[^>]*?ref=["\']{re.escape(ref)}["\']\s*\/?>'
+    return matches_pattern(content, pattern)
+
+
+def matches_pattern(content, pattern):
+    """Check whether a regex pattern matches the given content."""
     return re.search(pattern, content) is not None
 
 
