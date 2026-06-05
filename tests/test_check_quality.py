@@ -174,6 +174,104 @@ def test_chapter_footnotes_reports_missing_files(tmp_path):
     assert "Chapter file not found" in issues[0]
 
 
+def test_chapter_output_blocks_matches_simple_output(tmp_path):
+    soln_dir = tmp_path / "soln"
+    source_dir = tmp_path / "pretext" / "source"
+    soln_dir.mkdir(parents=True)
+    source_dir.mkdir(parents=True)
+
+    (soln_dir / "chap01.ipynb").write_text(
+        """
+        {
+         "cells": [
+          {
+           "cell_type": "code",
+           "execution_count": 1,
+           "metadata": {},
+           "outputs": [
+            {
+             "output_type": "stream",
+             "name": "stdout",
+             "text": [
+              "hello\\n"
+             ]
+            }
+           ],
+           "source": [
+            "print('hello')\\n"
+           ]
+          }
+         ],
+         "metadata": {},
+         "nbformat": 4,
+         "nbformat_minor": 5
+        }
+        """
+    )
+    (source_dir / "ch01-probability.ptx").write_text(
+        """
+        <chapter>
+          <program language="python">
+            <input>print('hello')</input>
+          </program>
+          hello
+        </chapter>
+        """
+    )
+
+    assert check_quality.check_chapter_output_blocks(tmp_path, "chap01", "ch01-probability") == []
+
+
+def test_chapter_output_blocks_reports_missing_output(tmp_path):
+    soln_dir = tmp_path / "soln"
+    source_dir = tmp_path / "pretext" / "source"
+    soln_dir.mkdir(parents=True)
+    source_dir.mkdir(parents=True)
+
+    (soln_dir / "chap01.ipynb").write_text(
+        """
+        {
+         "cells": [
+          {
+           "cell_type": "code",
+           "execution_count": 1,
+           "metadata": {},
+           "outputs": [
+            {
+             "output_type": "stream",
+             "name": "stdout",
+             "text": [
+              "hello\\n"
+             ]
+            }
+           ],
+           "source": [
+            "print('hello')\\n"
+           ]
+          }
+         ],
+         "metadata": {},
+         "nbformat": 4,
+         "nbformat_minor": 5
+        }
+        """
+    )
+    (source_dir / "ch01-probability.ptx").write_text(
+        """
+        <chapter>
+          <program language="python">
+            <input>print('hello')</input>
+          </program>
+        </chapter>
+        """
+    )
+
+    issues = check_quality.check_chapter_output_blocks(tmp_path, "chap01", "ch01-probability")
+
+    assert issues
+    assert "Missing output" in issues[0]
+
+
 def test_chapter_image_assets_pass_on_repo():
     repo_root = Path(__file__).resolve().parents[1]
     assert check_quality.check_chapter_image_assets(repo_root) == []
