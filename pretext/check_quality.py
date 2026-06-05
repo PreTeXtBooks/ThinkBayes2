@@ -65,11 +65,16 @@ CHAPTER_REFERENCE_BOILERPLATE_MARKERS = {
         "creativecommons.org/licenses/by-nc-sa/4.0",
     ),
     "shared frontmatter references": (
-        'This is a <url href="https://pretextbook.org" visual="pretextbook.org">PreTeXt</url> adaptation of',
-        "The original book and its Jupyter notebooks are freely available at",
-        '<url href="https://allendowney.github.io/ThinkBayes2" visual="allendowney.github.io/ThinkBayes2">',
-        '<url href="https://github.com/AllenDowney" visual="github.com/AllenDowney">Allen B. Downey</url>.',
-        "All credit for the content of this book belongs to Allen B. Downey.",
+        """
+        This is a <url href="https://pretextbook.org" visual="pretextbook.org">PreTeXt</url> adaptation of
+        <em>Think Bayes 2</em> by
+        <url href="https://github.com/AllenDowney" visual="github.com/AllenDowney">Allen B. Downey</url>.
+        The original book and its Jupyter notebooks are freely available at
+        <url href="https://allendowney.github.io/ThinkBayes2" visual="allendowney.github.io/ThinkBayes2">allendowney.github.io/ThinkBayes2</url>,
+        and the source is hosted on
+        <url href="https://github.com/AllenDowney/ThinkBayes2" visual="github.com/AllenDowney/ThinkBayes2">GitHub</url>.
+        All credit for the content of this book belongs to Allen B. Downey.
+        """,
         "This PreTeXt edition is maintained at",
         '<url href="https://github.com/PreTeXtBooks/ThinkBayes2" visual="github.com/PreTeXtBooks/ThinkBayes2">',
         "If you find errors or issues specific to this PreTeXt version, please open an issue there.",
@@ -80,11 +85,16 @@ CHAPTER_REFERENCE_BOILERPLATE_MARKERS = {
 # preface.
 FRONTMATTER_REFERENCE_MARKERS = {
     "shared frontmatter references": (
-        'This is a <url href="https://pretextbook.org" visual="pretextbook.org">PreTeXt</url> adaptation of',
-        "The original book and its Jupyter notebooks are freely available at",
-        '<url href="https://allendowney.github.io/ThinkBayes2" visual="allendowney.github.io/ThinkBayes2">',
-        '<url href="https://github.com/AllenDowney" visual="github.com/AllenDowney">Allen B. Downey</url>.',
-        "All credit for the content of this book belongs to Allen B. Downey.",
+        """
+        This is a <url href="https://pretextbook.org" visual="pretextbook.org">PreTeXt</url> adaptation of
+        <em>Think Bayes 2</em> by
+        <url href="https://github.com/AllenDowney" visual="github.com/AllenDowney">Allen B. Downey</url>.
+        The original book and its Jupyter notebooks are freely available at
+        <url href="https://allendowney.github.io/ThinkBayes2" visual="allendowney.github.io/ThinkBayes2">allendowney.github.io/ThinkBayes2</url>,
+        and the source is hosted on
+        <url href="https://github.com/AllenDowney/ThinkBayes2" visual="github.com/AllenDowney/ThinkBayes2">GitHub</url>.
+        All credit for the content of this book belongs to Allen B. Downey.
+        """,
     ),
     "frontmatter website reference": (
         """
@@ -117,13 +127,10 @@ CHAPTER_CROSS_REFERENCE_MARKERS = {
 # Chapter filenames mapped to tuples of expected footnote text fragments.
 CHAPTER_FOOTNOTE_MARKERS = {
     "ch02-bayes-theorem.ptx": (
-        "Based on an example from",
-        "Wikipedia",
-        "that is no longer there.",
+        'Based on an example from <url href="https://en.wikipedia.org/wiki/Bayes%27_theorem">Wikipedia</url> that is no longer there.',
     ),
     "ch20-abc.ptx": (
-        "If you are not familiar with Python generators, see",
-        "wiki.python.org/moin/Generators",
+        'If you are not familiar with Python generators, see <url href="http://wiki.python.org/moin/Generators">wiki.python.org/moin/Generators</url>.',
     ),
 }
 
