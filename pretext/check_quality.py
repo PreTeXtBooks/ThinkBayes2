@@ -114,6 +114,15 @@ CHAPTER_CROSS_REFERENCE_MARKERS = {
     "ch17-regression.ptx": ("ch-mark-recapture",),
 }
 
+CHAPTER_FOOTNOTE_MARKERS = {
+    "ch02-bayes-theorem.ptx": (
+        "Based on an example from <url href=\"https://en.wikipedia.org/wiki/Bayes%27_theorem\">Wikipedia</url> that is no longer there.",
+    ),
+    "ch20-abc.ptx": (
+        "If you are not familiar with Python generators, see <url href=\"http://wiki.python.org/moin/Generators\">wiki.python.org/moin/Generators</url>.",
+    ),
+}
+
 
 def normalize_whitespace(text):
     """Collapse whitespace in text.
@@ -407,6 +416,31 @@ def check_chapter_cross_references(repo_root):
     return issues
 
 
+def check_chapter_footnotes(repo_root):
+    """Verify expected footnotes remain in the source chapters."""
+    source_dir = repo_root / "pretext" / "source"
+    issues = []
+
+    for filename, markers in CHAPTER_FOOTNOTE_MARKERS.items():
+        path = source_dir / filename
+        if not path.exists():
+            issues.append(f"  Chapter file not found: {path}")
+            continue
+        content = normalize_whitespace(path.read_text())
+
+        missing = [
+            marker
+            for marker in markers
+            if normalize_whitespace(f"<fn>{marker}</fn>") not in content
+        ]
+        if missing:
+            issues.append(
+                f"  Missing footnotes in {path.name}: " + "; ".join(missing)
+            )
+
+    return issues
+
+
 def check_chapter_output_blocks(repo_root, nb_name, ptx_name):
     """Verify comparable simple notebook outputs are present near matching PTX code."""
     nb_path = repo_root / "soln" / f"{nb_name}.ipynb"
@@ -593,6 +627,16 @@ def main():
         print()
     else:
         print("PASS: chapter cross-references")
+
+    footnote_issues = check_chapter_footnotes(repo_root)
+    if footnote_issues:
+        all_passed = False
+        print("FAIL: chapter footnotes")
+        for issue in footnote_issues:
+            print(issue)
+        print()
+    else:
+        print("PASS: chapter footnotes")
 
     image_issues = check_chapter_image_assets(repo_root)
     if image_issues:

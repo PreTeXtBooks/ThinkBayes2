@@ -147,6 +147,33 @@ def test_chapter_cross_references_reports_missing_files(tmp_path):
     assert "Chapter file not found" in issues[0]
 
 
+def test_chapter_footnotes_pass_on_repo():
+    repo_root = Path(__file__).resolve().parents[1]
+    assert check_quality.check_chapter_footnotes(repo_root) == []
+
+
+def test_chapter_footnotes_reports_missing_footnotes(tmp_path):
+    source_dir = tmp_path / "pretext" / "source"
+    source_dir.mkdir(parents=True)
+    (source_dir / "ch02-bayes-theorem.ptx").write_text("<chapter><p>Missing footnote</p></chapter>")
+    (source_dir / "ch20-abc.ptx").write_text("<chapter><p>Missing footnote</p></chapter>")
+
+    issues = check_quality.check_chapter_footnotes(tmp_path)
+
+    assert issues
+    assert "Missing footnotes" in issues[0]
+
+
+def test_chapter_footnotes_reports_missing_files(tmp_path):
+    source_dir = tmp_path / "pretext" / "source"
+    source_dir.mkdir(parents=True)
+
+    issues = check_quality.check_chapter_footnotes(tmp_path)
+
+    assert issues
+    assert "Chapter file not found" in issues[0]
+
+
 def test_contains_xref_reference_handles_whitespace():
     content = 'before <xref\n  ref="ch-bayes-theorem"\n/> after'
     assert check_quality.contains_xref_reference(content, "ch-bayes-theorem") is True
