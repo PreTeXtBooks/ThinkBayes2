@@ -816,6 +816,7 @@ posterior_log_odds
         <p>
           Here are the number of children born in each month and the number diagnosed with ADHD.
         </p>
+        <image source="images/ch16_logistic_regression_1a2b3c4d.svg" width="80%"/>
     <program language="python">
       <input>
 n = np.array([32690, 31238, 34405, 34565, 34977, 34415, 

@@ -174,6 +174,29 @@ def test_chapter_footnotes_reports_missing_files(tmp_path):
     assert "Chapter file not found" in issues[0]
 
 
+def test_chapter_image_assets_pass_on_repo():
+    repo_root = Path(__file__).resolve().parents[1]
+    assert check_quality.check_chapter_image_assets(repo_root) == []
+
+
+def test_chapter_image_assets_reports_unreferenced_supported_formats(tmp_path):
+    asset_dir = tmp_path / "pretext" / "assets" / "images"
+    asset_dir.mkdir(parents=True)
+    for filename in [
+        "ch01_probability_a1b2c3d4.png",
+        "ch01_probability_e5f6a7b8.jpeg",
+        "ch01_probability_1a2b3c4d.svg",
+    ]:
+        (asset_dir / filename).write_text("dummy")
+
+    issues = check_quality.check_chapter_image_assets(tmp_path)
+
+    assert len(issues) == 3
+    assert "ch01_probability_a1b2c3d4.png" in issues[0]
+    assert any("ch01_probability_e5f6a7b8.jpeg" in issue for issue in issues)
+    assert any("ch01_probability_1a2b3c4d.svg" in issue for issue in issues)
+
+
 def test_contains_xref_reference_handles_whitespace():
     content = 'before <xref\n  ref="ch-bayes-theorem"\n/> after'
     assert check_quality.contains_xref_reference(content, "ch-bayes-theorem") is True
