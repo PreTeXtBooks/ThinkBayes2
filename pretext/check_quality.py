@@ -85,14 +85,17 @@ FRONTMATTER_REFERENCE_MARKERS = {
         '<url href="https://allendowney.github.io/ThinkBayes2" visual="allendowney.github.io/ThinkBayes2">',
         '<url href="https://github.com/AllenDowney" visual="github.com/AllenDowney">Allen B. Downey</url>.',
         "All credit for the content of this book belongs to Allen B. Downey.",
+    ),
+    "frontmatter website reference": (
+        "<website> <name>Think Bayes 2</name> <address>https://allendowney.github.io/ThinkBayes2</address> </website>",
+    ),
+    "frontmatter license reference": (
+        '<url href="http://creativecommons.org/licenses/by-nc-sa/4.0/" visual="creativecommons.org/licenses/by-nc-sa/4.0"> CreativeCommons.org</url>',
+    ),
+    "frontmatter source reference": (
         "This PreTeXt edition is maintained at",
         '<url href="https://github.com/PreTeXtBooks/ThinkBayes2" visual="github.com/PreTeXtBooks/ThinkBayes2">',
         "If you find errors or issues specific to this PreTeXt version, please open an issue there.",
-    ),
-    "frontmatter external references": (
-        "<website> <name>Think Bayes 2</name> <address>https://allendowney.github.io/ThinkBayes2</address> </website>",
-        '<url href="http://creativecommons.org/licenses/by-nc-sa/4.0/" visual="creativecommons.org/licenses/by-nc-sa/4.0">CreativeCommons.org</url>',
-        '<url href="https://github.com/AllenDowney/ThinkBayes2" visual="github.com/AllenDowney/ThinkBayes2">GitHub</url>.',
     ),
 }
 

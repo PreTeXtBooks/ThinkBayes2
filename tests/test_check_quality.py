@@ -61,14 +61,13 @@ def test_frontmatter_reference_boilerplate_reports_missing_external_refs(tmp_pat
               <url href="https://github.com/AllenDowney" visual="github.com/AllenDowney">Allen B. Downey</url>.
               The original book and its Jupyter notebooks are freely available at
               <url href="https://allendowney.github.io/ThinkBayes2" visual="allendowney.github.io/ThinkBayes2">allendowney.github.io/ThinkBayes2</url>,
-              and the source is hosted on
-              <url href="https://github.com/AllenDowney/ThinkBayes2" visual="github.com/AllenDowney/ThinkBayes2">GitHub</url>.
               All credit for the content of this book belongs to Allen B. Downey.
             </p>
             <p>
-              This PreTeXt edition is maintained at
-              <url href="https://github.com/PreTeXtBooks/ThinkBayes2" visual="github.com/PreTeXtBooks/ThinkBayes2">github.com/PreTeXtBooks/ThinkBayes2</url>.
-              If you find errors or issues specific to this PreTeXt version, please open an issue there.
+              <website>
+                <name>Think Bayes 2</name>
+                <address>https://allendowney.github.io/ThinkBayes2</address>
+              </website>
             </p>
           </preface>
         </frontmatter>
@@ -78,7 +77,9 @@ def test_frontmatter_reference_boilerplate_reports_missing_external_refs(tmp_pat
     issues = check_quality.check_frontmatter_reference_boilerplate(tmp_path)
 
     assert issues
-    assert "frontmatter external references" in issues[0]
+    assert "frontmatter license reference" in issues[0]
+    assert "frontmatter source reference" in issues[0]
+    assert "frontmatter website reference" not in issues[0]
 
 
 def test_chapter_cross_references_pass_on_repo():
