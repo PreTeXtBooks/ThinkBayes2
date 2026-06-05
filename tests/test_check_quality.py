@@ -61,6 +61,8 @@ def test_frontmatter_reference_boilerplate_reports_missing_external_refs(tmp_pat
               <url href="https://github.com/AllenDowney" visual="github.com/AllenDowney">Allen B. Downey</url>.
               The original book and its Jupyter notebooks are freely available at
               <url href="https://allendowney.github.io/ThinkBayes2" visual="allendowney.github.io/ThinkBayes2">allendowney.github.io/ThinkBayes2</url>,
+              and the source is hosted on
+              <url href="https://github.com/AllenDowney/ThinkBayes2" visual="github.com/AllenDowney/ThinkBayes2">GitHub</url>.
               All credit for the content of this book belongs to Allen B. Downey.
             </p>
             <p>
