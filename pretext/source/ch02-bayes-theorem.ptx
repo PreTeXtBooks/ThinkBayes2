@@ -199,6 +199,18 @@ import pandas as pd
 table = pd.DataFrame(index=['Bowl 1', 'Bowl 2'])
       </input>
     </program>
+
+    <p>
+      Now I'll add a column to represent the priors:
+    </p>
+    
+    <program language="python">
+      <input>
+table['prior'] = 1/2, 1/2
+table
+      </input>
+    </program>
+
         <table xml:id="tbl-bowls-1">
   <tabular>
     <row>
@@ -218,21 +230,16 @@ table = pd.DataFrame(index=['Bowl 1', 'Bowl 2'])
   </tabular>
 </table>
 
-    <p>
-      Now I'll add a column to represent the priors:
+<p>
+      And a column for the likelihoods:
     </p>
     
     <program language="python">
       <input>
-table['prior'] = 1/2, 1/2
+table['likelihood'] = 3/4, 1/2
 table
       </input>
     </program>
-<pre>
-prior
-Bowl 1    0.5
-Bowl 2    0.5
-</pre>
 <table xml:id="tbl-bowls-2">
   <tabular>
     <row>
@@ -254,21 +261,7 @@ Bowl 2    0.5
     </row>
   </tabular>
 </table>
-    <p>
-      And a column for the likelihoods:
-    </p>
-    
-    <program language="python">
-      <input>
-table['likelihood'] = 3/4, 1/2
-table
-      </input>
-    </program>
-<pre>
-prior  likelihood
-Bowl 1    0.5        0.75
-Bowl 2    0.5        0.50
-</pre>
+
     
     <p>
       Here we see a difference from the previous method: we compute likelihoods for both hypotheses, not just Bowl 1:
@@ -295,11 +288,6 @@ table['unnorm'] = table['prior'] * table['likelihood']
 table
       </input>
     </program>
-<pre>
-prior  likelihood  unnorm
-Bowl 1    0.5        0.75   0.375
-Bowl 2    0.5        0.50   0.250
-</pre>
 
 <table xml:id="tbl-bowls-3">
   <tabular>
@@ -368,11 +356,7 @@ table['posterior'] = table['unnorm'] / prob_data
 table
       </input>
     </program>
-<pre>
-prior  likelihood  unnorm  posterior
-Bowl 1    0.5        0.75   0.375        0.6
-Bowl 2    0.5        0.50   0.250        0.4
-</pre>
+
     <table xml:id="tbl-bowls-posterior">
   <title>Posterior probabilities for the two-bowl problem.</title>
   <tabular>
@@ -454,12 +438,6 @@ table2['likelihood'] = Fraction(1, 6), Fraction(1, 8), Fraction(1, 12)
 table2
       </input>
     </program>
-<pre>
-prior likelihood
-6    1/3        1/6
-8    1/3        1/8
-12   1/3       1/12
-</pre>
 
 <table xml:id="tbl-dice-posterior-1">
   <tabular>
@@ -522,12 +500,6 @@ prob_data = update(table2)
 table2
       </input>
     </program>
-<pre>
-prior likelihood unnorm posterior
-6    1/3        1/6   1/18       4/9
-8    1/3        1/8   1/24       1/3
-12   1/3       1/12   1/36       2/9
-</pre>
 
 <table xml:id="tbl-dice-posterior">
   <tabular>
@@ -628,11 +600,7 @@ table3
       </input>
     </program>
 <pre>
-prior
-Door 1   1/3
-Door 2   1/3
-Door 3   1/3
-</pre>
+
     <table xml:id="tbl-mh-1">
   <tabular>
     <row>
@@ -678,12 +646,6 @@ table3['likelihood'] = Fraction(1, 2), 1, 0
 table3
       </input>
     </program>
-<pre>
-prior likelihood
-Door 1   1/3        1/2
-Door 2   1/3          1
-Door 3   1/3          0
-</pre>
 
 <table xml:id="tbl-montyhall-posterior-2">
   <tabular>
@@ -722,12 +684,6 @@ update(table3)
 table3
       </input>
     </program>
-<pre>
-prior likelihood unnorm posterior
-Door 1   1/3        1/2    1/6       1/3
-Door 2   1/3          1    1/3       2/3
-Door 3   1/3          0      0         0
-</pre>
 
 <table xml:id="tbl-montyhall-posterior-3">
   <tabular>
@@ -817,6 +773,7 @@ Door 3   1/3          0      0         0
     <title>Exercises</title>
     
     <exercise xml:id="ex-trick-coin">
+<title>Trick Coin</title>
       <statement>
         <p>
           Suppose you have two coins in a box. One is a normal coin with heads on one side and tails on the other, and one is a trick coin with heads on both sides. You choose a coin at random and see that one of the sides is heads. What is the probability that you chose the trick coin?
@@ -865,6 +822,7 @@ table4
     </exercise>
     
     <exercise xml:id="ex-two-children">
+<title>Two Children</title>
       <statement>
         <p>
           Suppose you meet someone and learn that they have two children. You ask if either child is a girl and they say yes. What is the probability that both children are girls?
@@ -932,6 +890,7 @@ table5
     </exercise>
     
     <exercise xml:id="ex-monty-hall-variant">
+<title>Monty Hall Variant</title>
       <statement>
         <p>
           There are many variations of the Monty Hall problem. For example, suppose Monty always chooses Door 2 if he can, and only chooses Door 3 if he has to (because the car is behind Door 2).
@@ -1048,6 +1007,7 @@ table7
     </exercise>
     
     <exercise xml:id="ex-m-and-ms">
+<title>M&amp;Ms</title>
       <statement>
         <p>
           M&amp;M's are small candy-coated chocolates that come in a variety of colors. Mars, Inc., which makes M&amp;M's, changes the mixture of colors from time to time. In 1995, they introduced blue M&amp;M's.
