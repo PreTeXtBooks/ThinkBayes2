@@ -82,7 +82,7 @@
   <!-- Common options -->
   <common>
     <!-- Enable syntax highlighting for code blocks -->
-    <chunking level="2"/>
+    <chunking level="1"/>
     <tableofcontents level="2"/>
   </common>
 </publication>
