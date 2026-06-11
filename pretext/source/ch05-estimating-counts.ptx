@@ -539,7 +539,7 @@ array([ 91., 243.])
     </p>
   </section>
 
-  <section xml:id="sec-ch05-exercises">
+  <exercises xml:id="sec-ch05-exercises">
     <title>Exercises</title>
 
     <exercise xml:id="ex-audience-size">
@@ -888,6 +888,6 @@ posterior
     </solution>
     </exercise>
 
-  </section>
+  </exercises>
 
 </chapter>
