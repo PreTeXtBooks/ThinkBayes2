@@ -43,13 +43,11 @@
       To use <c>Pmf</c> you can import it like this:
     </p>
 
-    <listing xml:id="list-import-pmf">
       <program language="python">
         <input>
 from empiricaldist import Pmf
         </input>
       </program>
-    </listing>
 
     <p>
       The following example makes a <c>Pmf</c> that represents the outcome of a coin toss.
@@ -252,7 +250,6 @@ letters('s')
       But if it is not in the distribution, the result is <c>0</c>, not an error.
     </p>
 
-    <listing xml:id="list-lookup-missing">
       <program language="python">
         <input>
 letters('t')
@@ -261,7 +258,6 @@ letters('t')
 <pre>
 0
 </pre>
-    </listing>
     <p>
       With parentheses, you can also provide a sequence of quantities and get a sequence of probabilities.
     </p>
@@ -548,7 +544,6 @@ Now the posterior probability for Bowl 1 is about 53%. After two vanilla cookies
       To solve this problem, I'll use <c>np.arange</c> to make an array that represents 101 hypotheses, numbered from 0 to 100.
     </p>
 
-    <listing xml:id="list-101-hypos">
       <program language="python">
         <input>
 import numpy as np
@@ -556,20 +551,17 @@ import numpy as np
 hypos = np.arange(101)
         </input>
       </program>
-    </listing>
 
     <p>
       We can use this array to make the prior distribution:
     </p>
 
-    <listing xml:id="list-101-prior">
       <program language="python">
         <input>
 prior = Pmf(1, hypos)
 prior.normalize()
         </input>
       </program>
-    </listing>
 <pre>
 101
 </pre>
@@ -588,13 +580,11 @@ prior.normalize()
       Here are the first few hypotheses and their probabilities.
     </p>
 
-    <listing xml:id="list-101-head">
       <program language="python">
         <input>
 prior.head()
         </input>
       </program>
-    </listing>
 <table xml:id="tbl-101-prior-head">
   <tabular>
     <row>
@@ -620,14 +610,12 @@ prior.head()
       The likelihood of the data is the fraction of vanilla cookies in each bowl, which we can calculate using <c>hypos</c>:
     </p>
 
-    <listing xml:id="list-101-likelihood">
       <program language="python">
         <input>
 likelihood_vanilla = hypos/100
 likelihood_vanilla[:5]
         </input>
       </program>
-    </listing>
 <pre>
 array([0.  , 0.01, 0.02, 0.03, 0.04])
 </pre>
@@ -636,7 +624,6 @@ array([0.  , 0.01, 0.02, 0.03, 0.04])
       Now we can compute the posterior distribution in the usual way:
     </p>
 
-    <listing xml:id="list-101-posterior1">
       <program language="python">
         <input>
 posterior1 = prior * likelihood_vanilla
@@ -644,7 +631,6 @@ posterior1.normalize()
 posterior1.head()
         </input>
       </program>
-    </listing>
 <table xml:id="tbl-101-posterior1-head">
   <tabular>
     <row>
@@ -670,7 +656,6 @@ posterior1.head()
       The following figure shows the prior distribution and the posterior distribution after one vanilla cookie.
     </p>
 
-    <listing xml:id="list-101-decorate-bowls">
       <program language="python">
         <input>
 from utils import decorate
@@ -681,9 +666,7 @@ def decorate_bowls(title):
              title=title)
         </input>
       </program>
-    </listing>
 
-    <listing xml:id="list-101-plot1">
       <program language="python">
         <input>
 prior.plot(label='prior', color='C5')
@@ -691,7 +674,6 @@ posterior1.plot(label='posterior', color='C4')
 decorate_bowls('Posterior after one vanilla cookie')
         </input>
       </program>
-    </listing>
 
     <p>
       The posterior probability of Bowl 0 is 0 because it contains no vanilla cookies.
@@ -704,7 +686,6 @@ decorate_bowls('Posterior after one vanilla cookie')
       Here's the update after the second cookie:
     </p>
 
-    <listing xml:id="list-101-posterior2">
       <program language="python">
         <input>
 posterior2 = posterior1 * likelihood_vanilla
@@ -714,7 +695,6 @@ posterior2.normalize()
 <pre>
 0.6699999999999999
 </pre>
-    </listing>
 <pre>
 0.67
 </pre>
@@ -723,14 +703,12 @@ posterior2.normalize()
       And here's what the posterior distribution looks like.
     </p>
 
-    <listing xml:id="list-101-plot2">
       <program language="python">
         <input>
 posterior2.plot(label='posterior', color='C4')
 decorate_bowls('Posterior after two vanilla cookies')
         </input>
       </program>
-    </listing>
 
     <p>
       After two vanilla cookies, the high-numbered bowls have the highest posterior probabilities because they contain the most vanilla cookies; the low-numbered bowls have the lowest probabilities.
@@ -741,7 +719,6 @@ decorate_bowls('Posterior after two vanilla cookies')
       Here's the update:
     </p>
 
-    <listing xml:id="list-101-posterior3">
       <program language="python">
         <input>
 likelihood_chocolate = 1 - hypos/100
@@ -750,7 +727,6 @@ posterior3 = posterior2 * likelihood_chocolate
 posterior3.normalize()
         </input>
       </program>
-    </listing>
 <pre>
 0.2462686567164179
 </pre>
@@ -759,14 +735,12 @@ posterior3.normalize()
       And here's the posterior distribution.
     </p>
 
-    <listing xml:id="list-101-plot3">
       <program language="python">
         <input>
 posterior3.plot(label='posterior', color='C4')
 decorate_bowls('Posterior after 2 vanilla, 1 chocolate')
         </input>
       </program>
-    </listing>
 
     <p>
       Now Bowl 100 has been eliminated because it contains no chocolate cookies.
@@ -785,13 +759,11 @@ decorate_bowls('Posterior after 2 vanilla, 1 chocolate')
       To compute the MAP, we can use the <c>Series</c> method <c>idxmax</c>:
     </p>
 
-    <listing xml:id="list-101-map">
       <program language="python">
         <input>
 posterior3.idxmax()
         </input>
       </program>
-    </listing>
 <pre>
 67
 </pre>
@@ -800,13 +772,11 @@ posterior3.idxmax()
       Or <c>Pmf</c> provides a more memorable name for the same thing:
     </p>
 
-    <listing xml:id="list-101-max-prob">
       <program language="python">
         <input>
 posterior3.max_prob()
         </input>
       </program>
-    </listing>
 <pre>
 67
 </pre>
@@ -846,26 +816,22 @@ posterior3.max_prob()
       I'll use integers to represent the hypotheses:
     </p>
 
-    <listing xml:id="list-dice-hypos">
       <program language="python">
         <input>
 hypos = [6, 8, 12]
         </input>
       </program>
-    </listing>
 
     <p>
       We can make the prior distribution like this:
     </p>
 
-    <listing xml:id="list-dice-prior">
       <program language="python">
         <input>
 prior = Pmf(1/3, hypos)
 prior
         </input>
       </program>
-    </listing>
 <table xml:id="tbl-dice-prior">
   <tabular>
     <row>
@@ -899,24 +865,20 @@ prior
       </ul>
     </p>
 
-    <listing xml:id="list-dice-qs">
       <program language="python">
         <input>
 prior.qs
         </input>
       </program>
-    </listing>
 <pre>
 array([ 6,  8, 12])
 </pre>
 
-    <listing xml:id="list-dice-ps">
       <program language="python">
         <input>
 prior.ps
         </input>
       </program>
-    </listing>
 <pre>
 array([0.33333333, 0.33333333, 0.33333333])
 </pre>
@@ -926,19 +888,16 @@ array([0.33333333, 0.33333333, 0.33333333])
       Here's the likelihood of the data for each hypothesis.
     </p>
 
-    <listing xml:id="list-dice-likelihood1">
       <program language="python">
         <input>
 likelihood1 = 1/6, 1/8, 1/12
         </input>
       </program>
-    </listing>
 
     <p>
       And here's the update.
     </p>
 
-    <listing xml:id="list-dice-posterior1">
       <program language="python">
         <input>
 posterior = prior * likelihood1
@@ -946,7 +905,6 @@ posterior.normalize()
 posterior
         </input>
       </program>
-    </listing>
 <table xml:id="tbl-dice-posterior1">
   <tabular>
     <row>
@@ -977,13 +935,11 @@ posterior
       Here are the likelihoods:
     </p>
 
-    <listing xml:id="list-dice-likelihood2">
       <program language="python">
         <input>
 likelihood2 = 0, 1/8, 1/12
         </input>
       </program>
-    </listing>
 
     <p>
       The likelihood for the 6-sided die is 0 because it is not possible to get a 7 on a 6-sided die.
@@ -994,7 +950,6 @@ likelihood2 = 0, 1/8, 1/12
       Here's the update:
     </p>
 
-    <listing xml:id="list-dice-posterior2">
       <program language="python">
         <input>
 posterior *= likelihood2
@@ -1002,7 +957,6 @@ posterior.normalize()
 posterior
         </input>
       </program>
-    </listing>
 <table xml:id="tbl-dice-posterior2">
   <tabular>
     <row>
@@ -1036,7 +990,6 @@ posterior
       The following function is a more general version of the update in the previous section:
     </p>
 
-    <listing xml:id="list-update-dice-function">
       <program language="python">
         <input>
 def update_dice(pmf, data):
@@ -1049,7 +1002,6 @@ def update_dice(pmf, data):
     pmf.normalize()
         </input>
       </program>
-    </listing>
 
     <p>
       The first parameter is a <c>Pmf</c> that represents the possible dice and their probabilities.
@@ -1081,14 +1033,12 @@ def update_dice(pmf, data):
       I start with a fresh copy of the prior distribution:
     </p>
 
-    <listing xml:id="list-dice-copy">
       <program language="python">
         <input>
 pmf = prior.copy()
 pmf
         </input>
       </program>
-    </listing>
 <table xml:id="tbl-dice-copy">
   <tabular>
     <row>
@@ -1114,7 +1064,6 @@ pmf
       And use <c>update_dice</c> to do the updates.
     </p>
 
-    <listing xml:id="list-dice-updates">
       <program language="python">
         <input>
 update_dice(pmf, 1)
@@ -1122,7 +1071,6 @@ update_dice(pmf, 7)
 pmf
         </input>
       </program>
-    </listing>
 <table xml:id="tbl-dice-updates">
   <tabular>
     <row>
