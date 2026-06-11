@@ -57,25 +57,6 @@
 To demonstrate, I'll use data from the <url href="http://gss.norc.org/">General Social Survey</url> (GSS).
     </p>
     <p>
-      The following cell downloads the data.
-    </p>
-    <program language="python">
-      <input>
-    # Load the data file
-    
-    from os.path import basename, exists
-    
-    def download(url):
-        filename = basename(url)
-        if not exists(filename):
-            from urllib.request import urlretrieve
-            local, _ = urlretrieve(url, filename)
-            print('Downloaded ' + local)
-        
-    download('https://github.com/AllenDowney/ThinkBayes2/raw/master/data/gss_bayes.csv')
-      </input>
-    </program>
-    <p>
       I'll use Pandas to read the data and store it in a <c>DataFrame</c>.
     </p>
     <program language="python">
@@ -86,14 +67,7 @@ To demonstrate, I'll use data from the <url href="http://gss.norc.org/">General 
     gss.head()
       </input>
     </program>
-<pre>
-caseid  year   age  sex  polviews  partyid  indus10
-0       1  1974  21.0    1       4.0      2.0   4970.0
-1       2  1974  41.0    1       5.0      0.0   9160.0
-2       5  1974  58.0    2       6.0      1.0   2670.0
-3       6  1974  30.0    1       5.0      4.0   6870.0
-4       7  1974  48.0    1       5.0      4.0   7860.0
-</pre>
+
 <table xml:id="tbl-gss-sample">
   <title>Summary of selected GSS observations.</title>
   <tabular>
@@ -965,6 +939,7 @@ In the next chapter, we'll see how.
     <title>Exercises</title>
 
     <exercise xml:id="ex-101">
+<title>Exercise 1</title>
       <statement>
         <p>
           Use <c>conditional</c> to compute the following probabilities:
@@ -998,6 +973,7 @@ conditional(democrat, given=liberal)
   </solution>
     </exercise>
     <exercise xml:id="ex-104">
+<title>Exercise 2</title>
       <statement>
         <p>
           Let's use the tools in this chapter to solve a variation of the Linda problem.
@@ -1037,6 +1013,7 @@ conditional(banker &amp; liberal &amp; democrat, given=female)
   </solution>
     </exercise>
     <exercise xml:id="ex-107">
+<title>Exercise 3 (Part 1)</title>
       <statement>
         <p>
           There's a <url href="https://quoteinvestigator.com/2014/02/24/heart-head/">famous quote</url> about young people, old people, liberals, and conservatives that goes something like:
@@ -1079,7 +1056,7 @@ prob(old &amp; conservative)
     </exercise>
 
     <exercise xml:id="ex-ch01-4">
-      <title>Exercise 4</title>
+      <title>Exercise 3 (Part 2)</title>
       <statement>
     <p>
       For these thresholds, I chose round numbers near the 20th and 80th percentiles.  Depending on your age, you may or may not agree with these definitions of &quot;young&quot; and &quot;old&quot;.
