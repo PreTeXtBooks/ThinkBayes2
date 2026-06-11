@@ -935,7 +935,7 @@ In the next chapter, we'll see how.
     </p>
   </section>
 
-  <section xml:id="sec-exercises">
+  <exercises xml:id="sec-exercises">
     <title>Exercises</title>
 
     <exercise xml:id="ex-101">
@@ -1128,6 +1128,6 @@ conditional(old, given=conservative)
     </solution>
     </exercise>
 
-  </section>
+  </exercises>
 
 </chapter>
