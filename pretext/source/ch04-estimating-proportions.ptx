@@ -150,10 +150,9 @@ decorate(xlabel='Number of heads (k)',
          title='Binomial distribution')
       </input>
     </program>
-    <image source="images/ch04_estimating_proportions_74dab07f.png" width="80%"/>
     <figure xml:id="fig-ch04-binomial-distribution">
       <caption>Binomial distribution with <m>n=250</m> and <m>p=0.5</m>.</caption>
-      <image source="ch04/fig-cell8.png" width="80%">
+    <image source="images/ch04_estimating_proportions_74dab07f.png" width="80%">
         <description>A plot of the binomial distribution showing the probability of each number of heads when flipping a fair coin 250 times. The distribution is bell-shaped and centered around 125.</description>
       </image>
     </figure>
@@ -195,9 +194,6 @@ pmf_k[140]
     </program>
 <pre>
 0.008357181724918188
-</pre>
-<pre>
-0.008357181724918204
 </pre>
 
     <p>
@@ -435,10 +431,9 @@ posterior.plot(label='140 heads out of 250', color='C4')
 decorate_euro(title='Posterior distribution of x')
       </input>
     </program>
-    <image source="images/ch04_estimating_proportions_4c5170f6.png" width="80%"/>
     <figure xml:id="fig-ch04-posterior-euro">
       <caption>Posterior distribution of <m>x</m>, the proportion of heads for the Belgian Euro coin, after observing 140 heads out of 250 spins.</caption>
-      <image source="ch04/fig-cell24.png" width="80%">
+      <image source="images/ch04_estimating_proportions_4c5170f6.png" width="80%">
         <description>A plot of the posterior distribution of the probability of heads for the Belgian Euro coin, showing that values between 0.5 and 0.6 are most likely.</description>
       </image>
     </figure>
@@ -527,10 +522,9 @@ triangle.plot()
 decorate_euro(title='Uniform and triangle prior distributions')
       </input>
     </program>
-    <image source="images/ch04_estimating_proportions_7383a632.png" width="80%"/>
     <figure xml:id="fig-ch04-priors">
       <caption>Uniform and triangle prior distributions for the proportion of heads.</caption>
-      <image source="ch04/fig-cell28.png" width="80%">
+    <image source="images/ch04_estimating_proportions_7383a632.png" width="80%">
         <description>A plot comparing the uniform and triangle-shaped prior distributions for the probability of heads.</description>
       </image>
     </figure>
@@ -557,10 +551,9 @@ triangle.plot()
 decorate_euro(title='Posterior distributions')
       </input>
     </program>
-    <image source="images/ch04_estimating_proportions_26f9ef9a.png" width="80%"/>
     <figure xml:id="fig-ch04-posteriors-triangle">
       <caption>Posterior distributions for the uniform and triangle priors after observing 140 heads out of 250 spins.</caption>
-      <image source="ch04/fig-cell30.png" width="80%">
+     <image source="images/ch04_estimating_proportions_26f9ef9a.png" width="80%">
         <description>A plot comparing the posterior distributions obtained from the uniform and triangle priors, showing they are nearly identical.</description>
       </image>
     </figure>
@@ -632,20 +625,6 @@ data = 140, 250
 update_binomial(uniform2, data)
       </input>
     </program>
-
-    <program language="python">
-      <input>
-uniform.plot()
-uniform2.plot()
-decorate_euro(title='Posterior distributions computed two ways')
-      </input>
-    </program>
-    <figure xml:id="fig-ch04-posteriors-two-ways">
-      <caption>Posterior distributions computed two ways: updating one spin at a time vs. using the binomial distribution.</caption>
-      <image source="ch04/fig-cell33.png" width="80%">
-        <description>A plot showing that the posterior distributions computed by updating one spin at a time and by using the binomial likelihood function are identical.</description>
-      </image>
-    </figure>
 
     <p>
       We can use <c>allclose</c> to confirm that the result is the same as in the previous section except for a small floating-point round-off.
@@ -758,6 +737,7 @@ I'm going to leave this question hanging a little longer; we'll come back to it 
     <title>Exercises</title>
 
     <exercise xml:id="ex-batting-average">
+<title>Exercise 1: Batting Average</title>
       <statement>
         <p>
           In Major League Baseball, most players have a batting average between .200 and .330, which means that their probability of getting a hit is between 0.2 and 0.33.
@@ -834,10 +814,9 @@ decorate(xlabel='Probability of getting a hit',
          ylabel='PMF')
           </input>
         </program>
-        <image source="images/ch04_estimating_proportions_ed333b3f.png" width="80%"/>
         <figure xml:id="fig-ch04-batting-prior">
           <caption>Prior distribution for the probability of getting a hit, based on historical batting averages.</caption>
-          <image source="ch04/fig-cell39.png" width="80%">
+        <image source="images/ch04_estimating_proportions_ed333b3f.png" width="80%">
             <description>A plot of the prior distribution of batting averages, showing a bell-shaped distribution centered around 0.25.</description>
           </image>
         </figure>
@@ -895,6 +874,7 @@ posterior.max_prob()
     </exercise>
 
     <exercise xml:id="ex-randomized-response">
+<title>Exercise 2: Randomized Response </title>
       <statement>
         <p>
           Whenever you survey people about sensitive issues, you have to deal with <url href="https://en.wikipedia.org/wiki/Social_desirability_bias">social desirability bias</url>, which is the tendency of people to adjust their answers to show themselves in the most positive light.
@@ -978,6 +958,7 @@ posterior.idxmax()
     </exercise>
 
     <exercise xml:id="ex-unreliable-machine">
+<title>Exercise 3: Unreliable Machine</title>
       <statement>
         <p>
           Suppose you want to test whether a coin is fair, but you don't want to spin it hundreds of times.
@@ -1047,6 +1028,7 @@ posterior00.idxmax(), posterior02.idxmax(), posterior04.idxmax()
     </exercise>
 
     <exercise xml:id="ex-alien-blaster">
+<title>Exercise 4: Alien Blaster</title>
       <statement>
         <p>
           In preparation for an alien invasion, the Earth Defense League (EDL) has been working on new missiles to shoot down space invaders.  Of course, some missile designs are better than others; let's assume that each design has some probability of hitting an alien ship, <c>x</c>.
