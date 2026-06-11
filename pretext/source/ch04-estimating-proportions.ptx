@@ -733,7 +733,7 @@ I'm going to leave this question hanging a little longer; we'll come back to it 
   </section>
 
 
-  <section xml:id="sec-ch04-exercises">
+  <exercises xml:id="sec-ch04-exercises">
     <title>Exercises</title>
 
     <exercise xml:id="ex-batting-average">
@@ -1130,6 +1130,6 @@ decorate(xlabel='Probability of hitting the target',
       </solution>
     </exercise>
 
-  </section>
+  </exercises>
 
 </chapter>
