@@ -993,8 +993,9 @@ In that case, each simulation might require substantial computation, and many si
 
     <exercise xml:id="ex-ch20-2014">
       <statement>
+<p>This exercise is based on <url href = "http://www.sumsar.net/blog/2014/10/tiny-data-and-the-socks-of-karl-broman">a blog post by Rasmus Bååth</url>, which is motivated by a tweet from Karl Broman, who wrote:</p>
         <p>
-          &gt; That the first 11 socks in the laundry are distinct suggests that there are a lot of socks.
+          "That the first 11 socks in the laundry are distinct suggests that there are a lot of socks."
         </p>
         <p>
           Suppose you pull 11 socks out of the laundry and find that no two of them make a matched pair.  Estimate the number of socks in the laundry.
