@@ -61,11 +61,7 @@ coin['tails'] = 1/2
 coin
         </input>
     </program>
-<pre>
-heads    0.5
-tails    0.5
-dtype: float64
-</pre>
+
 <table xml:id="tbl-coin-probs">
   <title>Probability distribution for a fair coin.</title>
   <tabular>
@@ -103,15 +99,6 @@ die = Pmf.from_seq([1,2,3,4,5,6])
 die
         </input>
     </program>
-<pre>
-1    0.166667
-2    0.166667
-3    0.166667
-4    0.166667
-5    0.166667
-6    0.166667
-Name: , dtype: float64
-</pre>
 <table xml:id="tbl-die-throw">
   <title>Probability distribution for a fair 6-sided die.</title>
   <tabular>
@@ -158,13 +145,6 @@ letters = Pmf.from_seq(list('Mississippi'))
 letters
         </input>
     </program>
-<pre>
-M    0.090909
-i    0.363636
-p    0.181818
-s    0.363636
-Name: , dtype: float64
-</pre>
 
 <table xml:id="tbl-mississippi">
   <tabular>
@@ -312,11 +292,6 @@ prior = Pmf.from_seq(['Bowl 1', 'Bowl 2'])
 prior
         </input>
     </program>
-<pre>
-Bowl 1    0.5
-Bowl 2    0.5
-Name: , dtype: float64
-</pre>
 <table xml:id="tbl-bowl-probs-1">
   <tabular>
     <row>
@@ -434,11 +409,6 @@ posterior.normalize()
 posterior
 </input>
     </program>
-<pre>
-Bowl 1    0.692308
-Bowl 2    0.307692
-Name: , dtype: float64
-</pre>
 <table xml:id="tbl-bowl-probs-3">
   <tabular>
     <row>
@@ -479,11 +449,7 @@ posterior.normalize()
 posterior
 </input>
     </program>
-<pre>
-Bowl 1    0.529412
-Bowl 2    0.470588
-Name: , dtype: float64
-</pre>
+
 <table xml:id="tbl-bowl-probs-4">
   <tabular>
     <row>
@@ -694,9 +660,6 @@ posterior2.normalize()
       </program>
 <pre>
 0.6699999999999999
-</pre>
-<pre>
-0.67
 </pre>
 
     <p>
@@ -1156,6 +1119,12 @@ for data in [1, 3, 5, 7]:
 pmf
           </input>
         </program>
+<pre>
+    probs
+6	  0.000000
+8	  0.835052
+12  0.164948
+</pre>
       </solution>
     </exercise>
 
@@ -1186,6 +1155,14 @@ update_dice(pmf, 7)
 pmf
           </input>
         </program>
+<pre>
+    probs
+4   0.000000
+6   0.000000
+8   0.391304
+12  0.347826
+20  0.260870
+</pre>
       </solution>
     </exercise>
 
@@ -1217,6 +1194,11 @@ posterior.normalize()
 posterior
           </input>
         </program>
+<pre>
+	            probs
+BlackWhite    0.6
+RedGreenBlue  0.4
+</pre>
         <program language="python">
           <input>
 # If I drew from the BlackWhite drawer, the probability the
@@ -1235,7 +1217,7 @@ posterior['BlackWhite'] / 2
       <title>Elvis's Twin</title>
       <statement>
         <p>
-          Here's a problem from <em>Bayesian Data Analysis</em>:
+          Here's a problem from <url href = "http://www.stat.columbia.edu/~gelman/book/">Bayesian Data Analysis</url>:
         </p>
         <blockquote>
           <p>
@@ -1269,6 +1251,11 @@ table['posterior'] = table['unnorm'] / prob_data
 table
           </input>
         </program>
+<pre>
+	        prior     likelihood  unnorm    posterior
+identical 0.333333  1.0         0.333333  0.5
+fraternal 0.666667  0.5         0.333333  0.5
+</pre>
         <program language="python">
           <input>
 # Here's a solution using a Pmf
@@ -1278,6 +1265,11 @@ prior = Pmf([1/3, 2/3], hypos)
 prior
           </input>
         </program>
+<pre>
+          probs
+identical	0.333333
+fraternal	0.666667
+</pre>
         <program language="python">
           <input>
 likelihood = 1, 1/2
@@ -1286,6 +1278,11 @@ posterior.normalize()
 posterior
           </input>
         </program>
+<pre>
+          probs
+identical	0.5
+fraternal	0.5
+</pre>
       </solution>
     </exercise>
   </exercises>
