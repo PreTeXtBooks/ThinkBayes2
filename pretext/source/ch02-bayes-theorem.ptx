@@ -599,7 +599,6 @@ table3['prior'] = Fraction(1, 3)
 table3
       </input>
     </program>
-<pre>
 
     <table xml:id="tbl-mh-1">
   <tabular>
