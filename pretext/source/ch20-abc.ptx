@@ -5,15 +5,6 @@
 
   <introduction>
     <p>
-      You can order print and ebook versions of <em>Think Bayes 2e</em> from <url href="https://bookshop.org/a/98697/9781492089469">Bookshop.org</url> and <url href="https://amzn.to/334eqGo">Amazon</url>.
-    </p>
-    <program language="python">
-      <input>
-from utils import set_pyplot_params
-set_pyplot_params()
-      </input>
-    </program>
-    <p>
       This chapter introduces a method of last resort for the most complex problems, Approximate Bayesian Computation (ABC).
 I say it is a last resort because it usually requires more computation than other methods, so if you can solve a problem any other way, you should.
 However, for the examples in this chapter, ABC is not just easy to implement; it is also efficient.
@@ -56,10 +47,10 @@ So I agree to help him answer his question.
 They report growth rates in two forms:
     </p>
     <p>
-      * Volumetric doubling time, which is the time it would take for a tumor to double in size.
-    </p>
-    <p>
-      * Reciprocal doubling time (RDT), which is the number of doublings per year.
+<ul>
+<li>Volumetric doubling time, which is the time it would take for a tumor to double in size.</li>
+<li>Reciprocal doubling time (RDT), which is the number of doublings per year.</li>
+</ul>
     </p>
     <p>
       The next section shows how we work with these growth rates.
@@ -80,19 +71,19 @@ https://pubs.rsna.org/doi/full/10.1148/radiol.2501071712
       We'll start with a simple model of tumor growth based on two assumptions:
     </p>
     <p>
-      * Tumors grow with a constant doubling time, and
-    </p>
-    <p>
-      * They are roughly spherical in shape.
+<ul>
+      <li>Tumors grow with a constant doubling time, and</li>
+      <li>They are roughly spherical in shape.</li>
+</ul>
     </p>
     <p>
       And I'll define two points in time:
     </p>
     <p>
-      * <c>t1</c> is when my correspondent retired.
-    </p>
-    <p>
-      * <c>t2</c> is when the tumor was detected.
+<ul>
+      <li><c>t1</c> is when my correspondent retired.</li>
+      <li><c>t2</c> is when the tumor was detected.
+</li></ul>
     </p>
     <p>
       The time between <c>t1</c> and <c>t2</c> was about 9.0 years.
@@ -227,22 +218,6 @@ And if <c>rdt=-1</c>, it would halve in volume.
     </p>
     <program language="python">
       <input>
-# Data from the histogram in Figure 3
-
-import numpy as np
-from empiricaldist import Pmf
-
-counts = [2, 29, 11, 6, 3, 1, 1]
-rdts = np.arange(-1, 6) + 0.01
-pmf_rdt = Pmf(counts, rdts)
-pmf_rdt.normalize()
-      </input>
-    </program>
-<pre>
-np.int64(53)
-</pre>
-    <program language="python">
-      <input>
 # Data from the scatter plot in Figure 4
 
 rdts = [5.089,  3.572,  3.242,  2.642,  1.982,  1.847,  1.908,  1.798,
@@ -271,14 +246,6 @@ qs = np.linspace(-2, 6, num=201)
 pmf_rdt = kde_from_sample(rdt_sample, qs)
       </input>
     </program>
-    <program language="python">
-      <input>
-1 / pmf_rdt.median() * 365
-      </input>
-    </program>
-<pre>
-np.float64(651.7857142857142)
-</pre>
     <p>
       Here's what it looks like.
     </p>
@@ -384,11 +351,6 @@ It initializes the age and volume of the tumor, then runs a loop that simulates 
     </p>
     <program language="python">
       <input>
-np.random.seed(17)
-      </input>
-    </program>
-    <program language="python">
-      <input>
 sim = simulate_growth(pmf_rdt)
       </input>
     </program>
@@ -423,11 +385,6 @@ age       volume   diameter
     <p>
       To show the results graphically, I'll run 101 simulations:
     </p>
-    <program language="python">
-      <input>
-np.random.seed(17)
-      </input>
-    </program>
     <program language="python">
       <input>
 sims = [simulate_growth(pmf_rdt) for _ in range(101)]
@@ -514,11 +471,12 @@ np.float64(0.9900990099009901)
     <p>
       But this result is based on two modeling decisions that are potentially problematic:
     </p>
-    <p>
-      * In the simulations, growth rate during each interval is independent of previous growth rates. In reality it is plausible that tumors that have grown quickly in the past are likely to grow quickly in the future. In other words, there is probably a serial correlation in growth rate.
-    </p>
-    <p>
-      * To convert from linear measure to volume, we assume that tumors are approximately spherical.
+<p>
+<ul>
+      <li>In the simulations, growth rate during each interval is independent of previous growth rates. In reality it is plausible that tumors that have grown quickly in the past are likely to grow quickly in the future. In other words, there is probably a serial correlation in growth rate.
+</li>
+      <li>To convert from linear measure to volume, we assume that tumors are approximately spherical.
+</li></ul>
     </p>
     <p>
       In additional experiments, I implemented a simulation that chooses growth rates with serial correlation using a generator<fn>If you are not familiar with Python generators, see <url href="http://wiki.python.org/moin/Generators">wiki.python.org/moin/Generators</url>.</fn>; the effect is that the fast-growing tumors grow faster and the slow-growing tumors grow slower.
@@ -584,10 +542,11 @@ The example he presents is counting cells in a "yeast slurry", which is a mixtur
       There are two steps in the process:
     </p>
     <p>
-      * First, the slurry is diluted until the concentration is low enough that it is practical to count cells.
-    </p>
-    <p>
-      * Then a small sample is put on a hemocytometer, which is a specialized microscope slide that holds a fixed amount of liquid on a rectangular grid.
+<ul>
+      <li>First, the slurry is diluted until the concentration is low enough that it is practical to count cells.
+</li>
+      <li>Then a small sample is put on a hemocytometer, which is a specialized microscope slide that holds a fixed amount of liquid on a rectangular grid.
+</li></ul>
     </p>
     <p>
       The cells and the grid are visible in a microscope, making it possible to count the cells accurately.
@@ -606,13 +565,13 @@ Although the grid has 25 squares, it is standard practice to inspect only a few 
       This process is simple enough, but at every stage there are sources of error:
     </p>
     <p>
-      * During the dilution process, liquids are measured using pipettes that introduce measurement error.
-    </p>
-    <p>
-      * The amount of liquid in the hemocytometer might vary from the specification.
-    </p>
-    <p>
-      * During each step of the sampling process, we might select more or less than the average number of cells, due to random variation.
+<ul>
+      <li>During the dilution process, liquids are measured using pipettes that introduce measurement error.
+</li>
+      <li>The amount of liquid in the hemocytometer might vary from the specification.
+</li>
+      <li>During each step of the sampling process, we might select more or less than the average number of cells, due to random variation.
+</li></ul>
     </p>
     <p>
       Davidson-Pilon presents a PyMC model that describes these errors.
@@ -730,6 +689,11 @@ Multiprocess sampling (4 chains in 4 jobs)
 CompoundStep
 &gt;NUTS: [yeast conc, shaker1 vol, shaker2 vol, shaker3 vol, yeast slurry vol, shaker1 to shaker2, shaker2 to shaker3, chamber_vol]
 &gt;Metropolis: [yeast in chamber]
+</pre>
+<pre>
+Sampling 4 chains for 1_000 tune and 1_000 draw iterations (4_000 + 4_000 draws total) took 11 seconds.
+The rhat statistic is larger than 1.01 for some parameters. This indicates problems during sampling. See https://arxiv.org/abs/1903.08008 for details
+The effective sample size per chain is smaller than 100 for some parameters.  A higher number is needed for reliable rhat and ess computation. See https://arxiv.org/abs/1903.08008 for details
 </pre>
     <p>
       And we can use the sample to estimate the posterior distribution of <c>yeast_conc</c> and compute summary statistics.
@@ -1039,186 +1003,30 @@ In that case, each simulation might require substantial computation, and many si
           To solve this problem, we'll use the model Bååth suggests, which is based on these assumptions:
         </p>
         <p>
-          * The laundry contains some number of pairs of socks, <c>n_pairs</c>, plus some number of odd (unpaired) socks, <c>n_odds</c>.
-        </p>
-        <p>
-          * The pairs of socks are different from each other and different from the unpaired socks; in other words, the number of socks of each type is either 1 or 2, never more.
+<ul>
+          <li>The laundry contains some number of pairs of socks, <c>n_pairs</c>, plus some number of odd (unpaired) socks, <c>n_odds</c>.
+</li>
+          <li>The pairs of socks are different from each other and different from the unpaired socks; in other words, the number of socks of each type is either 1 or 2, never more.
+</li></ul>
         </p>
         <p>
           We'll use the prior distributions Bååth suggests, which are:
         </p>
         <p>
-          * The number of socks follows a negative binomial distribution with mean 30 and standard deviation 15.
-        </p>
-        <p>
-          * The proportion of socks that are paired follows a beta distribution with parameters <c>alpha=15</c> and <c>beta=2</c>.
+<ul>
+          <li>The number of socks follows a negative binomial distribution with mean 30 and standard deviation 15.
+</li>
+          <li>The proportion of socks that are paired follows a beta distribution with parameters <c>alpha=15</c> and <c>beta=2</c>.
+</li></ul>
         </p>
         <p>
           In the notebook for this chapter, I'll define these priors.  Then you can simulate the sampling process and use ABC to estimate the posterior distributions.
         </p>
-    <p>
-      To get you started, I'll define the priors.
-    </p>
-    <program language="python">
-      <input>
-from scipy.stats import nbinom, beta
 
-mu = 30
-p = 0.8666666
-r = mu * (1-p) / p
-
-prior_n_socks = nbinom(r, 1-p)
-prior_n_socks.mean(), prior_n_socks.std()
-      </input>
-    </program>
-<pre>
-(np.float64(30.0), np.float64(14.999996250001402))
-</pre>
-    <program language="python">
-      <input>
-prior_prop_pair = beta(15, 2)
-prior_prop_pair.mean()
-      </input>
-    </program>
-<pre>
-np.float64(0.8823529411764706)
-</pre>
-    <program language="python">
-      <input>
-qs = np.arange(90)
-ps = prior_n_socks.pmf(qs)
-pmf = Pmf(ps, qs)
-pmf.normalize()
-
-pmf.plot(label='prior', drawstyle='steps')
-
-decorate(xlabel='Number of socks',
-         ylabel='PMF')
-      </input>
-    </program>
-    <image source="images/ch20_abc_e5db590a.png" width="80%"/>
-    <program language="python">
-      <input>
-from utils import pmf_from_dist
-
-qs = np.linspace(0, 1, 101)
-pmf = pmf_from_dist(prior_prop_pair, qs)
-pmf.plot(label='prior', color='C1')
-
-decorate(xlabel='Proportion of socks in pairs',
-         ylabel='PDF')
-      </input>
-    </program>
-    <image source="images/ch20_abc_5249b0ef.png" width="80%"/>
-    <p>
-      We can sample from the prior distributions like this:
-    </p>
-    <program language="python">
-      <input>
-n_socks = prior_n_socks.rvs()
-prop_pairs = prior_prop_pair.rvs()
-
-n_socks, prop_pairs
-      </input>
-    </program>
-<pre>
-(53, np.float64(0.9644877185150033))
-</pre>
-    <p>
-      And use the values to compute <c>n_pairs</c> and <c>n_odds</c>:
-    </p>
-    <program language="python">
-      <input>
-n_pairs = np.round(n_socks//2 * prop_pairs)
-n_odds = n_socks - n_pairs*2
-
-n_pairs, n_odds
-      </input>
-    </program>
-<pre>
-(np.float64(25.0), np.float64(3.0))
-</pre>
-    <p>
-      Now you take it from there.
-    </p>
       </statement>
     <solution>
       <program language="python">
         <input>
-from scipy.stats import nbinom, beta
-
-mu = 30
-p = 0.8666666
-r = mu * (1-p) / p
-
-prior_n_socks = nbinom(r, 1-p)
-prior_n_socks.mean(), prior_n_socks.std()
-        </input>
-    </program>
-<pre>
-(np.float64(30.0), np.float64(14.999996250001402))
-</pre>
-      <program language="python">
-        <input>
-prior_prop_pair = beta(15, 2)
-prior_prop_pair.mean()
-        </input>
-    </program>
-<pre>
-np.float64(0.8823529411764706)
-</pre>
-      <program language="python">
-        <input>
-qs = np.arange(90)
-ps = prior_n_socks.pmf(qs)
-pmf = Pmf(ps, qs)
-pmf.normalize()
-
-pmf.plot(label='prior', drawstyle='steps')
-
-decorate(xlabel='Number of socks',
-         ylabel='PMF')
-        </input>
-      </program>
-    <image source="images/ch20_abc_e5db590a.png" width="80%"/>
-      <program language="python">
-        <input>
-from utils import pmf_from_dist
-
-qs = np.linspace(0, 1, 101)
-pmf = pmf_from_dist(prior_prop_pair, qs)
-pmf.plot(label='prior', color='C1')
-
-decorate(xlabel='Proportion of socks in pairs',
-         ylabel='PDF')
-        </input>
-      </program>
-    <image source="images/ch20_abc_5249b0ef.png" width="80%"/>
-      <program language="python">
-        <input>
-n_socks = prior_n_socks.rvs()
-prop_pairs = prior_prop_pair.rvs()
-
-n_socks, prop_pairs
-        </input>
-    </program>
-<pre>
-(53, np.float64(0.9644877185150033))
-</pre>
-      <program language="python">
-        <input>
-n_pairs = np.round(n_socks//2 * prop_pairs)
-n_odds = n_socks - n_pairs*2
-
-n_pairs, n_odds
-        </input>
-    </program>
-<pre>
-(np.float64(25.0), np.float64(3.0))
-</pre>
-      <program language="python">
-        <input>
-
 n_pairs = 9
 n_odds = 5
 
