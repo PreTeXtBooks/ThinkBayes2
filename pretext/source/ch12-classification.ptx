@@ -5,9 +5,6 @@
 
   <introduction>
     <p>
-      You can order print and ebook versions of <em>Think Bayes 2e</em> from <url href="https://bookshop.org/a/98697/9781492089469">Bookshop.org</url> and <url href="https://amzn.to/334eqGo">Amazon</url>.
-    </p>
-    <p>
       Classification might be the most well-known application of Bayesian methods, made famous in the 1990s as the basis of the first generation of <url href="https://en.wikipedia.org/wiki/Naive_Bayes_spam_filtering">spam filters</url>.
     </p>
     <p>
@@ -21,35 +18,6 @@
     <p>
       I'll use Pandas to load the data into a <c>DataFrame</c>.
     </p>
-
-    <program language="python">
-      <input>
-from utils import Or70, Pu50, Gr30
-
-color_list3 = [Or70, Pu50, Gr30]
-      </input>
-    </program>
-
-    <program language="python">
-      <input>
-import matplotlib.pyplot as plt
-from cycler import cycler
-
-marker_cycle = cycler(marker=['s', 'o', '^'])
-color_cycle = cycler(color=color_list3)
-line_cycle = cycler(linestyle=['-', '--', ':'])
-
-plt.rcParams['axes.prop_cycle'] = (color_cycle + 
-                                   marker_cycle + 
-                                   line_cycle)
-      </input>
-    </program>
-
-    <program language="python">
-      <input>
-download('https://github.com/allisonhorst/palmerpenguins/raw/main/inst/extdata/penguins_raw.csv')
-      </input>
-    </program>
 
     <program language="python">
       <input>
@@ -114,12 +82,6 @@ studyName  Sample Number                              Species  Region  \
     </p>
 
     <p>
-      These species are shown in this illustration (by Allison Horst, available under the
-      <url href="https://creativecommons.org/licenses/by/2.0/">CC-BY</url> license):
-    </p>
-    <image source="images/ch12_classification_penguins_a1b2c3d4.jpeg" width="80%"/>
-
-    <p>
       The measurements we'll use are:
     </p>
     <ul>
@@ -133,11 +95,6 @@ studyName  Sample Number                              Species  Region  \
     </p>
 
     <p>
-      The culmen is shown in the following illustration (also by Allison Horst):
-    </p>
-    <image source="images/ch12_classification_culmen_b5c6d7e8.jpeg" width="80%"/>
-
-    <p>
       These measurements will be most useful for classification if there are substantial differences between species and small variation within species.  To see whether that is true, and to what degree, I'll plot cumulative distribution functions (CDFs) of each measurement for each species.
     </p>
     <p>
@@ -149,17 +106,8 @@ studyName  Sample Number                              Species  Region  \
 
     <program language="python">
       <input>
-def shorten(species):
-    return species.split()[0]
-
-df['Species2'] = df['Species'].apply(shorten)
-      </input>
-    </program>
-
-    <program language="python">
-      <input>
 def make_cdf_map(df, colname, by='Species2'):
-    &amp;quot;&amp;quot;&amp;quot;Make a CDF for each species.&amp;quot;&amp;quot;&amp;quot;
+    """Make a CDF for each species."""
     cdf_map = {}
     grouped = df.groupby(by)[colname]
     for species, group in grouped:
@@ -178,14 +126,14 @@ from empiricaldist import Cdf
 from utils import decorate
 
 def plot_cdfs(df, colname, by='Species2'):
-    &amp;quot;&amp;quot;&amp;quot;Make a CDF for each species.
+    """Make a CDF for each species.
     
     df: DataFrame
     colname: string column name
     by: string column name
 
     returns: dictionary from species name to Cdf
-    &amp;quot;&amp;quot;&amp;quot;
+    """
     cdf_map = make_cdf_map(df, colname, by)
     
     for species, cdf in cdf_map.items():
@@ -290,7 +238,7 @@ plot_cdfs(df, colname)
 from scipy.stats import norm
 
 def make_norm_map(df, colname, by='Species2'):
-    &amp;quot;&amp;quot;&amp;quot;Make a map from species to norm object.&amp;quot;&amp;quot;&amp;quot;
+    """Make a map from species to norm object."""
     norm_map = {}
     grouped = df.groupby(by)[colname]
     for species, group in grouped:
@@ -409,7 +357,7 @@ dtype: float64
     <program language="python">
       <input>
 def update_penguin(prior, data, norm_map):
-    &amp;quot;&amp;quot;&amp;quot;Update hypothetical species.&amp;quot;&amp;quot;&amp;quot;
+    """Update hypothetical species."""
     hypos = prior.qs
     likelihood = [norm_map[hypo].pdf(data) for hypo in hypos]
     posterior = prior * likelihood
@@ -443,8 +391,6 @@ dtype: float64
     </p>
     <p>
       But culmen length <em>can</em> make this distinction, so let's use it to do a second round of classification.
-    </p>
-    <p>
       First we estimate distributions of culmen length for each species like this:
     </p>
 
@@ -456,8 +402,6 @@ culmen_map = make_norm_map(df, 'Culmen Length (mm)')
 
     <p>
       Now suppose we see a penguin with culmen length 48 mm.
-    </p>
-    <p>
       We can use this data to update the prior.
     </p>
 
@@ -479,8 +423,6 @@ dtype: float64
     </p>
     <p>
       Using one feature at a time, we can often rule out one species or another, but we generally can't identify species with confidence.
-    </p>
-    <p>
       We can do better using multiple features.
     </p>
 
@@ -496,14 +438,14 @@ dtype: float64
     <program language="python">
       <input>
 def update_naive(prior, data_seq, norm_maps):
-    &amp;quot;&amp;quot;&amp;quot;Naive Bayesian classifier
+    """Naive Bayesian classifier
     
     prior: Pmf
     data_seq: sequence of measurements
     norm_maps: sequence of maps from species to distribution
     
     returns: Pmf representing the posterior distribution
-    &amp;quot;&amp;quot;&amp;quot;
+    """
     posterior = prior.copy()
     for data, norm_map in zip(data_seq, norm_maps):
         posterior = update_penguin(posterior, data, norm_map)
@@ -614,8 +556,6 @@ same.sum()
 
     <p>
       There are 344 penguins in the dataset, but two of them are missing measurements, so we have 342 valid cases.
-    </p>
-    <p>
       Of those, 324 are classified correctly, which is almost 95%.
     </p>
 
@@ -635,7 +575,7 @@ same.sum() / valid.sum()
     <program language="python">
       <input>
 def accuracy(df):
-    &amp;quot;&amp;quot;&amp;quot;Compute the accuracy of classification.&amp;quot;&amp;quot;&amp;quot;
+    """Compute the accuracy of classification."""
     valid = df['Classification'].notna()
     same = df['Species2'] == df['Classification']
     return same.sum() / valid.sum()
@@ -660,7 +600,7 @@ def accuracy(df):
 import matplotlib.pyplot as plt
 
 def scatterplot(df, var1, var2):
-    &amp;quot;&amp;quot;&amp;quot;Make a scatter plot.&amp;quot;&amp;quot;&amp;quot;
+    """Make a scatter plot."""
     grouped = df.groupby('Species2')
     for species, group in grouped:
         plt.plot(group[var1], group[var2],
@@ -696,7 +636,7 @@ scatterplot(df, var1, var2)
     <program language="python">
       <input>
 def make_pmf_norm(dist, sigmas=3, n=101):
-    &amp;quot;&amp;quot;&amp;quot;Make a Pmf approximation to a normal distribution.&amp;quot;&amp;quot;&amp;quot;
+    """Make a Pmf approximation to a normal distribution."""
     mean, std = dist.mean(), dist.std()
     low = mean - sigmas * std
     high = mean + sigmas * std
@@ -741,11 +681,7 @@ for species in hypos:
 
     <p>
       The contours of a joint normal distribution form ellipses.
-    </p>
-    <p>
       In this example, because the features are uncorrelated, the ellipses are aligned with the axes.
-    </p>
-    <p>
       But they are not well aligned with the data.
     </p>
     <p>
@@ -765,8 +701,6 @@ for species in hypos:
     </p>
     <p>
       We can use the data to estimate the means and covariance matrix for the population of penguins.
-    </p>
-    <p>
       First I'll select the columns we want.
     </p>
 
@@ -803,7 +737,7 @@ cov
       </input>
     </program>
 <pre>
-Flipper Length (mm)  Culmen Length (mm)
+                     Flipper Length (mm)  Culmen Length (mm)
 Flipper Length (mm)           197.731792           50.375765
 Culmen Length (mm)             50.375765           29.807054
 </pre>
@@ -836,7 +770,7 @@ multinorm = multivariate_normal(mean, cov)
     <program language="python">
       <input>
 def make_multinorm_map(df, colnames):
-    &amp;quot;&amp;quot;&amp;quot;Make a map from each species to a multivariate normal.&amp;quot;&amp;quot;&amp;quot;
+    """Make a map from each species to a multivariate normal."""
     multinorm_map = {}
     grouped = df.groupby('Species2')
     for species, group in grouped:
@@ -976,12 +910,12 @@ decorate(xlabel=var1,
     <program language="python">
       <input>
 def make_joint(norm1, norm2, multinorm):
-    &amp;quot;&amp;quot;&amp;quot;Make a joint distribution.
+    """Make a joint distribution.
     
     norm1: `norm` object representing the distribution of the first feature
     norm2: `norm` object representing the distribution of the second feature
     multinorm: `multivariate_normal` object representing the joint distribution
-    &amp;quot;&amp;quot;&amp;quot;
+    """
     pmf1 = make_pmf_norm(norm1)
     pmf2 = make_pmf_norm(norm2)
     X, Y = np.meshgrid(pmf1.qs, pmf2.qs)
@@ -1026,7 +960,7 @@ for species in hypos:
     <program language="python">
       <input>
 def update_penguin(prior, data, norm_map):
-    &amp;quot;&amp;quot;&amp;quot;Update hypothetical species.&amp;quot;&amp;quot;&amp;quot;
+    """Update hypothetical species."""
     hypos = prior.qs
     likelihood = [norm_map[hypo].pdf(data) for hypo in hypos]
     posterior = prior * likelihood
@@ -1060,8 +994,6 @@ dtype: float64
     </p>
     <p>
       Now let's see if this classifier does any better than the naive Bayesian classifier.
-    </p>
-    <p>
       I'll apply it to each penguin in the dataset:
     </p>
 
@@ -1121,8 +1053,6 @@ accuracy(df)
     </p>
     <p>
       In some species, like angler fish, males and females look very different.  In other species, like mockingbirds, they are difficult to tell apart.
-    </p>
-    <p>
       And dimorphism is worth studying because it provides insight into social behavior, sexual selection, and evolution.
     </p>
     <p>
@@ -1134,7 +1064,7 @@ accuracy(df)
 
   </section>
 
-  <section xml:id="sec-ch12-exercises">
+  <exercises xml:id="sec-ch12-exercises">
     <title>Exercises</title>
 
     <exercise xml:id="ex-ch12-1">
@@ -1335,12 +1265,12 @@ for i, row in subset.iterrows():
 # This function computes accuracy
 
 def accuracy_sex(df):
-    &amp;quot;&amp;quot;&amp;quot;Compute the accuracy of classification.
+    """Compute the accuracy of classification.
     
     Compares columns Classification and Sex
     
     df: DataFrame
-    &amp;quot;&amp;quot;&amp;quot;
+    """
     valid = df['Classification'].notna()
     same = df['Sex'] == df['Classification']
     return same.sum() / valid.sum()
@@ -1365,10 +1295,10 @@ accuracy_sex(subset)
 # classify the other species
 
 def classify_by_sex(subset):
-    &amp;quot;&amp;quot;&amp;quot;Run the whole classification process.
+    """Run the whole classification process.
     
     subset: DataFrame
-    &amp;quot;&amp;quot;&amp;quot;
+    """
     culmen_map = make_norm_map(subset, 'Culmen Length (mm)', by='Sex')
     flipper_map = make_norm_map(subset, 'Flipper Length (mm)', by='Sex')
     depth_map = make_norm_map(subset, 'Culmen Depth (mm)', by='Sex')
@@ -1429,6 +1359,6 @@ classify_by_sex(subset)
     </solution>
     </exercise>
 
-  </section>
+  </exercises>
 
 </chapter>
