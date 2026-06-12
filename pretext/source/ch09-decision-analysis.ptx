@@ -309,7 +309,6 @@ the contestant’s guess would be <c>guess</c>?”
 
 Equivalently, if we define <c>error = guess - price</c>, we can ask, “What is the likelihood that the
 contestant’s guess is off by <c>error</c>?”</p>
-</p>
 
     <p>
       To answer this question, I'll use the historical data again.
