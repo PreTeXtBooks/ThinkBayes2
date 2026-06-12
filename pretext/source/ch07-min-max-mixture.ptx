@@ -4,22 +4,6 @@
   <title>Minimum, Maximum, and Mixture</title>
 
   <introduction>
-<p>
-  You can order print and ebook versions of <em>Think Bayes 2e</em> from
-<url href="https://bookshop.org/a/98697/9781492089469">Bookshop.org</url> and
-<url href="https://amzn.to/334eqGo">Amazon</url>.
-</p>
-<program language="python">
-  <input>
-# install empiricaldist if necessary
-
-try:
-    import empiricaldist
-except ImportError:
-    !pip install empiricaldist
-    import empiricaldist
-  </input>
-</program>
 <program language="python">
   <input>
 # Get utils.py
@@ -457,17 +441,6 @@ cdf_max_dist6 = cdf_best3.max_dist(6)
   </input>
 </program>
 <p>
-  And we can confirm that the differences are small.
-</p>
-<program language="python">
-  <input>
-np.allclose(cdf_max_dist6, cdf_max6)
-  </input>
-</program>
-<pre>
-True
-</pre>
-<p>
   In the next section we'll find the distribution of the minimum.
   The process is similar, but a little more complicated.
   See if you can figure it out before you go on.
@@ -752,6 +725,14 @@ import pandas as pd
 pd.DataFrame(dice)
   </input>
 </program>
+
+<pre>
+
+         1         2         3         4         5         6         7         8
+0	0.250000  0.250000  0.250000  0.250000       NaN       NaN       NaN       NaN
+1	0.166667  0.166667  0.166667  0.166667  0.166667	0.166667       NaN       NaN
+2	0.125000  0.125000  0.125000  0.125000  0.125000	0.125000     0.125     0.125
+</pre>
 <p>
   The result is a <c>DataFrame</c> with one row for each distribution and one column for each possible outcome.
   Not all rows are the same length, so Pandas fills the extra spaces with the special value <c>NaN</c>, which stands for <q>not a number</q>.
@@ -770,6 +751,18 @@ df = pd.DataFrame(dice).fillna(0).transpose()
 df
   </input>
 </program>
+<pre>
+
+     0         1      2
+1	0.25	0.166667	0.125
+2	0.25	0.166667	0.125
+3	0.25	0.166667	0.125
+4	0.25	0.166667	0.125
+5	0.00	0.166667	0.125
+6	0.00	0.166667	0.125
+7	0.00	0.000000	0.125
+8	0.00	0.000000	0.125
+</pre>
 <p>
   Now we can multiply by the probabilities in <c>pmf_dice</c>:
 </p>
@@ -783,6 +776,19 @@ df *= pmf_dice.ps
 df
   </input>
 </program>
+<pre>
+
+         0	       1	     2
+1	0.041667	0.055556	0.0625
+2	0.041667	0.055556	0.0625
+3	0.041667	0.055556	0.0625
+4	0.041667	0.055556	0.0625
+5	0.000000	0.055556	0.0625
+6	0.000000	0.055556	0.0625
+7	0.000000	0.000000	0.0625
+8	0.000000	0.000000	0.0625
+
+</pre>
 <p>
   And add up the weighted distributions:
 </p>
@@ -791,6 +797,16 @@ df
 df.sum(axis=1)
   </input>
 </program>
+<pre>
+1    0.159722
+2    0.159722
+3    0.159722
+4    0.159722
+5    0.118056
+6    0.118056
+7    0.062500
+8    0.062500
+</pre>
 <p>
   The argument <c>axis=1</c> means we want to sum across the rows.
   The result is a Pandas <c>Series</c>.
@@ -1022,6 +1038,12 @@ posterior.normalize()
 posterior
           </input>
         </program>
+<pre>
+       probs
+6	  0.425532
+8	  0.319149
+10	0.255319
+</pre>
         <program language="python">
           <input>
 # Solution
@@ -1114,6 +1136,12 @@ for n in range(2, 6):
     print(n, cdf_max.mean())
           </input>
         </program>
+<pre>
+2 978.4666876067706
+3 992.7589004318227
+4 1002.0372868686195
+5 1008.8226939493089
+</pre>
         <program language="python">
           <input>
 # Solution
