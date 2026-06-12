@@ -93,17 +93,6 @@
     </p>
 
     <p>
-      The following cells load the data files.
-    </p>
-
-    <program language="python">
-      <input>
-download('https://raw.githubusercontent.com/AllenDowney/ThinkBayes2/master/data/showcases.2011.csv')
-download('https://raw.githubusercontent.com/AllenDowney/ThinkBayes2/master/data/showcases.2012.csv')
-      </input>
-    </program>
-
-    <p>
       The following function reads the data and cleans it up a little.
     </p>
 
@@ -267,17 +256,6 @@ decorate_value('Prior distribution of showcase value')
       </input>
     </program>
     <image source="images/ch09_decision_analysis_46e80379.png" width="80%"/>
-    <p>
-      Here's what it looks like.
-      The most common price is around
-      $28,000, but there might be a second mode near $50,000.
-    </p>
-
-    <p>
-      If you were a contestant on the
-      show, you could use this distribution to quantify your prior belief
-      about the price of each showcase (before you see the prizes).
-    </p>
 
     <exercise xml:id="ex-decision-prior2-inline">
       <statement>
@@ -323,14 +301,15 @@ decorate_value('Prior distributions of showcase value')
     <p>
       To answer these questions, I will model each contestant as a price-guessing instrument with known error characteristics.
       In this model, when the contestant sees the prizes, they guess the price of each prize and add up the prices.
-      The total is their guess.
-    </p>
+Let’s call this total guess.
+</p><p>
+Now the question we have to answer is, “If the actual price is <c>price</c>, what is the likelihood that
+the contestant’s guess would be <c>guess</c>?”
+</p><p>
 
-    <p>
-      Under this model, the question we have to answer is, <q>If the
-      actual price is <c>price</c>, what is the likelihood that the
-      contestant's estimate would be <c>guess</c>?</q>
-    </p>
+Equivalently, if we define <c>error = guess - price</c>, we can ask, “What is the likelihood that the
+contestant’s guess is off by <c>error</c>?”</p>
+</p>
 
     <p>
       To answer this question, I'll use the historical data again.
@@ -355,6 +334,7 @@ kde_diff1 = kde_from_sample(sample_diff1, qs)
 kde_diff2 = kde_from_sample(sample_diff2, qs)
       </input>
     </program>
+<p>Here's what these distributions look like:</p>
 
     <program language="python">
       <input>
@@ -367,9 +347,6 @@ decorate(xlabel='Difference in value ($)',
       </input>
     </program>
     <image source="images/ch09_decision_analysis_f95ef026.png" width="80%"/>
-    <p>
-      Here's what these distributions look like.
-    </p>
 
     <p>
       It looks like the bids are too low more often than too high, which makes sense.
@@ -412,8 +389,13 @@ print(mean_diff1, std_diff1)
     </ul>
 
     <p>
-      Based on these assumptions, I'll make a normal distribution with mean 0 and standard deviation <c>std_diff1</c>:
+      Based on these assumptions, I'll make a normal distribution with parameters 0 and standard deviation <c>std_diff1</c>:
     </p>
+
+<p>
+SciPy provides an object called <c>norm</c> that represents a normal distribution with the given 
+mean and standard deviation.
+</p>
 
     <program language="python">
       <input>
@@ -444,20 +426,6 @@ error_dist1.pdf(error)
     <p>
       By itself, this number doesn't mean very much, because probability densities are not probabilities.
       But they are proportional to probabilities, so we can use them as likelihoods in a Bayesian update, as we'll see in the next section.
-    </p>
-
-    <p>
-      This model is not perfect because contestants' bids are sometimes strategic; for example, if Player 2 thinks that Player 1
-      has overbid, Player 2 might make a very low bid.
-      In that case <c>diff</c> does not reflect <c>error</c>.
-      If this happens a lot, the observed variance in <c>diff</c> might overestimate the variance in <c>error</c>.
-      Nevertheless, I think it is a reasonable modeling decision.
-    </p>
-
-    <p>
-      As an alternative, someone preparing to appear on the show could
-      estimate their own distribution of <c>error</c> by watching previous shows
-      and recording their guesses and the actual prices.
     </p>
   </section>
 
@@ -503,7 +471,9 @@ posterior1.normalize()
 <pre>
 3.3889812097254624e-05
 </pre>
-
+<p>
+Here’s what the posterior distribution looks like:
+</p>
     <program language="python">
       <input>
 prior1.plot(color='C5', label='Prior 1')
@@ -514,7 +484,6 @@ decorate_value('Prior and posterior distribution of showcase value')
     </program>
     <image source="images/ch09_decision_analysis_b7a19d92.png" width="80%"/>
     <p>
-      Here's what the posterior distribution looks like.
       Because your initial guess is in the lower end of the range, the posterior distribution has shifted to the left.
       We can compute the posterior mean to see by how much.
     </p>
@@ -733,6 +702,10 @@ ys = [compute_prob_win(x, sample_diff2)
       </input>
     </program>
 
+    <p>
+      Here's what it looks like.
+    </p>
+
     <program language="python">
       <input>
 import matplotlib.pyplot as plt
@@ -745,9 +718,6 @@ decorate(xlabel='Difference between bid and actual price ($)',
       </input>
     </program>
     <image source="images/ch09_decision_analysis_d64d1dcb.png" width="80%"/>
-    <p>
-      Here's what it looks like.
-    </p>
 
     <p>
       If you underbid by $30,000, the chance of winning is about 30%, which is mostly the chance your opponent overbids.
@@ -844,6 +814,18 @@ decorate(xlabel='Difference between bid and actual price ($)',
       The following function takes a possible bid, a posterior distribution of actual prices, and a sample of differences for the opponent.
     </p>
 
+<p>
+It loops through the hypothetical prices in the posterior distribution and, for each price,
+<ol>
+<li>
+Computes the difference between the bid and the hypothetical price,
+</li><li>
+Computes the probability that the player wins, given that difference, and
+</li><li>
+Adds up the weighted sum of the probabilities, where the weights are the probabilities in the posterior distribution.
+</li></ul>
+</p>
+
     <program language="python">
       <input>
 def total_prob_win(bid, posterior, sample_diff):
@@ -897,7 +879,7 @@ probs = [total_prob_win(bid, posterior1, sample_diff2)
 prob_win_series = pd.Series(probs, index=bids)
       </input>
     </program>
-
+<p>Here are the results.</p>
     <program language="python">
       <input>
 prob_win_series.plot(label='Player 1', color='C1')
@@ -1085,6 +1067,10 @@ expected_gain_series = pd.Series(gains, index=bids)
       </input>
     </program>
 
+    <p>
+      Here are the results.
+    </p>
+
     <program language="python">
       <input>
 expected_gain_series.plot(label='Player 1', color='C2')
@@ -1095,9 +1081,6 @@ decorate(xlabel='Bid ($)',
       </input>
     </program>
     <image source="images/ch09_decision_analysis_2ccd6e6f.png" width="80%"/>
-    <p>
-      Here are the results.
-    </p>
 
     <p>
       Here is the optimal bid.
@@ -1253,14 +1236,6 @@ expected_gain_series.max()
     <p>
       The notebook provides space where you can work on the following problems.
     </p>
-
-    <exercise xml:id="ex-decision-player-2">
-      <statement>
-        <p>
-          Following the instructions in the notebook, replicate the analysis in this chapter from the point of view of Player 2.
-        </p>
-      </statement>
-    </exercise>
 
     <exercise xml:id="ex-decision-redline">
       <statement>
@@ -1462,9 +1437,7 @@ def compute_profit(printed, orders):
         </program>
 
         <p>
-          To test these functions, suppose we get exactly 10 orders per week for eight weeks.
-          If you print 60 books, your net profit is $200.
-          If you print 100 books, your net profit is $310.
+          To test these functions, suppose we get exactly 10 orders per week for eight weeks:
         </p>
 
         <program language="python">
@@ -1476,6 +1449,11 @@ always_10
 <pre>
 [10, 10, 10, 10, 10, 10, 10, 10]
 </pre>
+
+        <p>
+If you print 60 books, your net profit is $200, as in the example.
+        </p>
+
         <program language="python">
           <input>
 compute_profit(60, always_10)
@@ -1484,6 +1462,11 @@ compute_profit(60, always_10)
 <pre>
 200
 </pre>
+
+        <p>
+If you print 100 books, your net profit is $310.
+        </p>
+
         <program language="python">
           <input>
 compute_profit(100, always_10)
@@ -1492,6 +1475,16 @@ compute_profit(100, always_10)
 <pre>
 310.0
 </pre>
+
+<p>
+Of course, in the context of the problem you don’t know how many books will be ordered in any given week. You don’t even know the average rate of orders. However, given the data and some assumptions about the prior, you can compute the distribution of the rate of orders.
+</p>
+<p>
+You’ll have a chance to do that, but to demonstrate the decision analysis part of the problem, I’ll start with the arbitrary assumption that order rates come from a gamma distribution with mean 9.
+</p>
+<p>
+Here’s a <c>Pmf</c> that represents this distribution.
+</p>
         <program language="python">
           <input>
 from scipy.stats import gamma
@@ -1507,6 +1500,8 @@ pmf.mean()
 <pre>
 8.998788382371902
 </pre>
+<p>And here’s what it looks like:
+</p>
         <program language="python">
           <input>
 pmf.plot(color='C1')
@@ -1515,6 +1510,16 @@ decorate(xlabel=r'Book ordering rate ($\lambda$)',
           </input>
         </program>
         <image source="images/ch09_decision_analysis_1699c363.png" width="80%"/>
+
+<p>
+Now, we could generate a predictive distribution for the number of books ordered in a given week,
+but in this example we have to deal with a complicated cost function. In particular,
+<c>out_of_stock_cost</c> depends on the sequence of orders.
+</p><p>
+So, rather than generate a predictive distribution, I suggest we run simulations. I’ll demonstrate the steps.
+</p><p>
+First, from our hypothetical distribution of rates, we can draw a random sample of 1000 values.
+</p>
         <program language="python">
           <input>
 rates = pmf.choice(1000)
@@ -1524,6 +1529,9 @@ np.mean(rates)
 <pre>
 9.0135
 </pre>
+<p>
+For each possible rate, we can generate a sequence of 8 orders.
+</p>
         <program language="python">
           <input>
 np.random.seed(17)
@@ -1531,12 +1539,23 @@ order_array = np.random.poisson(rates, size=(8, 1000)).transpose()
 order_array[:5, :]
           </input>
         </program>
+<pre>
+array([[10, 18, 14, 12, 15, 11, 21,  9],
+       [ 6,  7,  5, 12, 15,  3,  3,  8],
+       [ 6, 11, 11,  6,  6,  3,  7, 11],
+       [12, 10,  9, 12, 16,  7, 11,  8],
+       [11, 11,  8, 11, 10, 19, 24, 15]])
+</pre>
 
+<p>Each row of this array is a hypothetical sequence of orders based on a different hypothetical order rate.
+</p><p>
+Now, if you tell me how many books you printed, I can compute your expected profits, averaged over these 1000 possible sequences.
+</p>
         <program language="python">
           <input>
 def compute_expected_profits(printed, order_array):
     """Compute profits averaged over a sample of orders.
-
+    
     printed: number printed
     order_array: one row per sample, one column per week
     """
@@ -1545,6 +1564,7 @@ def compute_expected_profits(printed, order_array):
     return np.mean(profits)
           </input>
         </program>
+<p>For example, here are the expected profits if you order 70, 80, or 90 books.</p>
         <program language="python">
           <input>
 compute_expected_profits(70, order_array)
@@ -1569,6 +1589,9 @@ compute_expected_profits(90, order_array)
 <pre>
 164.484
 </pre>
+<p>
+Now, let’s sweep through a range of values and compute expected profits as a function of the number of books you print.
+</p>
         <program language="python">
           <input>
 printed_array = np.arange(70, 110)
@@ -1586,6 +1609,8 @@ decorate(xlabel='Number of books printed',
           </input>
         </program>
         <image source="images/ch09_decision_analysis_86b6ccfe.png" width="80%"/>
+<p>Here is the optimal order and the expected profit.
+</p>
         <program language="python">
           <input>
 expected_profits.idxmax(), expected_profits.max()
@@ -1618,15 +1643,19 @@ prior.normalize()
 </pre>
         <program language="python">
           <input>
+# Here's the CDF of the prior
+
 prior.make_cdf().plot(color='C1')
 decorate(xlabel=r'Book ordering rate ($\lambda$)',
          ylabel='CDF')
           </input>
         </program>
         <image source="images/ch09_decision_analysis_1f4e0b52.png" width="80%"/>
-        <p>Create an update function based on one week of orders:</p>
         <program language="python">
           <input>
+# Here's a function that updates the distribution of lambda
+# based on one week of orders
+
 from scipy.stats import poisson
 
 def update_book(pmf, data):
@@ -1642,19 +1671,24 @@ def update_book(pmf, data):
     pmf.normalize()
           </input>
         </program>
-        <p>Update after week 1 (10 sales) and week 2 (9 sales):</p>
         <program language="python">
           <input>
+# Here's the update after week 1.
+
 posterior1 = prior.copy()
 update_book(posterior1, 10)
           </input>
         </program>
+
         <program language="python">
           <input>
+# And the update after week 2.
+
 posterior2 = posterior1.copy()
 update_book(posterior2, 9)
           </input>
         </program>
+
         <program language="python">
           <input>
 prior.mean(), posterior1.mean(), posterior2.mean()
@@ -1663,9 +1697,10 @@ prior.mean(), posterior1.mean(), posterior2.mean()
 <pre>
 (21.78849107458653, 10.000000817984526, 9.500000000003652)
 </pre>
-        <p>Generate sample of 1000 values from the posterior and simulate 8 weeks:</p>
         <program language="python">
           <input>
+# Now we can generate a sample of 1000 values from the posterior
+
 rates = posterior2.choice(1000)
 np.mean(rates)
           </input>
@@ -1675,13 +1710,24 @@ np.mean(rates)
 </pre>
         <program language="python">
           <input>
+# And we can generate a sequence of 8 weeks for each value
+
 order_array = np.random.poisson(rates, size=(8, 1000)).transpose()
 order_array[:5, :]
           </input>
         </program>
-        <p>Compute expected profits for different order quantities:</p>
-        <program language="python">
+<pre>
+array([[ 9,  6,  6,  6,  9,  8, 11,  9],
+       [ 4,  5,  3,  1,  6,  3,  4,  4],
+       [ 5,  7,  7, 10,  4,  7, 12, 10],
+       [ 4,  4, 10,  6, 10, 19,  9, 10],
+       [ 9, 11, 13,  8,  8, 13, 18,  3]])
+</pre>
+
+   <program language="python">
           <input>
+# Here are the expected profits for each possible order
+
 printed_array = np.arange(70, 110)
 t = [compute_expected_profits(printed, order_array)
                     for printed in printed_array]
@@ -1690,6 +1736,8 @@ expected_profits = pd.Series(t, printed_array)
         </program>
         <program language="python">
           <input>
+# And here's what they look like.
+
 expected_profits.plot(label='')
 
 decorate(xlabel='Number of books printed',
@@ -1699,6 +1747,8 @@ decorate(xlabel='Number of books printed',
         <image source="images/ch09_decision_analysis_6305a262.png" width="80%"/>
         <program language="python">
           <input>
+# Here's the optimal order.
+
 expected_profits.idxmax()
           </input>
         </program>
