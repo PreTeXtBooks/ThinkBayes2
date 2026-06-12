@@ -822,7 +822,8 @@ Computes the difference between the bid and the hypothetical price,
 Computes the probability that the player wins, given that difference, and
 </li><li>
 Adds up the weighted sum of the probabilities, where the weights are the probabilities in the posterior distribution.
-</li></ul>
+</li>
+</ol>
 </p>
 
     <program language="python">
