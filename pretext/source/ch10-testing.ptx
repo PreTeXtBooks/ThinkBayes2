@@ -5,18 +5,6 @@
 
   <introduction>
     <p>
-      You can order print and ebook versions of <em>Think Bayes 2e</em> from
-      <url href="https://bookshop.org/a/98697/9781492089469">Bookshop.org</url> and
-      <url href="https://amzn.to/334eqGo">Amazon</url>.
-    </p>
-    <program language="python">
-      <input>
-from utils import set_pyplot_params
-set_pyplot_params()
-      </input>
-    </program>
-
-    <p>
       In a previous chapter I presented a problem from David MacKay's book, <url href="http://www.inference.org.uk/mackay/itila/p0.html"><em>Information Theory, Inference, and Learning Algorithms</em></url>:
     </p>
     <p>
@@ -201,9 +189,6 @@ biased_uniform[0.5] = 0
 biased_uniform.normalize()
       </input>
     </program>
-<pre>
-100
-</pre>
     <p>
       To compute the total probability of the data under this hypothesis, we compute the conditional probability of the data for each value of <m>x</m>.
     </p>
@@ -287,9 +272,6 @@ triangle = Pmf(a, xs, name='triangle')
 triangle.normalize()
       </input>
     </program>
-<pre>
-2500
-</pre>
     <p>
       As we did with the uniform distribution, we can remove 50% as a possible value of <m>x</m> (but it doesn't make much difference if we skip this detail).
     </p>
@@ -300,9 +282,6 @@ biased_triangle[0.5] = 0
 biased_triangle.normalize()
       </input>
     </program>
-<pre>
-0.98
-</pre>
     <p>
       Here's what the triangle prior looks like, compared to the uniform prior.
     </p>
@@ -420,9 +399,6 @@ prior = Pmf(1, xs)
 prior.normalize()
       </input>
     </program>
-<pre>
-101
-</pre>
     <p>
       Supposing we are choosing from four slot machines, I'll make four copies of the prior, one for each machine.
     </p>
@@ -468,7 +444,8 @@ plot(beliefs)
 
   <section xml:id="sec-ch10-update-1">
     <title>The Update</title>
-
+<p>Each time we play a machine, we can use the outcome to update our beliefs. The following function does the update.
+</p>
     <program language="python">
       <input>
 likelihood = {
@@ -497,11 +474,6 @@ def update(pmf, data):
     <p>
       Suppose we choose a machine, play 10 times, and win once.  We can compute the posterior distribution of <c>x</c>, based on this outcome, like this:
     </p>
-    <program language="python">
-      <input>
-np.random.seed(17)
-      </input>
-    </program>
     <program language="python">
       <input>
 bandit = prior.copy()
@@ -588,7 +560,7 @@ for i in range(4):
 plot(beliefs)
       </input>
     </program>
-    <image source="images/ch10_testing_3a843e17.png" width="80%"/>
+    <image source="images/ch10_testing_3a843e171.png" width="80%"/>
     <p>
       Here are the actual probabilities, posterior means, and 90% credible intervals.
     </p>
@@ -794,10 +766,10 @@ summarize_beliefs(beliefs)
     </program>
 <pre>
 Actual P(win)  Posterior mean Credible interval
-0            0.1           0.250      [0.08, 0.47]
-1            0.2           0.250      [0.08, 0.47]
-2            0.3           0.500      [0.27, 0.73]
-3            0.4           0.417       [0.2, 0.65]
+0            0.1           0.107      [0.00, 0.31]
+1            0.2           0.269      [0.14, 0.42]
+2            0.3           0.293      [0.18, 0.41]
+3            0.4           0.438       [0.3, 0.58]
 </pre>
     <p>
       The credible intervals usually contain the actual probabilities of winning. The estimates are still rough, especially for the lower-probability machines.  But that's a feature, not a bug: the goal is to play the high-probability machines most often.  Making the estimates more precise is a means to that end, but not an end itself.
@@ -886,25 +858,6 @@ Actual P(win) Times played
     <p>
       Details of this exercise are in the notebook.
     </p>
-    <p>
-      The model we'll use is based on <url href="https://en.wikipedia.org/wiki/Item_response_theory">item response theory</url>, which assumes that we can quantify the difficulty of each question and the ability of each test-taker, and that the probability of a correct response is a function of difficulty and ability.
-    </p>
-    <p>
-      Specifically, a common assumption is that this function is a three-parameter logistic function:
-    </p>
-    <me>\mathrm{p} = c + \frac{1-c}{1 + e^{-a (\theta-b)}}</me>
-    <p>
-      where <m>\theta</m> is the ability of the test-taker and <m>b</m> is the difficulty of the question.
-    </p>
-    <p>
-      <m>c</m> is the lowest probability of getting a question right, supposing the test-taker with the lowest ability tries to answer the hardest question.  On a multiple-choice test with four responses, <m>c</m> might be 0.25, which is the probability of getting the right answer by guessing at random.
-    </p>
-    <p>
-      <m>a</m> controls the shape of the curve.
-    </p>
-    <p>
-      The following function computes the probability of a correct answer, given <c>ability</c> and <c>difficulty</c>:
-    </p>
     <program language="python">
       <input>
 def prob_correct(ability, difficulty):
@@ -948,7 +901,20 @@ decorate(xlabel='Ability',
 
   <section xml:id="sec-ch10-simulating-the-test">
     <title>Simulating the Test</title>
-
+<p>
+To simulate the test, we’ll use the same structure we used for the bandit strategy:
+<ol>
+<li>
+A function called <c>play</c> that simulates a test-taker answering one question.
+</li><li>
+A function called <c>choose</c> that chooses the next question to pose.
+</li><li>
+A function called <c>update</c> that uses the outcome (a correct response or not) to update the estimate of the test-taker’s ability.
+</li></ol>
+</p>
+<p>
+Here’s <c>play</c>, which takes <c>ability</c> and <c>difficulty</c> as parameters.
+</p>
     <program language="python">
       <input>
 def play(ability, difficulty):
