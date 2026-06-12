@@ -532,7 +532,7 @@ from utils import make_mixture
 pred_france = make_mixture(france, pmf_seq)
       </input>
     </program>
-
+<p>Here's the predictive distribution for the number of goals France would score in a rematch.</p>
     <program language="python">
       <input>
 pred_france.bar(color='C3', label='France')
@@ -541,7 +541,6 @@ decorate_goals('Posterior predictive distribution')
     </program>
     <image source="images/ch08_poisson_processes_bf7a855f.png" width="80%"/>
     <p>
-      Here's the predictive distribution for the number of goals France would score in a rematch.
       This distribution represents two sources of uncertainty: we don't know the actual value of <c>lam</c>, and even if we did, we would not know the number of goals in the next game.
     </p>
 
