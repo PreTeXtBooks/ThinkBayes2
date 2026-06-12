@@ -99,7 +99,7 @@ df
       </input>
     </program>
 <pre>
-1   3   5
+   1   3   5
 2  2   6  10
 4  4  12  20
 </pre>
@@ -838,7 +838,7 @@ decorate(xlabel='Height in cm',
 
   </section>
 
-  <section xml:id="sec-ch11-exercises">
+  <exercises xml:id="sec-ch11-exercises">
     <title>Exercises</title>
 
     <exercise xml:id="ex-ch11-1">
@@ -1204,5 +1204,5 @@ marginal_A_elo.std(), marginal_B_elo.std()
     </solution>
     </exercise>
 
-  </section>
+  </exercises>
 </chapter>
