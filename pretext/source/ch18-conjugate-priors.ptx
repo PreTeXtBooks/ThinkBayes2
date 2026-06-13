@@ -22,7 +22,7 @@ With more than 3-4 parameters, grid methods become impractical.</p>
   <section xml:id="sec-ch18-world-cup">
     <title>The World Cup Problem Revisited</title>
 
-    <p>In <!-- ref: PoissonProcesses -->, we solved the World Cup problem using a Poisson process to model goals in a soccer game as random events that are equally likely to occur at any point during a game.</p>
+    <p>In <xref ref = "ch-poisson-processes"/>, we solved the World Cup problem using a Poisson process to model goals in a soccer game as random events that are equally likely to occur at any point during a game.</p>
     <p>We used a gamma distribution to represent the prior distribution of <m>\lambda</m>, the goal-scoring rate.  And we used a Poisson distribution to compute the probability of <m>k</m>, the number of goals scored.</p>
     <p>Here's a gamma object that represents the prior distribution.</p>
     <program language="python">
@@ -69,7 +69,7 @@ Now we'll solve the same problem using the conjugate prior.</p>
   <section xml:id="sec-ch18-conjugate-prior">
     <title>The Conjugate Prior</title>
 
-    <p>In <!-- ref: TheGammaDistribution -->, I presented three reasons to use a gamma distribution for the prior and said there was a fourth reason I would reveal later.
+    <p>In <xref ref = "sec-gamma-distribution"/>, I presented three reasons to use a gamma distribution for the prior and said there was a fourth reason I would reveal later.
 Well, now is the time.</p>
     <p>The other reason I chose the gamma distribution is that it is the "conjugate prior" of the Poisson distribution, so-called because the two distributions are connected or coupled, which is what "conjugate" means.</p>
     <p>In the next section I'll explain <em>how</em> they are connected, but first I'll show you the consequence of this connection, which is that there is a remarkably simple way to compute the posterior distribution.</p>
@@ -332,7 +332,7 @@ multinomial.pmf(data, n, ps)
   <section xml:id="sec-ch18-dirichlet">
     <title>The Dirichlet Distribution</title>
 
-    <p>The Dirichlet distribution is a multivariate distribution, like the multivariate normal distribution we used in <!-- ref: MultivariateNormalDistribution --> to describe the distribution of penguin measurements.</p>
+    <p>The Dirichlet distribution is a multivariate distribution, like the multivariate normal distribution we used in <xref ref = "sec-multivariate-normal-distribution"/> to describe the distribution of penguin measurements.</p>
     <p>In that example, the quantities in the distribution are pairs of flipper length and culmen length, and the parameters of the distribution are a vector of means and a matrix of covariances.</p>
     <p>In a Dirichlet distribution, the quantities are vectors of probabilities, <m>\mathbf{x}</m>, and the parameter is a vector, <m>\mathbf{\alpha}</m>.</p>
     <p>An example will make that clearer.  SciPy provides a <c>dirichlet</c> object that represents a Dirichlet distribution.
@@ -451,7 +451,7 @@ And that's useful because the Dirichlet distribution is the conjugate prior for 
 That's why we need grid algorithms and the methods in the next two chapters, Approximate Bayesian Computation (ABC) and Markov chain Monte Carlo methods (MCMC).</p>
   </section>
 
-  <section xml:id="sec-ch18-exercises">
+  <exercises xml:id="sec-ch18-exercises">
     <title>Exercises</title>
 
     <exercise xml:id="ex-ch18-1">
@@ -489,6 +489,7 @@ posterior1 = update_gamma(prior_gamma, data)
       <program language="python">
         <input>
 
+# Here's the second update
 data = 1, 12/90
 posterior2 = update_gamma(posterior1, data)
         </input>
@@ -505,6 +506,7 @@ prior_gamma.mean(), posterior1.mean(), posterior2.mean()
       <program language="python">
         <input>
 
+# And here's what the posteriors look like
 pmf_from_dist(prior_gamma, lams).plot(color='C5', label='prior')
 pmf_from_dist(posterior1, lams).plot(label='after 1 goal')
 pmf_from_dist(posterior2, lams).plot(label='after 2 goals')
@@ -586,58 +588,6 @@ decorate_euro('Prior distributions')
     <solution>
       <program language="python">
         <input>
-from empiricaldist import Pmf
-
-ramp_up = np.arange(50)
-ramp_down = np.arange(50, -1, -1)
-
-a = np.append(ramp_up, ramp_down)
-xs = uniform.qs
-
-triangle = Pmf(a, xs, name='triangle')
-triangle.normalize()
-        </input>
-    </program>
-<pre>
-2500
-</pre>
-      <program language="python">
-        <input>
-k, n = 140, 250
-likelihood = binom.pmf(k, n, xs)
-
-posterior = triangle * likelihood
-posterior.normalize()
-        </input>
-    </program>
-<pre>
-0.007008842590059087
-</pre>
-      <program language="python">
-        <input>
-alpha = 1
-beta = 1
-
-prior_beta = make_beta(alpha, beta)
-prior_beta.mean()
-        </input>
-    </program>
-<pre>
-0.5
-</pre>
-      <program language="python">
-        <input>
-prior_pmf = pmf_from_dist(prior_beta, xs)
-
-triangle.plot(label='triangle')
-prior_pmf.plot(label='beta')
-
-decorate_euro('Prior distributions')
-        </input>
-      </program>
-    <image source="images/ch18_conjugate_priors_47e2d565.png" width="80%"/>
-      <program language="python">
-        <input>
 
 data = 140, 250
 posterior_beta = update_beta(prior_beta, data)
@@ -673,9 +623,6 @@ np.allclose(posterior, posterior_conjugate)
 <pre>
 False
 </pre>
-<pre>
-True
-</pre>
     </solution>
     </exercise>
 
@@ -702,6 +649,8 @@ In <url href="https://www.youtube.com/watch?v=8idr1WZ1A7Q">this video</url> the 
       <program language="python">
         <input>
 
+# The first prior implies that most sellers are 
+# satisfactory most of the time, but none are perfect.
 prior = make_beta(8, 2)
 
 xs = np.linspace(0.005, 0.995, 199)
@@ -777,6 +726,12 @@ best = np.argmax(a, axis=0)
 Pmf.from_seq(best)
         </input>
       </program>
+<pre>
+   probs
+0	0.2881
+1	0.4770
+2	0.2349
+</pre>
     </solution>
     </exercise>
 
@@ -829,9 +784,16 @@ index = ['lion', 'tiger', 'bear']
 pd.DataFrame(dist.mean(), index, columns=['prob'])
         </input>
       </program>
+
+<pre>
+          prob
+lion  0.444444
+tiger 0.333333
+bear  0.222222
+</pre>
     </solution>
     </exercise>
 
-  </section>
+  </exercises>
 
 </chapter>
