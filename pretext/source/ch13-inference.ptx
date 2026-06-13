@@ -5,9 +5,6 @@
 
   <introduction>
     <p>
-      You can order print and ebook versions of <em>Think Bayes 2e</em> from <url href="https://bookshop.org/a/98697/9781492089469">Bookshop.org</url> and <url href="https://amzn.to/334eqGo">Amazon</url>.
-    </p>
-    <p>
       Whenever people compare Bayesian inference with conventional approaches, one of the questions that comes up most often is something like, "What about p-values?" And one of the most common examples is the comparison of two groups to see if there is a difference in their means.
     </p>
     <p>
@@ -308,7 +305,7 @@ Treatment  Response
     <title>Posterior Marginal Distributions</title>
 
     <p>
-      I'll use <c>marginal</c>, which we saw in &lt;&lt;_MarginalDistributions&gt;&gt;, to extract the posterior marginal distributions for the population means.
+      I'll use <c>marginal</c>, which we saw in a previous chapter on Marginal Distributions, to extract the posterior marginal distributions for the population means.
     </p>
     <program language="python">
       <input>
@@ -428,7 +425,7 @@ Treatment  Response
       <c>kde_from_pmf</c> takes as parameters a <c>Pmf</c> and the number of places to evaluate the KDE.
     </p>
     <p>
-      It uses <c>gaussian_kde</c>, which we saw in &lt;&lt;_KernelDensityEstimation&gt;&gt;, passing the probabilities from the <c>Pmf</c> as weights. This makes the estimated densities higher where the probabilities in the <c>Pmf</c> are higher.
+      It uses <c>gaussian_kde</c>, which we saw in a previous chapter on Kernel Density Estimation, passing the probabilities from the <c>Pmf</c> as weights. This makes the estimated densities higher where the probabilities in the <c>Pmf</c> are higher.
     </p>
     <p>
       Here's what the kernel density estimate looks like for the <c>Pmf</c> of differences between the groups.
@@ -671,9 +668,6 @@ array([ 2.4, 17.4])
     normalize(posterior_control2)
       </input>
     </program>
-<pre>
-0.00030965351017402847
-</pre>
     <p>
       To compute the posterior distribution for the treatment group, I'll put the previous steps in a function:
     </p>
@@ -1007,7 +1001,7 @@ array([ 2.4, 17.4])
     </p>
   </section>
 
-  <section xml:id="sec-ch13-exercises">
+  <exercises xml:id="sec-ch13-exercises">
     <title>Exercises</title>
 
     <exercise xml:id="ex-ch13-1">
@@ -1491,6 +1485,6 @@ array([1.0193799 , 1.02734473])
     </solution>
     </exercise>
 
-  </section>
+  </exercises>
 
 </chapter>
