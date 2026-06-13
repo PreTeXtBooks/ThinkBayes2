@@ -5,42 +5,6 @@
 
   <introduction>
     <p>
-      You can order print and ebook versions of <em>Think Bayes 2e</em> from <url href="https://bookshop.org/a/98697/9781492089469">Bookshop.org</url> and <url href="https://amzn.to/334eqGo">Amazon</url>.
-    </p>
-    <program language="python">
-      <input>
-# install empiricaldist if necessary
-
-try:
-    import empiricaldist
-except ImportError:
-    !pip install empiricaldist
-    import empiricaldist
-      </input>
-    </program>
-    <program language="python">
-      <input>
-# Get utils.py
-
-from os.path import basename, exists
-
-def download(url):
-    filename = basename(url)
-    if not exists(filename):
-        from urllib.request import urlretrieve
-        local, _ = urlretrieve(url, filename)
-        print('Downloaded ' + local)
-    
-download('https://github.com/AllenDowney/ThinkBayes2/raw/master/soln/utils.py')
-      </input>
-    </program>
-    <program language="python">
-      <input>
-from utils import set_pyplot_params
-set_pyplot_params()
-      </input>
-    </program>
-    <p>
       This chapter introduces "survival analysis", which is a set of statistical methods used to answer questions about the time until an event. In the context of medicine it is literally about survival, but it can be applied to the time until any kind of event, or instead of time it can be about space or other dimensions.
     </p>
     <p>
@@ -101,11 +65,7 @@ decorate(xlabel='Duration in time',
     <p>
       <c>actual_dist</c> provides <c>rvs</c>, which we can use to generate a random sample from this distribution.
     </p>
-    <program language="python">
-      <input>
-np.random.seed(17)
-      </input>
-    </program>
+
     <program language="python">
       <input>
 data = actual_dist.rvs(10)
@@ -326,11 +286,6 @@ print(k, posterior_k.credible_interval(0.9))
     </p>
     <program language="python">
       <input>
-np.random.seed(19)
-      </input>
-    </program>
-    <program language="python">
-      <input>
 start = np.random.uniform(0, 8, size=10)
 start
       </input>
@@ -342,11 +297,7 @@ array([0.78026881, 6.08999773, 1.97550379, 1.1050535 , 2.65157251,
     <p>
       Now let's suppose that the residence times follow the Weibull distribution we used in the previous example. We can generate a sample from that distribution like this:
     </p>
-    <program language="python">
-      <input>
-np.random.seed(17)
-      </input>
-    </program>
+
     <program language="python">
       <input>
 duration = actual_dist.rvs(10)
@@ -378,7 +329,7 @@ obs
       </input>
     </program>
 <pre>
-start       end
+      start       end
 0  0.663997  3.921447
 1  0.780269  1.585242
 2  1.105053  1.213680
@@ -623,9 +574,14 @@ decorate(xlabel='k',
     <p>
       In 2007 <url href="https://www.researchgate.net/publication/225450325_Renewal_Rate_of_Filament_Lamps_Theory_and_Experiment">researchers ran an experiment</url> to characterize the distribution of lifetimes for light bulbs. Here is their description of the experiment:
     </p>
+        <blockquote>
     <p>
-      &gt; An assembly of 50 new Philips (India) lamps with the rating 40 W, 220 V (AC) was taken and installed in the horizontal orientation and uniformly distributed over a lab area 11 m x 7 m. &gt; &gt; The assembly was monitored at regular intervals of 12 h to look for failures. The instants of recorded failures were [recorded] and a total of 32 data points were obtained such that even the last bulb failed.
+      An assembly of 50 new Philips (India) lamps with the rating 40 W, 220 V (AC) was taken and installed in the horizontal orientation and uniformly distributed over a lab area 11 m x 7 m.
+</p>
+<p>
+The assembly was monitored at regular intervals of 12 h to look for failures. The instants of recorded failures were [recorded] and a total of 32 data points were obtained such that even the last bulb failed.
     </p>
+        </blockquote>
     <program language="python">
       <input>
 download('https://gist.github.com/epogrebnyak/7933e16c0ad215742c4c104be4fbdeb1/raw/c932bc5b6aa6317770c4cbf43eb591511fec08f9/lamps.csv')
@@ -641,7 +597,7 @@ df.head()
       </input>
     </program>
 <pre>
-h  f   K
+     h  f   K
 i            
 0    0  0  50
 1  840  2  48
@@ -1014,7 +970,7 @@ decorate(xlabel='Number of dead bulbs',
     </p>
   </section>
 
-  <section xml:id="sec-ch14-exercises">
+  <exercises xml:id="sec-ch14-exercises">
     <title>Exercises</title>
 
     <exercise xml:id="ex-ch14-1">
@@ -1439,5 +1395,5 @@ p_gt
     </solution>
     </exercise>
 
-  </section>
+  </exercises>
 </chapter>
