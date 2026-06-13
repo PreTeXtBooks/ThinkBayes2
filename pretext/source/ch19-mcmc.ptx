@@ -5,7 +5,7 @@
 
   <introduction>
     <p>
-      You can order print and ebook versions of *Think Bayes 2e* from <url href="https://bookshop.org/a/98697/9781492089469">Bookshop.org</url> and <url href="https://amzn.to/334eqGo">Amazon</url>.
+[NOTE: this online version of Chapter 19 has been updated for PyMC version 5]
     </p>
     <p>
       For most of this book we've been using grid methods to approximate posterior distributions. For models with one or two parameters, grid algorithms are fast and the results are precise enough for most practical purposes. With three parameters, they start to be slow, and with more than three they are usually not practical.
@@ -22,13 +22,48 @@
     <p>
       To demonstrate, we'll start by solving the World Cup problem. Yes, again.
     </p>
+
+    <program language="python">
+      <input>
+# install empiricaldist if necessary
+
+try:
+    import empiricaldist
+except ImportError:
+    !pip install empiricaldist
+    import empiricaldist
+</input>
+</program>
+
+    <program language="python">
+      <input>
+# Get utils.py
+
+from os.path import basename, exists
+
+def download(url):
+    filename = basename(url)
+    if not exists(filename):
+        from urllib.request import urlretrieve
+        local, _ = urlretrieve(url, filename)
+        print('Downloaded ' + local)
+
+download('https://github.com/AllenDowney/ThinkBayes2/raw/master/soln/utils.py')
+</input>
+</program>
+    <program language="python">
+      <input>
+from utils import set_pyplot_params
+set_pyplot_params()
+</input>
+</program>
   </introduction>
 
   <section xml:id="sec-ch19-the-world-cup-problem">
     <title>The World Cup Problem</title>
 
     <p>
-      In [[_PoissonProcesses]] we modeled goal scoring in football (soccer) as a Poisson process characterized by a goal-scoring rate, denoted <m>\lambda</m>.
+      In <xref ref = "ch-poisson-processes"/> we modeled goal scoring in football (soccer) as a Poisson process characterized by a goal-scoring rate, denoted <m>\lambda</m>.
     </p>
     <p>
       We used a gamma distribution to represent the prior distribution of <m>\lambda</m>, then we used the outcome of the game to compute the posterior distribution for both teams.
@@ -51,7 +86,7 @@
     <title>Grid Approximation</title>
 
     <p>
-      As we did in [[_TheGammaDistribution]] we'll use a gamma distribution with parameter <m>\alpha=1.4</m> to represent the prior.
+      As we did in <xref ref = "sec-gamma-distribution"/> we'll use a gamma distribution with parameter <m>\alpha=1.4</m> to represent the prior.
     </p>
     <program language="python">
       <input>
@@ -161,7 +196,7 @@
     <title>Introducing PyMC3</title>
 
     <p>
-      PyMC3 is a Python library that provides several MCMC methods.
+      PyMC is a Python library that provides several MCMC methods.
     </p>
     <p>
       To use PyMC3, we have to specify a model of the process that generates the data.
@@ -184,7 +219,7 @@
     </p>
     <program language="python">
       <input>
-      import pymc3 as pm
+      import PyMC as pm
 
       with pm.Model() as model:
           lam = pm.Gamma('lam', alpha=1.4, beta=1.0)
@@ -192,7 +227,7 @@
       </input>
     </program>
     <p>
-      After importing <c>pymc3</c>, we create a <c>Model</c> object named <c>model</c>.
+      After importing <c>PyMC</c>, we create a <c>Model</c> object named <c>model</c>.
     </p>
     <p>
       If you are not familiar with the <c>with</c> statement in Python, it is a way to associate a block of statements with an object. In this example, the two indented statements are associated with the new <c>Model</c> object.  As a result, when we create the distribution objects, <c>Gamma</c> and <c>Poisson</c>, they are added to the <c>Model</c>.
@@ -214,7 +249,7 @@
       The first parameter of <c>Gamma</c> and <c>Poisson</c> is a string variable name.
     </p>
     <p>
-      PyMC3 provides a function that generates a visual representation of the model.
+      PyMC provides a function that generates a visual representation of the model.
     </p>
     <program language="python">
       <input>
@@ -233,7 +268,7 @@
     <title>Sampling the Prior</title>
 
     <p>
-      PyMC3 provides a function that generates samples from the prior and prior predictive distributions.
+      PyMC provides a function that generates samples from the prior and prior predictive distributions.
     </p>
     <p>
       We can use a <c>with</c> statement to run this function in the context of the model.
@@ -244,9 +279,26 @@
           trace = pm.sample_prior_predictive(1000)
       </input>
     </program>
+<pre>
+Sampling: [goals, lam]
+</pre>
+    <program language="python">
+      <input>
+type(idata)
+      </input>
+    </program>
+<pre>
+arviz.data.inference_data.InferenceData
+</pre>
     <p>
       The result is a dictionary-like object that maps from the variables, <c>lam</c> and <c>goals</c>, to the samples. We can extract the sample of <c>lam</c> like this:
     </p>
+    <program language="python">
+      <input>
+def get_values(array):
+    return array.values.flatten()
+      </input>
+    </program>
     <program language="python">
       <input>
       sample_prior_pymc = trace['lam']
@@ -277,7 +329,7 @@
                label='SciPy sample',
                color='C5')
       plot_cdf(sample_prior_pymc, 
-               label='PyMC3 sample',
+               label='PyMC sample',
                color='C0')
       decorate(xlabel=r'Goals per game ($\lambda$)',
                ylabel='CDF',
@@ -318,7 +370,7 @@
                 label='SciPy sample', 
                 color='C5')
       plot_pred(sample_prior_pred_pymc, 
-                label='PyMC3 sample', 
+                label='PyMC sample', 
                 color='C13')
       decorate(xlabel='Number of goals',
                ylabel='PMF',
@@ -327,7 +379,7 @@
     </program>
     <image source="images/ch19_mcmc_bbc3f328.png" width="80%"/>
     <p>
-      Again, the results are similar, so we have some confidence we are using PyMC3 right.
+      Again, the results are similar, so we have some confidence we are using PyMC right.
     </p>
   </section>
 
@@ -372,17 +424,18 @@
       </input>
     </program>
 <pre>
-Auto-assigning NUTS sampler...
 Initializing NUTS using jitter+adapt_diag...
 Multiprocess sampling (2 chains in 2 jobs)
 NUTS: [lam]
+
+Sampling 4 chains for 1_000 tune and 500 draw iterations (4_000 + 2_000 draws total) took 1 seconds.
 </pre>
     <p>
-      Although the specification of these models is similar, the sampling process is very different. I won't go into the details of how PyMC3 works, but here are a few things you should be aware of:
+      Although the specification of these models is similar, the sampling process is very different. I won't go into the details of how PyMC works, but here are a few things you should be aware of:
     </p>
     <p>
       <ul>
-        <li><p>Depending on the model, PyMC3 uses one of several MCMC methods; in this example, it uses the <url href="https://en.wikipedia.org/wiki/Hamiltonian_Monte_Carlo#No_U-Turn_Sampler">No U-Turn Sampler</url> (NUTS), which is one of the most efficient and reliable methods we have.</p></li>
+        <li><p>Depending on the model, PyMC uses one of several MCMC methods; in this example, it uses the <url href="https://en.wikipedia.org/wiki/Hamiltonian_Monte_Carlo#No_U-Turn_Sampler">No U-Turn Sampler</url> (NUTS), which is one of the most efficient and reliable methods we have.</p></li>
       </ul>
     </p>
     <p>
@@ -392,11 +445,11 @@ NUTS: [lam]
     </p>
     <p>
       <ul>
-        <li><p>Instead of using a single Markov chain, PyMC3 uses multiple chains.  Then we can compare results from multiple chains to make sure they are consistent.</p></li>
+        <li><p>Instead of using a single Markov chain, PyMC uses multiple chains.  Then we can compare results from multiple chains to make sure they are consistent.</p></li>
       </ul>
     </p>
     <p>
-      Although we asked for a sample of 500, PyMC3 generated two samples of 1000, discarded half of each, and returned the remaining 1000. From <c>trace2</c> we can extract a sample from the posterior distribution, like this:
+      Although we asked for a sample of 500, PyMC generated two samples of 1000, discarded half of each, and returned the remaining 1000. From <c>trace2</c> we can extract a sample from the posterior distribution, like this:
     </p>
     <program language="python">
       <input>
@@ -419,7 +472,7 @@ NUTS: [lam]
       posterior.make_cdf().plot(label='posterior grid', 
                                 color='C5')
       plot_cdf(sample_post_pymc, 
-               label='PyMC3 sample',
+               label='PyMC sample',
                color='C4')
 
       decorate(xlabel=r'Goals per game ($\lambda$)',
@@ -429,7 +482,7 @@ NUTS: [lam]
     </program>
     <image source="images/ch19_mcmc_16df64a9.png" width="80%"/>
     <p>
-      The results from PyMC3 are consistent with the results from the grid approximation.
+      The results from PyMC are consistent with the results from the grid approximation.
     </p>
   </section>
 
@@ -446,23 +499,23 @@ NUTS: [lam]
       </input>
     </program>
 <pre>
-&lt;IPython.core.display.HTML object&gt;
+Sampling: [goals]
 </pre>
     <p>
-      The result is a dictionary that contains a sample of <c>goals</c>.
+      The result is an <c>InferenceData</c> object that contains a sample of <c>goals</c>.
     </p>
     <program language="python">
       <input>
-      sample_post_pred_pymc = post_pred['goals']
+sample_post_pred_pymc = get_values(idata2_pred.posterior_predictive['goals'])
       </input>
     </program>
     <program language="python">
       <input>
-      sample_post_pred_pymc.shape
+sample_post_pred_pymc.shape
       </input>
     </program>
 <pre>
-(1000,)
+(2000,)
 </pre>
     <p>
       I'll also generate a sample from the posterior distribution we computed by grid approximation.
@@ -478,16 +531,16 @@ NUTS: [lam]
     </p>
     <program language="python">
       <input>
-      plot_pred(sample_post_pred, 
-                label='grid sample',
-                color='C5')
-      plot_pred(sample_post_pred_pymc, 
-                label='PyMC3 sample',
-                color='C12')
+plot_pred(sample_post_pred,
+          label='grid sample',
+          color='C5')
+plot_pred(sample_post_pred_pymc,
+          label='PyMC sample',
+          color='C12')
 
-      decorate(xlabel='Number of goals',
-               ylabel='PMF',
-               title='Posterior Predictive Distribution')
+decorate(xlabel='Number of goals',
+         ylabel='PMF',
+         title='Posterior Predictive Distribution')
       </input>
     </program>
     <image source="images/ch19_mcmc_9278da95.png" width="80%"/>
@@ -498,7 +551,7 @@ NUTS: [lam]
       But it might not be clear why. In this example, the grid algorithm requires less computation than MCMC, and the result is a pretty good approximation of the posterior distribution, rather than a sample.
     </p>
     <p>
-      However, this is a simple model with just one parameter. In fact, we could have solved it with even less computation, using a conjugate prior. The power of PyMC3 will be clearer with a more complex model.
+      However, this is a simple model with just one parameter. In fact, we could have solved it with even less computation, using a conjugate prior. The power of PyMC will be clearer with a more complex model.
     </p>
   </section>
 
@@ -507,8 +560,6 @@ NUTS: [lam]
 
     <p>
       Recently I read <url href="https://ourworldindata.org/happiness-and-life-satisfaction">"Happiness and Life Satisfaction"</url>
-    </p>
-    <p>
       by Esteban Ortiz-Ospina and Max Roser, which discusses (among many other things) the relationship between income and happiness, both between countries, within countries, and over time.
     </p>
     <p>
@@ -548,7 +599,7 @@ NUTS: [lam]
       The dependent variable is the national average of responses to the "Cantril ladder question" used by the <url href="https://news.gallup.com/poll/122453/understanding-gallup-uses-cantril-scale.aspx">Gallup World Poll</url>:
     </p>
     <p>
-      > Please imagine a ladder with steps numbered from zero at the bottom to 10 at the top. The top of the ladder represents the best possible life for you and the bottom of the ladder represents the worst possible life for you. On which step of the ladder would you say you personally feel you stand at this time?
+      "Please imagine a ladder with steps numbered from zero at the bottom to 10 at the top. The top of the ladder represents the best possible life for you and the bottom of the ladder represents the worst possible life for you. On which step of the ladder would you say you personally feel you stand at this time?"
     </p>
     <p>
       I'll refer to the responses as "happiness", but it might be more precise to think of them as a measure of satisfaction with quality of life.
@@ -703,7 +754,7 @@ Intercept -1.198646
       The estimated slope is about 0.72, which suggests that an increase of one unit in log-GDP, which is a factor of <m>e \approx 2.7</m> in GDP, is associated with an increase of 0.72 units on the happiness ladder.
     </p>
     <p>
-      Now let's estimate the same parameters using PyMC3. We'll use the same regression model as in Section [[_RegressionModel]]:
+      Now let's estimate the same parameters using PyMC3. We'll use the same regression model as in <xref ref = "ch-regression"/>:
     </p>
     <p>
       <me>y = a x + b + \epsilon</me>
@@ -715,7 +766,7 @@ Intercept -1.198646
       <m>a</m> and <m>b</m> are the slope and intercept of the regression line. They are unknown parameters, so we will use the data to estimate them.
     </p>
     <p>
-      The following is the PyMC3 specification of this model.
+      The following is the PyMC specification of this model.
     </p>
     <program language="python">
       <input>
@@ -762,10 +813,11 @@ Intercept -1.198646
       </input>
     </program>
 <pre>
-Auto-assigning NUTS sampler...
 Initializing NUTS using jitter+adapt_diag...
-Multiprocess sampling (2 chains in 2 jobs)
-NUTS: [sigma, b, a]
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [a, b, sigma]
+
+Sampling 4 chains for 1_000 tune and 500 draw iterations (4_000 + 2_000 draws total) took 4 seconds.
 </pre>
     <p>
       When you run the sampler, you might get warning messages about "divergences" and the "acceptance probability". You can ignore them for now.
@@ -773,14 +825,6 @@ NUTS: [sigma, b, a]
     <p>
       The result is an object that contains samples from the joint posterior distribution of <c>a</c>, <c>b</c>, and <c>sigma</c>.
     </p>
-    <program language="python">
-      <input>
-      trace3
-      </input>
-    </program>
-<pre>
-&lt;MultiTrace: 2 chains, 500 iterations, 6 variables&gt;
-</pre>
     <p>
       ArviZ provides <c>plot_posterior</c>, which we can use to plot the posterior distributions of the parameters. Here are the posterior distributions of slope, <c>a</c>, and intercept, <c>b</c>.
     </p>
@@ -838,7 +882,7 @@ Regression intercept: -1.1986460618088843
       It is not practical to compute a grid approximation for a model with eight parameters. Even a coarse grid, with 20 points along each dimension, would have more than 25 billion points. And with 153 countries, we would have to compute almost 4 trillion likelihoods.
     </p>
     <p>
-      But PyMC3 can handle a model with eight parameters comfortably, as we'll see in the next section.
+      But PyMC can handle a model with eight parameters comfortably, as we'll see in the next section.
     </p>
     <program language="python">
       <input>
@@ -961,35 +1005,36 @@ Ladder score  Logged GDP per capita  Social support  \
       </input>
     </program>
 <pre>
-Auto-assigning NUTS sampler...
 Initializing NUTS using jitter+adapt_diag...
-Multiprocess sampling (2 chains in 2 jobs)
-NUTS: [sigma, b6, b5, b4, b3, b2, b1, b0]
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [b0, b1, b2, b3, b4, b5, b6, sigma]
+
+Sampling 4 chains for 1_000 tune and 500 draw iterations (4_000 + 2_000 draws total) took 4 seconds.
 </pre>
     <p>
       Because we standardized the data, we expect the intercept to be 0, and in fact the posterior mean of <c>b0</c> is close to 0.
     </p>
     <program language="python">
       <input>
-      trace4['b0'].mean()
+get_values(idata4.posterior['b0']).mean()
       </input>
     </program>
 <pre>
--0.0009400028402880869
+np.float64(0.001014408542637)
 </pre>
     <p>
       We can also check the posterior mean of <c>sigma</c>:
     </p>
     <program language="python">
       <input>
-      trace4['sigma'].mean()
+get_values(idata4.posterior['sigma']).mean()
       </input>
     </program>
 <pre>
-0.5157546237813752
+np.float64(0.517165987897353)
 </pre>
     <p>
-      From <c>trace4</c> we can extract samples from the posterior distributions of the parameters and compute their means.
+      From <c>idata4</c> we can extract samples from the posterior distributions of the parameters and compute their means.
     </p>
     <program language="python">
       <input>
@@ -1026,7 +1071,7 @@ NUTS: [sigma, b6, b5, b4, b3, b2, b1, b0]
       </input>
     </program>
 <pre>
-Posterior mean           94% CI
+                              Posterior mean           94% CI
 Logged GDP per capita                  0.244    [0.085, 0.41]
 Social support                         0.225   [0.081, 0.377]
 Healthy life expectancy                0.225   [0.081, 0.377]
@@ -1055,7 +1100,7 @@ Perceptions of corruption             -0.100  [-0.197, 0.002]
     <title>Summary</title>
 
     <p>
-      In this chapter we used PyMC3 to implement two models we've seen before: a Poisson model of goal-scoring in soccer and a simple regression model.
+      In this chapter we used PyMC to implement two models we've seen before: a Poisson model of goal-scoring in soccer and a simple regression model.
     </p>
     <p>
       Then we implemented a multiple regression model that would not have been possible to compute with a grid approximation.
@@ -1075,17 +1120,11 @@ Perceptions of corruption             -0.100  [-0.197, 0.002]
     </p>
     <p>
       For these reasons, I recommend a model development process that starts with grid algorithms and resorts to MCMC if necessary.
-    </p>
-    <p>
       As we saw in the previous chapters, you can solve a lot of real-world problems with grid methods.
-    </p>
-    <p>
       But when you need MCMC, it is useful to have a grid algorithm to compare to (even if it is based on a simpler model).
     </p>
     <p>
       All of the models in this book can be implemented in PyMC3, but some of them are easier to translate than others.
-    </p>
-    <p>
       In the exercises, you will have a chance to practice.
     </p>
   </section>
@@ -1096,19 +1135,14 @@ Perceptions of corruption             -0.100  [-0.197, 0.002]
     <exercise xml:id="ex-ch19-1">
       <statement>
         <p>
-          As a warmup, let's use PyMC3 to solve the Euro problem. Suppose we spin a coin 250 times and it comes up heads 140 times. What is the posterior distribution of <m>x</m>, the probability of heads?
+          As a warmup, let's use PyMC to solve the Euro problem. Suppose we spin a coin 250 times and it comes up heads 140 times. What is the posterior distribution of <m>x</m>, the probability of heads?
         </p>
         <p>
           For the prior, use a beta distribution with parameters <m>\alpha=1</m> and <m>\beta=1</m>.
         </p>
         <p>
-          See <url href="https://docs.pymc.io/api/distributions/continuous.html">the PyMC3 documentation</url> for the list of continuous distributions.
+          See <url href="https://docs.pymc.io/api/distributions/continuous.html">the PyMC documentation</url> for the list of continuous distributions.
         </p>
-        <program language="python">
-          <input>
-          # Solution goes here
-          </input>
-        </program>
       </statement>
     <solution>
       <program language="python">
@@ -1120,17 +1154,26 @@ k_obs = 140
 with pm.Model() as model5:
     x = pm.Beta('x', alpha=1, beta=1)
     k = pm.Binomial('k', n=n, p=x, observed=k_obs)
-    trace5 = pm.sample(500, **options)
-    az.plot_posterior(trace5)
+    idata5 = pm.sample(500, **options)
+    az.plot_posterior(idata5)
         </input>
       </program>
+
+<pre>
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [x]
+
+Sampling 4 chains for 1_000 tune and 500 draw iterations (4_000 + 2_000 draws total) took 2 seconds.
+</pre>
+
     </solution>
     </exercise>
 
     <exercise xml:id="ex-ch19-2">
       <statement>
         <p>
-          Now let's use PyMC3 to replicate the solution to the Grizzly Bear problem in [[_TheGrizzlyBearProblem]], which is based on the hypergeometric distribution.
+          Now let's use PyMC to replicate the solution to the Grizzly Bear problem seen earlier, which is based on the hypergeometric distribution.
         </p>
         <p>
           I'll present the problem with slightly different notation, to make it consistent with PyMC3.
@@ -1145,16 +1188,11 @@ with pm.Model() as model5:
           For the prior, use a discrete uniform distribution from 50 to 500.
         </p>
         <p>
-          See <url href="https://docs.pymc.io/api/distributions/discrete.html">the PyMC3 documentation</url> for the list of discrete distributions.
+          See <url href="https://docs.pymc.io/api/distributions/discrete.html">the PyMC documentation</url> for the list of discrete distributions.
         </p>
         <p>
-          Note: <c>HyperGeometric</c> was added to PyMC3 after version 3.8, so you might need to update your installation to do this exercise.
+          Note: <c>HyperGeometric</c> was added to PyMC after version 3.8, so you might need to update your installation to do this exercise.
         </p>
-        <program language="python">
-          <input>
-          # Solution goes here
-          </input>
-        </program>
       </statement>
     <solution>
       <program language="python">
@@ -1171,6 +1209,13 @@ with pm.Model() as model6:
     az.plot_posterior(trace6)
         </input>
       </program>
+<pre>
+Multiprocess sampling (4 chains in 4 jobs)
+Metropolis: [N]
+
+Sampling 4 chains for 1_000 tune and 1_000 draw iterations (4_000 + 4_000 draws total) took 1 seconds.
+The rhat statistic is larger than 1.01 for some parameters. This indicates problems during sampling. See https://arxiv.org/abs/1903.08008 for details
+</pre>
     </solution>
     </exercise>
 
@@ -1186,7 +1231,7 @@ with pm.Model() as model6:
           For the priors, you can use uniform distributions as we did in [[_SurvivalAnalysis]], or you could use <c>HalfNormal</c> distributions provided by PyMC3.
         </p>
         <p>
-          Note: The <c>Weibull</c> class in PyMC3 uses different parameters than SciPy.  The parameter <c>alpha</c> in PyMC3 corresponds to <m>k</m>, and <c>beta</c> corresponds to <m>\lambda</m>.
+          Note: The <c>Weibull</c> class in PyMC uses different parameters than SciPy.  The parameter <c>alpha</c> in PyMC corresponds to <m>k</m>, and <c>beta</c> corresponds to <m>\lambda</m>.
         </p>
         <p>
           Here's the data again:
@@ -1197,30 +1242,26 @@ with pm.Model() as model6:
                  3.25745053, 3.05555883, 2.47401062, 0.05340806, 1.08386395]
           </input>
         </program>
-        <program language="python">
-          <input>
-          # Solution goes here
-          </input>
-        </program>
       </statement>
     <solution>
       <program language="python">
         <input>
-data = [0.80497283, 2.11577082, 0.43308797, 0.10862644, 5.17334866,
-       3.25745053, 3.05555883, 2.47401062, 0.05340806, 1.08386395]
-        </input>
-      </program>
-      <program language="python">
-        <input>
-
 with pm.Model() as model7:
     lam = pm.Uniform('lam', 0.1, 10.1)
     k = pm.Uniform('k', 0.1, 5.1)
     y = pm.Weibull('y', alpha=k, beta=lam, observed=data)
-    trace7 = pm.sample(1000, **options)
-    az.plot_posterior(trace7)
+    idata7 = pm.sample(1000, **options)
+    az.plot_posterior(idata7)
         </input>
       </program>
+<pre>
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [lam, k]
+
+Sampling 4 chains for 1_000 tune and 1_000 draw iterations (4_000 + 4_000 draws total) took 2 seconds.
+There was 1 divergence after tuning. Increase `target_accept` or reparameterize.
+</pre>
     </solution>
     </exercise>
 
@@ -1249,7 +1290,7 @@ with pm.Model() as model7:
           </input>
     </program>
 <pre>
-Treatment  Response
+  Treatment  Response
 0   Treated        24
 1   Treated        43
 2   Treated        58
@@ -1276,63 +1317,24 @@ Treatment  Response
           data = responses['Treated']
           </input>
         </program>
-        <program language="python">
-          <input>
-          # Solution goes here
-          </input>
-        </program>
-        <program language="python">
-          <input>
-          # Solution goes here
-          </input>
-        </program>
       </statement>
     <solution>
       <program language="python">
         <input>
-download('https://github.com/AllenDowney/ThinkBayes2/raw/master/data/drp_scores.csv')
-        </input>
-      </program>
-      <program language="python">
-        <input>
-import pandas as pd
-
-df = pd.read_csv('drp_scores.csv', skiprows=21, delimiter='\t')
-df.head()
-        </input>
-    </program>
-<pre>
-Treatment  Response
-0   Treated        24
-1   Treated        43
-2   Treated        58
-3   Treated        71
-4   Treated        43
-</pre>
-      <program language="python">
-        <input>
-grouped = df.groupby('Treatment')
-responses = {}
-
-for name, group in grouped:
-    responses[name] = group['Response']
-        </input>
-      </program>
-      <program language="python">
-        <input>
-data = responses['Treated']
-        </input>
-      </program>
-      <program language="python">
-        <input>
-
 with pm.Model() as model8:
     mu = pm.Uniform('mu', 20, 80)
     sigma = pm.Uniform('sigma', 5, 30)
     y = pm.Normal('y', mu, sigma, observed=data)
-    trace8 = pm.sample(500, **options)
+    idata8 = pm.sample(500, **options)
         </input>
       </program>
+<pre>
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [mu, sigma]
+
+Sampling 4 chains for 1_000 tune and 500 draw iterations (4_000 + 2_000 draws total) took 1 seconds.
+</pre>
       <program language="python">
         <input>
 
@@ -1349,10 +1351,10 @@ with model8:
           In [[_TheLincolnIndexProblem]] we used a grid algorithm to solve the Lincoln Index problem as presented by John D. Cook:
         </p>
         <p>
-          > "Suppose you have a tester who finds 20 bugs in your program. You want to estimate how many bugs are really in the program. You know there are at least 20 bugs, and if you have supreme confidence in your tester, you may suppose there are around 20 bugs. But maybe your tester isn't very good. Maybe there are hundreds of bugs. How can you have any idea how many bugs there are? There's no way to know with one tester. But if you have two testers, you can get a good idea, even if you don't know how skilled the testers are."
+“Suppose you have a tester who finds 20 bugs in your program. You want to estimate how many bugs are really in the program. You know there are at least 20 bugs, and if you have supreme confidence in your tester, you may suppose there are around 20 bugs. But maybe your tester isn’t very good. Maybe there are hundreds of bugs. How can you have any idea how many bugs there are? There’s no way to know with one tester. But if you have two testers, you can get a good idea, even if you don’t know how skilled the testers are.”
         </p>
         <p>
-          Suppose the first tester finds 20 bugs, the second finds 15, and they find 3 in common; use PyMC3 to estimate the number of bugs.
+          Suppose the first tester finds 20 bugs, the second finds 15, and they find 3 in common; use PyMC to estimate the number of bugs.
         </p>
         <p>
           Note: This exercise is more difficult that some of the previous ones.  One of the challenges is that the data includes <c>k00</c>, which depends on <c>N</c>:
@@ -1407,77 +1409,90 @@ with model8:
         </p>
         <program language="python">
           <input>
-          num_seen = k01 + k10 + k11
-          num_seen
+k_obs = [k01, k10, k11]
+n_obs = np.sum(k_obs)
+n_obs
           </input>
     </program>
 <pre>
-32
+np.int64(32)
 </pre>
-        <program language="python">
-          <input>
-          # Solution goes here
-          </input>
-        </program>
-        <program language="python">
-          <input>
-          # Solution goes here
-          </input>
-        </program>
-        <program language="python">
-          <input>
-          # Solution goes here
-          </input>
-        </program>
+
+<p>Note: This exercise is more difficult that some of the previous ones, and the solution that appeared in previous versions of this notebook doesn’t work in recent versions of PyMC. Here are some suggestions that might help.
+
+<ul>
+<li>Define priors for <c>p0</c>, <c>p1</c>, and <c>N</c>.
+</li><li>Compute the complementary probabilities, <c>q1</c> and <c>q2</c>,
+well as the probability of being seen, <c>p_seen</c>, and the probabilities of being seen by the first, second, or both testers, given that a bug is discovered.
+
+      <program language="python">
+        <input>
+q0 = 1-p0
+q1 = 1-p1
+p_seen = 1 - q0*q1
+ps = pm.math.stack([q0*p1, p0*q1, p0*p1]) / p_seen
+</input>
+</program>
+</li><li>Compute two likelihoods: the probability of finding <c>n_obs</c> bugs given <c>N</c> and
+<c>p_seen</c>, and the probability of <c>k_obs</c> given <c>n_obs</c> and <c>ps</c>.
+</li>
+</ul>
 
       </statement>
     <solution>
       <program language="python">
         <input>
-k10 = 20 - 3
-k01 = 15 - 3
-k11 = 3
-        </input>
-      </program>
-      <program language="python">
-        <input>
-num_seen = k01 + k10 + k11
-num_seen
-        </input>
-    </program>
-<pre>
-32
-</pre>
-      <program language="python">
-        <input>
+# Solution
 
 with pm.Model() as model9:
     p0 = pm.Beta('p0', alpha=1, beta=1)
     p1 = pm.Beta('p1', alpha=1, beta=1)
-    N = pm.DiscreteUniform('N', num_seen, 350)
+    N = pm.DiscreteUniform('N', n_obs, 350)
     
     q0 = 1-p0
     q1 = 1-p1
-    ps = [q0*q1, q0*p1, p0*q1, p0*p1]
+    p_seen = 1 - q0*q1
+    ps = pm.math.stack([q0*p1, p0*q1, p0*p1]) / p_seen
     
-    k00 = N - num_seen
-    data = pm.math.stack((k00, k01, k10, k11))
-    y = pm.Multinomial('y', n=N, p=ps, observed=data)
+    pm.Binomial("n_obs", n=N, p=p_seen, observed=n_obs)
+    pm.Multinomial('k_obs', n=n_obs, p=ps, observed=k_obs)
         </input>
       </program>
       <program language="python">
         <input>
-
 with model9:
-    trace9 = pm.sample(1000, **options)
+    idata9 = pm.sample(1000)
         </input>
       </program>
+<pre>
+Multiprocess sampling (4 chains in 4 jobs)
+CompoundStep
+NUTS: [p0, p1]
+Metropolis: [N]
+
+Sampling 4 chains for 1_000 tune and 1_000 draw iterations (4_000 + 4_000 draws total) took 3 seconds.
+The rhat statistic is larger than 1.01 for some parameters. This indicates problems during sampling. See https://arxiv.org/abs/1903.08008 for details
+The effective sample size per chain is smaller than 100 for some parameters.  A higher number is needed for reliable rhat and ess computation. See https://arxiv.org/abs/1903.08008 for details
+</pre>
       <program language="python">
         <input>
-
-with model9:
-    az.plot_posterior(trace9)
+az.summary(idata9)
         </input>
+      </program>
+<pre>
+
+     mean     sd  hdi_3%  hdi_97%	 mcse_mean  mcse_sd	  ess_bulk  ess_tail   r_hat
+N	116.376	58.896	41.000  233.000      9.702    6.701       38.0	    84.0	  1.08
+p0	0.216	0.099    0.059    0.393      0.015    0.005       44.0	   142.0	  1.07
+p1	0.165	0.079    0.040    0.311      0.011    0.004       48.0     137.0    1.06
+
+</pre>
+
+      <program language="python">
+        <input>
+with model9:
+    az.plot_posterior(idata9)
+</input>
       </program>
     </solution>
     </exercise>
