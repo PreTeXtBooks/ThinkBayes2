@@ -1222,7 +1222,7 @@ The rhat statistic is larger than 1.01 for some parameters. This indicates probl
     <exercise xml:id="ex-ch19-3">
       <statement>
         <p>
-          In [[_TheWeibullDistribution]] we generated a sample from a Weibull distribution with <m>\lambda=3</m> and <m>k=0.8</m>. Then we used the data to compute a grid approximation of the posterior distribution of those parameters.
+          In <xref ref = "sec-the-weibull-distribution"/> we generated a sample from a Weibull distribution with <m>\lambda=3</m> and <m>k=0.8</m>. Then we used the data to compute a grid approximation of the posterior distribution of those parameters.
         </p>
         <p>
           Now let's do the same with PyMC3.
