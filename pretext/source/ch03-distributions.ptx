@@ -641,6 +641,13 @@ decorate_bowls('Posterior after one vanilla cookie')
         </input>
       </program>
 
+    <figure xml:id="fig-ch03-prior-and-posterior">
+      <caption>Prior and posterior distributions for the 101 Bowls problem.</caption>
+      <image source="images/ch03_distributions_ebd0d4b8.png" width="80%">
+        <description>A plot showing the uniform prior distribution and the posterior distribution after drawing one vanilla cookie from the 101 Bowls problem.</description>
+      </image>
+    </figure>
+
     <p>
       The posterior probability of Bowl 0 is 0 because it contains no vanilla cookies.
       The posterior probability of Bowl 100 is the highest because it contains the most vanilla cookies.
@@ -673,6 +680,13 @@ decorate_bowls('Posterior after two vanilla cookies')
         </input>
       </program>
 
+    <figure xml:id="fig-ch03-posterior-after-two-vanilla-cookies">
+      <caption>Posterior distribution after two vanilla cookies.</caption>
+      <image source="images/ch03_distributions_3ebdba42.png" width="80%">
+        <description>A plot showing the posterior distribution of the bowl number after drawing two vanilla cookies.</description>
+      </image>
+    </figure>
+
     <p>
       After two vanilla cookies, the high-numbered bowls have the highest posterior probabilities because they contain the most vanilla cookies; the low-numbered bowls have the lowest probabilities.
     </p>
@@ -704,6 +718,13 @@ posterior3.plot(label='posterior', color='C4')
 decorate_bowls('Posterior after 2 vanilla, 1 chocolate')
         </input>
       </program>
+
+    <figure xml:id="fig-ch03-posterior-after-three-cookies">
+      <caption>Posterior distribution after two vanilla and one chocolate cookie.</caption>
+      <image source="images/ch03_distributions_d60c7b99.png" width="80%">
+        <description>A plot showing the posterior distribution after two vanilla and one chocolate cookie.</description>
+      </image>
+    </figure>
 
     <p>
       Now Bowl 100 has been eliminated because it contains no chocolate cookies.
