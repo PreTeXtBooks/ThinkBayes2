@@ -369,6 +369,7 @@ joint_pmf.head(3)
       </input>
     </program>
 <pre>
+           probs
 N   p   
 50  0.00    0.000022
     0.01    0.000022
@@ -663,6 +664,7 @@ def joint_plot(joint, **options):
 joint_plot(joint_posterior)
       </input>
     </program>
+    <image source="images/ch15jointposteriorplot.png" width="80%"/>
     <p>
       A <c>JointGrid</c> is a concise way to represent the joint and marginal distributions visually.
     </p>
@@ -753,6 +755,7 @@ prior_N.head(3)
       </input>
     </program>
 <pre>
+        probs
 N
 32    0.015625
 37    0.015625
@@ -793,9 +796,6 @@ posterior_N.normalize()
 <pre>
 0.0003425201572557094
 </pre>
-<pre>
-0.07755224277106798
-</pre>
     <p>
       And here's what it looks like.
     </p>
@@ -808,6 +808,7 @@ decorate(xlabel='Number of bugs (N)',
          title='Posterior marginal distribution of N with known p0, p1')
       </input>
     </program>
+    <image source="images/ch15-posterior-pmf-111.png" width="80%"/>
     <program language="python">
       <input>
 print(posterior_N.mean(), posterior_N.credible_interval(0.9))
@@ -815,9 +816,6 @@ print(posterior_N.mean(), posterior_N.credible_interval(0.9))
     </program>
 <pre>
 102.1249999999998 [ 77. 127.]
-</pre>
-<pre>
-102.2100122100122 [ 77. 127.]
 </pre>
     <p>
       With the assumption that <c>p0</c> and <c>p1</c> are known to be <c>0.2</c> and <c>0.15</c>, the posterior mean is 102 with 90% credible interval (77, 127).
@@ -862,6 +860,7 @@ joint2_pmf.head(3)
       </input>
     </program>
 <pre>
+              probs
 N   p0  
 32  0.00    0.000306
     0.02    0.000306
@@ -919,6 +918,7 @@ joint3_pmf.head(3)
       </input>
     </program>
 <pre>
+                   probs
 N   p0   p1  
 32  0.0  0.00    0.000006
          0.02    0.000006
@@ -1000,9 +1000,7 @@ posterior_N.mean()
 <pre>
 105.76561732196238
 </pre>
-<pre>
-105.54726368159204
-</pre>
+
     <p>
       The posterior mean is 105 bugs, which suggests that there are still many bugs the testers have not found.
     </p>
@@ -1022,6 +1020,7 @@ decorate(xlabel='Probability of finding a bug',
          title='Posterior marginal distributions of p1 and p2')
       </input>
     </program>
+    <image source="images/ch15-posterior-pmf-112.png" width="80%"/>
     <program language="python">
       <input>
 posterior_p1.mean(), posterior_p1.credible_interval(0.9)
@@ -1037,9 +1036,6 @@ posterior_p2.mean(), posterior_p2.credible_interval(0.9)
     </program>
 <pre>
 (0.17501172155925765, array([0.06, 0.32]))
-</pre>
-<pre>
-(0.2297065971677734, array([0.1, 0.4]))
 </pre>
     <p>
       Comparing the posterior distributions, the tester who found more bugs probably has a higher probability of finding bugs.  The posterior means are about 23% and 18%.  But the distributions overlap, so we should not be too sure.
@@ -1072,7 +1068,7 @@ posterior_p2.mean(), posterior_p2.credible_interval(0.9)
     </p>
   </section>
 
-  <section xml:id="sec-ch15-exercises">
+  <exercises xml:id="sec-ch15-exercises">
     <title>Exercises</title>
 
     <exercise xml:id="ex-hepatitis-two-lists">
@@ -1497,6 +1493,6 @@ marginal3_N.mean(), marginal3_N.credible_interval(0.9)
     </solution>
     </exercise>
 
-  </section>
+  </exercises>
 
 </chapter>
