@@ -1419,12 +1419,12 @@ np.int64(32)
 </pre>
 
 <p>Note: This exercise is more difficult that some of the previous ones, and the solution that appeared in previous versions of this notebook doesn’t work in recent versions of PyMC. Here are some suggestions that might help.
-
+</p>
 <ul>
-<li>Define priors for <c>p0</c>, <c>p1</c>, and <c>N</c>.
-</li><li>Compute the complementary probabilities, <c>q1</c> and <c>q2</c>,
+<li><p>Define priors for <c>p0</c>, <c>p1</c>, and <c>N</c>.
+</p></li><li><p>Compute the complementary probabilities, <c>q1</c> and <c>q2</c>,
 well as the probability of being seen, <c>p_seen</c>, and the probabilities of being seen by the first, second, or both testers, given that a bug is discovered.
-
+</p>
       <program language="python">
         <input>
 q0 = 1-p0
@@ -1433,8 +1433,9 @@ p_seen = 1 - q0*q1
 ps = pm.math.stack([q0*p1, p0*q1, p0*p1]) / p_seen
 </input>
 </program>
-</li><li>Compute two likelihoods: the probability of finding <c>n_obs</c> bugs given <c>N</c> and
+</li><li><p>Compute two likelihoods: the probability of finding <c>n_obs</c> bugs given <c>N</c> and
 <c>p_seen</c>, and the probability of <c>k_obs</c> given <c>n_obs</c> and <c>ps</c>.
+</p>
 </li>
 </ul>
 
