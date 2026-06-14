@@ -1,0 +1,718 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appendix xml:id="app-usb" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <title>Flipping USB Connectors</title>
+
+  <introduction>
+    <p>
+      This notebook is one of the examples in the second edition of <url href="https://greenteapress.com/wp/think-bayes/"><em>Think Bayes</em></url>.
+    </p>
+
+    <p>
+      <url href="https://colab.research.google.com/github/AllenDowney/ThinkBayes2/blob/master/examples/usb.ipynb">Click here to run this notebook on Colab</url>.
+    </p>
+
+    <p>
+      I am not the first person to observe that it sometimes takes several tries to plug in a USB connector (specifically the rectangular <url href="https://en.wikipedia.org/wiki/USB">Type A connector</url>, which is not reversible).
+      There are <url href="https://knowyourmeme.com/memes/usb-insertion-issues">memes about it</url>, there are <url href="https://www.smbc-comics.com/?id=2388">cartoons about it</url>, and on Quora alone,
+      <url href="https://www.quora.com/Why-do-you-always-have-to-flip-a-USB-twice-when-trying-to-plug-it-in-Shouldn-t-it-have-gone-in-the-first-time-when-you-had-it-the-right-way">people</url>
+      <url href="https://www.quora.com/There-is-a-50-chance-of-plugging-in-a-USB-cable-the-right-way-on-the-first-try-Why-does-it-only-happen-20-of-the-time-when-I-do-it">have</url>
+      <url href="https://www.quora.com/Why-doesnt-the-USB-go-in-the-first-time-but-does-after-youve-turn-it-a-few-times">asked</url>
+      <url href="https://www.quora.com/People-that-can-plug-the-USB-in-on-their-first-try-How">about</url>
+      <url href="https://www.quora.com/Why-cant-we-plug-in-USB-devices-correctly-the-first-time">it</url> more than once.
+    </p>
+
+    <p>
+      But I might be the first to use Bayesian decision analysis to figure out the optimal strategy for plugging in a USB connector. Specifically, I have worked out how long you should try on the first side before flipping, how long you should try on the second side before flipping again, how long you should try on the third side, and so on.
+    </p>
+
+    <p>
+      Of course, my analysis is based on some modeling assumptions:
+    </p>
+
+    <ol>
+      <li><p>Initially, the probability is 0.5 that the connector is in the right orientation.</p></li>
+      <li><p>If it is, the time it takes to succeed follows an exponential distribution with a mean of 1.1 seconds.</p></li>
+      <li><p>Flipping the connector takes 0.1 seconds.</p></li>
+    </ol>
+
+    <p>
+      With that, we are ready to get started.
+    </p>
+  </introduction>
+
+  <section xml:id="sec-usb-continuous-updates">
+    <title>Continuous Updates</title>
+
+    <p>
+      The first step is to figure out the probability that the connector is in the right orientation as a function of how long you have been trying.
+      For that, we can use a Bayes table, which is a form of Bayes's Theorem I use in <url href="https://allendowney.github.io/ThinkBayes2/chap02.html#bayes-tables">Chapter 2 of <em>Think Bayes</em></url>.
+    </p>
+
+    <p>
+      The following function takes a sequence of hypotheses, prior probabilities, and likelihoods, and returns a pandas <c>DataFrame</c> that represents a Bayes table.
+    </p>
+
+    <program language="python">
+      <input>
+import pandas as pd
+
+def bayes_table(hypos, prior, likelihood):
+    """Make a table showing a Bayesian update."""
+    table = pd.DataFrame(dict(prior=prior, likelihood=likelihood), index=hypos)
+    table['unnorm'] = table['prior'] * table['likelihood']
+    prob_data = table['unnorm'].sum()
+    table['posterior'] = table['unnorm'] / prob_data
+    return table
+      </input>
+    </program>
+
+    <p>
+      Now suppose that the prior probability is 0.5 that the orientation of the connector is correct, and you have been trying for 0.9 seconds.
+      What is the likelihood that you would have to try so long?
+    </p>
+
+    <ul>
+      <li><p>If you are on the wrong side, it is 100%.</p></li>
+      <li><p>If you are on the right side, it's given by the survival function (complementary CDF) of the exponential distribution, which is <m>\exp(-\lambda t)</m>, where <m>\lambda</m> is the rate parameter and <m>t</m> is time.</p></li>
+    </ul>
+
+    <p>
+      The following function computes this likelihood:
+    </p>
+
+    <program language="python">
+      <input>
+import numpy as np
+
+def expo_sf(t, lam):
+    """Survival function of the exponential distribution."""
+    return np.exp(-lam * t)
+      </input>
+    </program>
+
+    <p>
+      We can use this function to compute the likelihood of trying for 0.9 seconds or more, given an exponential distribution with mean 1.1.
+    </p>
+
+    <program language="python">
+      <input>
+t = 0.9
+mu = 1.1
+lam = 1/mu
+
+expo_sf(t, lam)
+      </input>
+    </program>
+
+    <pre>
+0.441233167759984
+    </pre>
+
+    <p>
+      The result is the likelihood of the data, given that the orientation of the connector is correct.
+    </p>
+
+    <p>
+      Now let's make a Bayes table with two hypotheses -- the connector is either the right way or the wrong way -- with equal prior probabilities.
+    </p>
+
+    <program language="python">
+      <input>
+hypos = ['Right way', 'Wrong way']
+prior = [1/2, 1/2]
+      </input>
+    </program>
+
+    <p>
+      And here is the likelihood of the data for each hypothesis:
+    </p>
+
+    <program language="python">
+      <input>
+likelihood = [expo_sf(t, lam), 1]
+      </input>
+    </program>
+
+    <p>
+      Putting it together, here's the Bayes table.
+    </p>
+
+    <program language="python">
+      <input>
+bayes_table(hypos, prior, likelihood)
+      </input>
+    </program>
+
+    <pre>
+           prior  likelihood    unnorm  posterior
+Right way    0.5    0.441233  0.220617    0.30615
+Wrong way    0.5    1.000000  0.500000    0.69385
+    </pre>
+
+    <p>
+      After 0.9 seconds, the probability is about 69% that the orientation of the connector is wrong, so you might want to think about trying the other side.
+    </p>
+
+    <p>
+      But if it takes 0.1 seconds to flip, maybe you should keep trying a little longer. To figure out when to flip, let's do the same analysis again for general values of <m>\lambda</m> and <m>t</m>.
+    </p>
+  </section>
+
+  <section xml:id="sec-usb-generalization">
+    <title>Generalization</title>
+
+    <p>
+      To minimize human error, I'll use Sympy to do the algebra. Here are the symbols I'll use.
+    </p>
+
+    <program language="python">
+      <input>
+from sympy import symbols, exp
+
+t, lam, p, q, r = symbols('t lam p q r')
+      </input>
+    </program>
+
+    <p>
+      Here's the likelihood again, using the symbols.
+    </p>
+
+    <program language="python">
+      <input>
+likelihood = [exp(-lam * t), 1]
+likelihood
+      </input>
+    </program>
+
+    <pre>
+[exp(-lam*t), 1]
+    </pre>
+
+    <p>
+      And here's the Bayes table, using <m>p</m> and <m>q</m> for the prior probabilities of the hypotheses.
+    </p>
+
+    <program language="python">
+      <input>
+prior = [p, q]
+table = bayes_table(hypos, prior, likelihood)
+table
+      </input>
+    </program>
+
+    <pre>
+          prior   likelihood         unnorm                          posterior
+Right way     p  exp(-lam*t)  p*exp(-lam*t)  p*exp(-lam*t)/(p*exp(-lam*t) + q)
+Wrong way     q            1              q              q/(p*exp(-lam*t) + q)
+    </pre>
+
+    <p>
+      From the table I'll select the posterior probability that the orientation is correct.
+    </p>
+
+    <program language="python">
+      <input>
+expr = table.loc['Right way', 'posterior']
+expr.simplify()
+      </input>
+    </program>
+
+    <pre>
+p/(p + q*exp(lam*t))
+    </pre>
+
+    <p>
+      You might recognize this as a form of the <url href="https://en.wikipedia.org/wiki/Logistic_function">logistic function</url>; we can compute it like this:
+    </p>
+
+    <program language="python">
+      <input>
+def logistic(p, lam, t):
+    q = 1-p
+    return p / (p + q * np.exp(lam * t))
+      </input>
+    </program>
+
+    <p>
+      Let's see what that looks like for a range of values of <c>t</c>, assuming that the prior probability is <c>p=0.5</c>.
+    </p>
+
+    <program language="python">
+      <input>
+import matplotlib.pyplot as plt
+
+ts = np.linspace(0, 4)
+ps = logistic(p=0.5, lam=1/mu, t=ts)
+
+plt.plot(ts, ps)
+plt.xlabel("How long you've been trying (seconds)")
+plt.ylabel("Probability the orientation is right");
+      </input>
+    </program>
+
+    <image source="images/usb_fig0.png" width="80%"/>
+
+    <p>
+      After a few seconds of fiddling, you should be reasonably convinced that the orientation is wrong.
+    </p>
+  </section>
+
+  <section xml:id="sec-usb-strategy">
+    <title>Strategy</title>
+
+    <p>
+      Now, let's think about turning belief into action. Let me start with a conjecture: I suspect that the best strategy is to try on the first side until the probability of correct orientation drops below some threshold (to be determined), then try on the second side until the probability drops below that threshold again, and repeat until success.
+    </p>
+
+    <p>
+      To test this strategy, we will have to figure out how long to try as a function of the prior probability, <c>p</c>, and the threshold probability, <c>r</c>. Again, I'll make Sympy do the work.
+    </p>
+
+    <p>
+      Here's the equation that sets the posterior probability, which we computed in the previous section, to <c>r</c>.
+    </p>
+
+    <program language="python">
+      <input>
+from sympy import Eq, solve
+
+eqn = Eq(expr, r)
+eqn
+      </input>
+    </program>
+
+    <pre>
+Eq(p*exp(-lam*t)/(p*exp(-lam*t) + q), r)
+    </pre>
+
+    <p>
+      And here's the solution for <c>t</c> in terms of <c>p</c>, <c>q</c>, <c>r</c>, and <c>lam</c>.
+    </p>
+
+    <program language="python">
+      <input>
+solve(eqn, t)[0]
+      </input>
+    </program>
+
+    <pre>
+log(p*(1 - r)/(q*r))/lam
+    </pre>
+
+    <p>
+      And here's how we can express this solution in terms of the prior and posterior odds.
+    </p>
+
+    <program language="python">
+      <input>
+def wait_time(p, lam, r):
+    q = 1-p
+    prior_odds = p / q
+    posterior_odds = r / (1-r)
+    return np.log(prior_odds / posterior_odds) / lam
+      </input>
+    </program>
+
+    <p>
+      Let's see what that looks like for a range of values of <c>r</c>, assuming that the prior probability is <c>p=0.5</c>.
+    </p>
+
+    <program language="python">
+      <input>
+rs = np.linspace(0.05, 0.5)
+ts = wait_time(p=0.5, lam=1/mu, r=rs)
+
+plt.plot(rs, ts, color='C2')
+plt.xlabel("Probability the orientation is right")
+plt.ylabel("How long to keep trying (seconds)");
+      </input>
+    </program>
+
+    <image source="images/usb_fig1.png" width="80%"/>
+
+    <p>
+      When the threshold is low, we have to wait a few seconds to reach it. As the threshold increases, the time to reach it decreases.
+      We'll use this function in the next section to simulate the strategy.
+    </p>
+  </section>
+
+  <section xml:id="sec-usb-simulation">
+    <title>Simulation</title>
+
+    <p>
+      As a step toward optimization, let's run a simulation. The following function takes as parameters:
+    </p>
+
+    <ul>
+      <li><p><c>correct</c>: A Boolean indicating if the orientation is correct.</p></li>
+      <li><p><c>p</c>: The prior probability that the orientation is correct.</p></li>
+      <li><p><c>lam</c>: The rate parameter for the distribution of time until success.</p></li>
+      <li><p><c>r</c>: The threshold for the posterior probability.</p></li>
+      <li><p><c>flip</c>: The time it takes to flip the connector, in seconds.</p></li>
+      <li><p><c>trace</c>: A list that indicates how much time we have spent, so far, trying and flipping.</p></li>
+    </ul>
+
+    <p>
+      It runs the simulation and returns a sequence of waiting and flipping times. The sum of this sequence is the total time it took to connect. And we can use the length of the sequence to figure out how many times we had to flip.
+    </p>
+
+    <program language="python">
+      <input>
+def simulate(correct, p, lam, r, flip, trace):
+    # figure out the maximum time we should try before flipping
+    wait = wait_time(p, lam, r)
+
+    # if we're on the correct side, see if we succeed before time's up
+    if correct:
+        t = np.random.exponential(1/lam)
+        if t &lt; wait:
+            # if so, update and return the trace
+            return trace + [t]
+
+    # if time expired, add the wait time and flip time to the trace
+    # and make a recursive call to continue the simulation
+    return simulate(not correct, 1-r, lam, r, flip, trace + [wait, flip])
+      </input>
+    </program>
+
+    <p>
+      Here's a test run, starting on the correct side.
+    </p>
+
+    <program language="python">
+      <input>
+simulate(correct=True, p=0.5, lam=1/mu, r=0.2, flip=0.1, trace=[])
+      </input>
+    </program>
+
+    <pre>
+[0.24846062544031747]
+    </pre>
+
+    <p>
+      And here's a run where we start on the wrong side.
+    </p>
+
+    <program language="python">
+      <input>
+simulate(correct=False, p=0.5, lam=1/mu, r=0.2, flip=0.1, trace=[])
+      </input>
+    </program>
+
+    <pre>
+[1.5249237972318797, 0.1, 0.8563018209476607]
+    </pre>
+
+    <p>
+      The following function runs the simulation many times with initial probability <c>p=0.5</c>, starting in the right orientation half the time.
+    </p>
+
+    <p>
+      It returns two arrays, containing the length of the trace and the total duration for each simulation.
+    </p>
+
+    <program language="python">
+      <input>
+def run_simulations(lam, r, flip, iters=20000, flag=None):
+    res = []
+    for i in range(iters):
+        correct = i%2 if flag is None else flag
+        trace = simulate(correct, 0.5, lam, r, flip, [])
+        res.append((len(trace), sum(trace)))
+
+    return np.transpose(res)
+      </input>
+    </program>
+
+    <p>
+      Here's the average total duration with threshold probability <c>r=0.25</c>.
+    </p>
+
+    <program language="python">
+      <input>
+lengths, totals = run_simulations(lam=1/mu, r=0.25, flip=0.1)
+totals.mean()
+      </input>
+    </program>
+
+    <pre>
+2.4265255008111306
+    </pre>
+
+    <p>
+      With this threshold, it takes about 2 seconds to connect, on average.
+    </p>
+  </section>
+
+  <section xml:id="sec-usb-optimization">
+    <title>Optimization</title>
+
+    <p>
+      Now let's see how the average duration varies as we sweep through a range of values for the threshold probability, <c>r</c>:
+    </p>
+
+    <program language="python">
+      <input>
+rs = np.linspace(0.15, 0.4, 21)
+rs
+      </input>
+    </program>
+
+    <pre>
+array([0.15  , 0.1625, 0.175 , 0.1875, 0.2   , 0.2125, 0.225 , 0.2375,
+       0.25  , 0.2625, 0.275 , 0.2875, 0.3   , 0.3125, 0.325 , 0.3375,
+       0.35  , 0.3625, 0.375 , 0.3875, 0.4   ])
+    </pre>
+
+    <program language="python">
+      <input>
+np.random.seed(17)
+
+res = []
+for r in rs:
+    lengths, totals = run_simulations(lam=1/mu, r=r, flip=0.1)
+    res.append((r, totals.mean()))
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+from statsmodels.nonparametric.smoothers_lowess import lowess
+
+def make_lowess(series):
+    """Use LOWESS to compute a smooth line.
+
+    series: pd.Series
+
+    returns: pd.Series
+    """
+    endog = series.values
+    exog = series.index.values
+
+    smooth = lowess(endog, exog)
+    index, data = np.transpose(smooth)
+
+    return pd.Series(data, index=index)
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+def plot_series_lowess(series, color):
+    """Plots a series of data points and a smooth line.
+
+    series: pd.Series
+    color: string or tuple
+    """
+    series.plot(lw=0, marker='o', color=color, alpha=0.5)
+    smooth = make_lowess(series)
+    smooth.plot(label='_', color=color)
+      </input>
+    </program>
+
+    <p>
+      Here's what the results look like.
+    </p>
+
+    <program language="python">
+      <input>
+rs, ts = np.transpose(res)
+series = pd.Series(ts, rs)
+
+plot_series_lowess(series, 'C1')
+
+plt.xlabel("Threshold probability where you flip (r)")
+plt.ylabel("Average total duration (seconds)");
+      </input>
+    </program>
+
+    <image source="images/usb_fig2.png" width="80%"/>
+
+    <p>
+      The optimal value of <c>r</c> is close to <c>0.3</c>. With that threshold we can see how long we should try on the first side, starting with prior probability <c>p=0.5</c>.
+    </p>
+
+    <program language="python">
+      <input>
+r_opt = 0.3
+wait_time(p=0.5, lam=1/mu, r=r_opt)
+      </input>
+    </program>
+
+    <pre>
+0.9320276464259238
+    </pre>
+
+    <p>
+      With the given values of <c>lam</c> and <c>flip</c>, it turns out the optimal time to wait is about <c>0.9</c> seconds.
+    </p>
+
+    <p>
+      If we have to flip, the prior probability for the second side is <c>p=1-r</c>, so we have to wait twice as long for the posterior probability to get down to <c>r</c>.
+    </p>
+
+    <program language="python">
+      <input>
+wait_time(p=1-r_opt, lam=1/mu, r=r_opt)
+      </input>
+    </program>
+
+    <pre>
+1.864055292851848
+    </pre>
+  </section>
+
+  <section xml:id="sec-usb-how-many-flips">
+    <title>How many flips?</title>
+
+    <p>
+      Now let's run the simulations with the optimal value of <c>r</c> and see what the distributions look like for the total time and the number of flips.
+    </p>
+
+    <program language="python">
+      <input>
+lengths1, totals1 = run_simulations(lam=1/mu, r=r_opt, flip=0.1, flag=True)
+lengths2, totals2 = run_simulations(lam=1/mu, r=r_opt, flip=0.1, flag=False)
+      </input>
+    </program>
+
+    <p>
+      Here's the distribution of total time, represented as a CDF.
+    </p>
+
+    <program language="python">
+      <input>
+try:
+    import empiricaldist
+except ImportError:
+    !pip install empiricaldist
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+from empiricaldist import Cdf
+
+Cdf.from_seq(totals1).plot(lw=2, label='Right the first time')
+Cdf.from_seq(totals2).plot(lw=2, label='Wrong the first time')
+
+plt.xlabel('Total time to connect (seconds)')
+plt.ylabel('CDF')
+plt.title('Distribution of total time to connect')
+plt.legend();
+      </input>
+    </program>
+
+    <image source="images/usb_fig3.png" width="80%"/>
+
+    <program language="python">
+      <input>
+totals1.mean(), totals2.mean()
+      </input>
+    </program>
+
+    <pre>
+(2.2006236558767154, 2.616228241925388)
+    </pre>
+
+    <program language="python">
+      <input>
+np.percentile(totals1, 90), np.percentile(totals2, 90)
+      </input>
+    </program>
+
+    <pre>
+(4.601034595944718, 5.636579992175272)
+    </pre>
+
+    <program language="python">
+      <input>
+np.append(totals1, totals2).mean()
+      </input>
+    </program>
+
+    <pre>
+2.4084259489010518
+    </pre>
+
+    <p>
+      The average is about 2.4 seconds, but occasionally it takes much longer!
+    </p>
+
+    <p>
+      And here's the distribution for the total number of flips.
+    </p>
+
+    <program language="python">
+      <input>
+from empiricaldist import Pmf
+
+flips1 = (lengths1-1) // 2
+pmf1 = Pmf.from_seq(flips1) / 2
+pmf1.bar(alpha=0.7, label='Right the first time')
+
+flips2 = (lengths2-1) // 2
+pmf2 = Pmf.from_seq(flips2) / 2
+pmf2.bar(alpha=0.7, label='Right the second time')
+
+plt.xlabel('How many times you have to flip')
+plt.ylabel('PMF')
+plt.title('Distribution of number of flips')
+plt.legend();
+      </input>
+    </program>
+
+    <image source="images/usb_fig4.png" width="80%"/>
+
+    <program language="python">
+      <input>
+lengths = np.append(lengths1, lengths2)
+flips = (lengths-1) // 2
+Pmf.from_seq(flips).head(5)
+      </input>
+    </program>
+
+    <pre>
+0.0    0.282925
+1.0    0.407050
+2.0    0.177200
+3.0    0.075200
+4.0    0.032575
+Name: , dtype: float64
+    </pre>
+
+    <p>
+      The probability of getting it right on the first try is only about 28%. That might seem low, because the chance of starting in the right orientation is 50%, but remember that we have a substantial chance of flipping even if we start in the right orientation (and in that case, we have to flip at least twice).
+    </p>
+
+    <p>
+      The most common outcome is that we have to flip once, about 40% of the time. And the probability of the notorious double flip is about 18%.
+    </p>
+
+    <p>
+      Fortunately, it is rare to flip three or more times.
+    </p>
+  </section>
+
+  <section xml:id="sec-usb-summary">
+    <title>Summary</title>
+
+    <p>
+      With that, I think we have solved the USB connector problem.
+    </p>
+
+    <ol>
+      <li><p>For given parameters <c>lam</c> and <c>flip</c>, we can find the threshold probability, <c>r</c>, that minimizes the average time to connect.</p></li>
+      <li><p>Given this optimal value, we can estimate the distribution of total time and the number of times we have to flip.</p></li>
+    </ol>
+
+    <p>
+      Sadly, all of this fun is gradually being spoiled by the encroachment of the <url href="https://en.wikipedia.org/wiki/USB-C">USB-C</url> connector, which is reversible.
+    </p>
+
+    <p>
+      <em>If you like this article, you might also like the second edition of <url href="https://greenteapress.com/wp/think-bayes/"><em>Think Bayes</em></url>.</em>
+    </p>
+  </section>
+
+</appendix>
