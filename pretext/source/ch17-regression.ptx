@@ -528,7 +528,6 @@ decorate(xlabel='$\sigma$, standard deviation of $\epsilon$',
     </p>
     <p>
       Nevertheless, it is good to check the marginal distributions to make sure
-    </p>
     <ul>
       <li> The location is consistent with our expectations, and</li>
       <li>The posterior probabilities are near 0 at the extremes of the range, which indicates that the prior distribution covers all parameters with non-negligible probability.</li>
