@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section xml:id="vaccine-effectiveness" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <title>Bayesian estimation of vaccine effectiveness</title>
+
+  <introduction>
+    <p>Copyright 2020 Allen Downey</p>
+    <p><url href="https://opensource.org/licenses/MIT">MIT License</url></p>
+
+    <program language="python">
+      <input>
+# If we're running on Colab, install empiricaldist
+# https://pypi.org/project/empiricaldist/
+
+import sys
+IN_COLAB = 'google.colab' in sys.modules
+
+if IN_COLAB:
+    !pip install empiricaldist
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+import numpy as np
+import matplotlib.pyplot as plt
+
+from empiricaldist import Pmf
+      </input>
+    </program>
+
+    <p>According to <url href="https://www.pfizer.com/news/press-release/press-release-detail/pfizer-and-biontech-announce-vaccine-candidate-against">this press release</url></p>
+
+    <blockquote>
+      <p>The first set of results from our Phase 3 COVID-19 vaccine trial provides the initial evidence of our vaccine’s ability to prevent COVID-19.</p>
+    </blockquote>
+
+    <p>The press release includes the following details about the results</p>
+
+    <blockquote>
+      <p>The ... trial ... has enrolled 43,538 participants to date, 38,955 of whom have received a second dose of the vaccine candidate as of November 8, 2020.</p>
+      <p>... the evaluable case count reached 94 and ... the case split between vaccinated individuals and those who received the placebo indicates a vaccine efficacy rate above 90%, at 7 days after the second dose.</p>
+    </blockquote>
+
+    <p>The press release provides only a point estimate for the effectiveness of the vaccine, and it does not provide enough information to make a better estimate.</p>
+
+    <p>But with some guesswork, we can compute the posterior distribution of effectiveness, and use it to estimate the lower bound of the credible interval.</p>
+
+    <p>Since we don't know how many people are in each branch of the trial, I'll assume that it is approximately equal.</p>
+
+    <program language="python">
+      <input>
+n_control = 38955 / 2
+n_treatment = 38955 / 2
+      </input>
+    </program>
+
+    <p>We know there were a total of 94 infections in the two branches.  Since the estimated effectiveness is 90%, I'll guess that there were 86 infections in the control branch and 8 in the treatment branch.</p>
+
+    <p>We can make a beta distribution that represents the posterior distribution of the infection rate in the control branch, starting with a uniform distribution.</p>
+
+    <program language="python">
+      <input>
+from scipy.stats import beta
+
+dist_control = beta(86+1, n_control+1)
+dist_control.mean() * 100
+      </input>
+    </program>
+
+    <pre>
+0.4446602437964785
+    </pre>
+
+    <p>And here's the posterior distribution for the treatment branch.</p>
+
+    <program language="python">
+      <input>
+dist_treatment = beta(8+1, n_treatment+1)
+dist_treatment.mean() * 100
+      </input>
+    </program>
+
+    <pre>
+0.046183450930083386
+    </pre>
+
+    <p>The risk ratio is about 10:1, which is consistent with 90% effectiveness.</p>
+
+    <p>To compute the distribution of risk ratios, I'll make a discrete approximation to the two posterior distributions, using the <c>Pmf</c> object from <c>empiricaldist</c>:</p>
+
+    <program language="python">
+      <input>
+def make_beta(dist):
+    """PMF to approximate a beta distribution.
+    
+    dist: `beta` object
+    
+    returns: Pmf
+    """
+    qs = np.linspace(8e-6, 0.008, 1000)
+    ps = dist.pdf(qs)
+    pmf = Pmf(ps, qs)
+    pmf.normalize()
+    return pmf
+      </input>
+    </program>
+
+    <p>Here are the <c>Pmf</c> objects:</p>
+
+    <program language="python">
+      <input>
+pmf_control = make_beta(dist_control)
+pmf_treatment = make_beta(dist_treatment)
+      </input>
+    </program>
+
+    <p>And here's what they look like:</p>
+
+    <program language="python">
+      <input>
+pmf_control.plot(label='Control')
+pmf_treatment.plot(label='Treatment')
+
+plt.xlabel('Infection rate')
+plt.ylabel('PMF')
+plt.legend();
+      </input>
+    </program>
+
+    <image source="images/vaccine_fig1.png" width="80%"/>
+
+    <p>Again, it looks like the infection rate is about 10 times higher in the control group.</p>
+
+    <p>We can use <c>div_dist</c> to compute the risk ratio.</p>
+
+    <program language="python">
+      <input>
+pmf_ratio = pmf_treatment.div_dist(pmf_control)
+      </input>
+    </program>
+
+    <p>Here's the CDF of the risk ratio.  I cut it off at 1 because higher values have very low probabilities; that is, we are pretty sure the treatment is effective.</p>
+
+    <program language="python">
+      <input>
+pmf_ratio.make_cdf().plot()
+plt.xlim([0, 1])
+
+plt.xlabel('Risk ratio')
+plt.ylabel('CDF');
+      </input>
+    </program>
+
+    <image source="images/vaccine_fig2.png" width="80%"/>
+
+    <p>The median of the risk ratio is about 0.10.  Again, that's consistent with an effectiveness of 90%.</p>
+
+    <program language="python">
+      <input>
+pmf_ratio.median()
+      </input>
+    </program>
+
+    <pre>
+array(0.10040984)
+    </pre>
+
+    <p>To compute the distribution of effectiveness, we have to compute the distribution of <c>1-RR</c>, where <c>RR</c> is the risk ratio.  We can do that with <c>empiricaldist</c> by creating a deterministic <c>Pmf</c> with the quantity <c>1</c> and using <c>sub_dist</c> to subtract two <c>Pmf</c>s.</p>
+
+    <program language="python">
+      <input>
+effectiveness = Pmf.from_seq(1).sub_dist(pmf_ratio)
+      </input>
+    </program>
+
+    <p>Here's the result.</p>
+
+    <program language="python">
+      <input>
+effectiveness.make_cdf().plot()
+plt.xlim([0, 1])
+
+plt.xlabel('Effectiveness')
+plt.ylabel('CDF');
+      </input>
+    </program>
+
+    <image source="images/vaccine_fig3.png" width="80%"/>
+
+    <p>The posterior mean is about 89%.</p>
+
+    <program language="python">
+      <input>
+effectiveness.mean()
+      </input>
+    </program>
+
+    <pre>
+0.8949353341973734
+    </pre>
+
+    <p>And the 95% credible interval is between 81% and 95%.</p>
+
+    <program language="python">
+      <input>
+effectiveness.credible_interval(0.95)
+      </input>
+    </program>
+
+    <pre>
+array([0.8099631 , 0.95352564])
+    </pre>
+
+    <p>If my guesses about the data are close enough, and the modeling decisions are good enough, it is unlikely that the effectiveness of the vaccine is less than 80%.</p>
+  </introduction>
+</section>
