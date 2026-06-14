@@ -71,7 +71,6 @@ STATION                   NAME       DATE  PRCP  SNOW  SNWD  TMAX  \
 </pre>
     <p>
       The columns we'll use are:
-    </p>
     <ul>
 <li><c>DATE</c>, which is the date of each observation,</li>
 <li><c>SNOW</c>, which is the total snowfall in inches.</li>
