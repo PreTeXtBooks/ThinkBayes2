@@ -1,0 +1,686 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section xml:id="redline" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <title>The Red Line Problem</title>
+
+  <introduction>
+    <p>
+      The Red Line is a subway that connects Cambridge and Boston, Massachusetts. When I was working in Cambridge I took the Red Line from Kendall Square to South Station and caught the commuter rail to Needham. During rush hour Red Line trains run every 7–8 minutes, on average.
+    </p>
+
+    <p>
+      When I arrived at the station, I could estimate the time until the next train based on the number of passengers on the platform. If there were only a few people, I inferred that I just missed a train and expected to wait about 7 minutes. If there were more passengers, I expected the train to arrive sooner. But if there were a large number of passengers, I suspected that trains were not running on schedule, so I would go back to the street level and get a taxi.
+    </p>
+
+    <p>
+      While I was waiting for trains, I thought about how Bayesian estimation could help predict my wait time and decide when I should give up and take a taxi. This chapter presents the analysis I came up with.
+    </p>
+
+    <p>
+      This example is based on a project by Brendan Ritter and Kai Austin, who took a class with me at Olin College.
+It was a chapter in the first edition of <em>Think Bayes</em>, I cut it from the second edition.
+    </p>
+
+    <p>
+      Before we get to the analysis, we have to make some modeling decisions. First, I will treat passenger arrivals as a Poisson process, which means I assume that passengers are equally likely to arrive at any time, and that they arrive at a rate, λ, measured in passengers per minute. Since I observe passengers during a short period of time, and at the same time every day, I assume that λ is constant.
+    </p>
+
+    <p>
+      On the other hand, the arrival process for trains is not Poisson. Trains to Boston are supposed to leave from the end of the line (Alewife station) every 7–8 minutes during peak times, but by the time they get to Kendall Square, the time between trains varies between 3 and 12 minutes.
+    </p>
+
+    <p>
+      To gather data on the time between trains, I wrote a script that downloads real-time data from the <url href="http://www.mbta.com/rider_tools/developers/">MBTA</url>, selects south-bound trains arriving at Kendall square, and records their arrival times in a database. I ran the script from 4 pm to 6 pm every weekday for 5 days, and recorded about 15 arrivals per day. Then I computed the time between consecutive arrivals.
+Here are the gap times I recorded, in seconds.
+    </p>
+
+    <program language="python">
+      <input>
+    observed_gap_times = [
+        428.0, 705.0, 407.0, 465.0, 433.0, 425.0, 204.0, 506.0, 143.0, 351.0, 
+        450.0, 598.0, 464.0, 749.0, 341.0, 586.0, 754.0, 256.0, 378.0, 435.0, 
+        176.0, 405.0, 360.0, 519.0, 648.0, 374.0, 483.0, 537.0, 578.0, 534.0, 
+        577.0, 619.0, 538.0, 331.0, 186.0, 629.0, 193.0, 360.0, 660.0, 484.0, 
+        512.0, 315.0, 457.0, 404.0, 740.0, 388.0, 357.0, 485.0, 567.0, 160.0, 
+        428.0, 387.0, 901.0, 187.0, 622.0, 616.0, 585.0, 474.0, 442.0, 499.0, 
+        437.0, 620.0, 351.0, 286.0, 373.0, 232.0, 393.0, 745.0, 636.0, 758.0,
+    ]
+      </input>
+    </program>
+
+    <p>
+      I'll convert them to minutes and use <c>kde_from_sample</c> to estimate the distribution.
+    </p>
+
+    <program language="python">
+      <input>
+    import numpy as np
+    
+    zs = np.array(observed_gap_times) / 60
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+    from utils import kde_from_sample
+    
+    qs = np.linspace(0, 20, 101)
+    pmf_z = kde_from_sample(zs, qs)
+      </input>
+    </program>
+
+    <p>
+      Here's what it looks like.
+    </p>
+
+    <program language="python">
+      <input>
+    from utils import decorate
+    
+    pmf_z.plot()
+    
+    decorate(xlabel='Time (min)',
+             ylabel='PDF',
+             title='Distribution of time between trains')
+      </input>
+    </program>
+
+    <image source="images/app_redline_fig0.png" width="80%"/>
+  </introduction>
+
+  <section xml:id="sec-redline-the-update">
+    <title>The Update</title>
+
+    <p>
+      At this point we have an estimate for the distribution of time between trains.
+Now let's suppose I arrive at the station and see 10 passengers on the platform.
+What distribution of wait times should I expect?
+    </p>
+
+    <p>
+      We'll answer this question in two steps.
+    </p>
+
+    <ul>
+      <li><p>First, we'll derive the distribution of gap times as observed by a random arrival (me).</p></li>
+      <li><p>Then we'll derive the distribution of wait times, conditioned on the number of passengers.</p></li>
+    </ul>
+
+    <p>
+      When I arrive at the station, I am more likely to arrive during a long gap than a short one.
+In fact, the probability that I arrive during any interval is proportional to its duration.
+    </p>
+
+    <p>
+      If we think of <c>pmf_z</c> as the prior distribution of gap time, we can do a Bayesian update to compute the posterior.
+The likelihood of my arrival during each gap is the duration of the gap:
+    </p>
+
+    <program language="python">
+      <input>
+    likelihood = pmf_z.qs
+      </input>
+    </program>
+
+    <p>
+      So here's the first update.
+    </p>
+
+    <program language="python">
+      <input>
+    posterior_z = pmf_z * pmf_z.qs
+    posterior_z.normalize()
+      </input>
+    </program>
+
+    <pre>
+7.772927524715933
+    </pre>
+
+    <p>
+      Here's what the posterior distribution looks like.
+    </p>
+
+    <program language="python">
+      <input>
+    pmf_z.plot(label='prior', color='C5')
+    posterior_z.plot(label='posterior', color='C4')
+    
+    decorate(xlabel='Time (min)',
+             ylabel='PDF',
+             title='Distribution of time between trains')
+      </input>
+    </program>
+
+    <image source="images/app_redline_fig1.png" width="80%"/>
+
+    <p>
+      Because I am more likely to arrive during a longer gap, the distribution is shifted to the right.
+The prior mean is about 7.8 minutes; the posterior mean is about 8.9 minutes.
+    </p>
+
+    <program language="python">
+      <input>
+    pmf_z.mean(), posterior_z.mean()
+      </input>
+    </program>
+
+    <pre>
+(7.772927524715933, 8.89677416786441)
+    </pre>
+
+    <p>
+      This shift is an example of the "inspection paradox", which <url href="https://towardsdatascience.com/the-inspection-paradox-is-everywhere-2ef1c2e9d709">I wrote an article about</url>.
+    </p>
+
+    <p>
+      As an aside, the Red Line schedule reports that trains run every 9 minutes during peak times. This is close to the posterior mean, but higher than the prior mean. I exchanged email with a representative of the MBTA, who confirmed that the reported time between trains is deliberately conservative in order to account for variability.
+    </p>
+  </section>
+
+  <section xml:id="sec-redline-elapsed-time">
+    <title>Elapsed time</title>
+
+    <p>
+      Elapsed time, which I call <c>x</c>, is the time between the arrival of the previous train and the arrival of a passenger. 
+Wait time, which I call <c>y</c>, is the time between the arrival of a passenger and the next arrival of a train. 
+I chose this notation so that
+    </p>
+
+    <p>
+      <c></c>`
+z = x + y.
+<c></c>`
+    </p>
+
+    <p>
+      Given the distribution of <c>z</c>, we can compute the distribution of <c>x</c>. I’ll start with a simple case and then generalize. Suppose the gap between trains is either 5 or 10 minutes with equal probability.
+    </p>
+
+    <p>
+      If we arrive at a random time, we arrive during a 5 minute gap with probability 1/3, or a 10 minute gap with probability 2/3.
+    </p>
+
+    <p>
+      If we arrive during a 5 minute gap, <c>x</c> is uniform from 0 to 5 minutes. If we arrive during a 10 minute gap, <c>x</c> is uniform from 0 to 10. 
+So the distribution of wait times is a weighted mixture of two uniform distributions.
+    </p>
+
+    <p>
+      More generally, if we have the posterior distribution of <c>z</c>, we can compute the distribution of <c>x</c> by making a mixture of uniform distributions.
+We'll use the following function to make the uniform distributions.
+    </p>
+
+    <program language="python">
+      <input>
+    from empiricaldist import Pmf
+    
+    def make_elapsed_dist(gap, qs):
+        qs = qs[qs &lt;= gap]
+        n = len(qs)
+        return Pmf(1/n, qs)
+      </input>
+    </program>
+
+    <p>
+      <c>make_elapsed_dist</c> takes a hypothetical gap and an array of possible times.
+It selects the elapsed times less than or equal to <c>gap</c> and puts them into a <c>Pmf</c> that represents a uniform distribution.
+    </p>
+
+    <p>
+      I'll use this function to make a sequence of <c>Pmf</c> objects, one for each gap in <c>posterior_z</c>.
+    </p>
+
+    <program language="python">
+      <input>
+    qs = posterior_z.qs
+    pmf_seq = [make_elapsed_dist(gap, qs) for gap in qs]
+      </input>
+    </program>
+
+    <p>
+      Here's an example that represents a uniform distribution from 0 to 0.6 minutes.
+    </p>
+
+    <program language="python">
+      <input>
+    pmf_seq[3]
+      </input>
+    </program>
+
+    <pre>
+0.0    0.25
+0.2    0.25
+0.4    0.25
+0.6    0.25
+Name: , dtype: float64
+    </pre>
+
+    <p>
+      The last element of the sequence is uniform from 0 to 20 minutes.
+    </p>
+
+    <program language="python">
+      <input>
+    pmf_seq[-1].plot()
+    
+    decorate(xlabel='Time (min)',
+             ylabel='PDF',
+             title='Distribution of wait time in 20 min gap')
+      </input>
+    </program>
+
+    <image source="images/app_redline_fig2.png" width="80%"/>
+
+    <p>
+      Now we can use <c>make_mixture</c> to make a weighted mixture of uniform distributions, where the weights are the probabilities from <c>posterior_z</c>.
+    </p>
+
+    <program language="python">
+      <input>
+    from utils import make_mixture
+    
+    pmf_x = make_mixture(posterior_z, pmf_seq)
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+    pmf_z.plot(label='prior gap', color='C5')
+    posterior_z.plot(label='posterior gap', color='C4')
+    pmf_x.plot(label='elapsed time', color='C1')
+    
+    decorate(xlabel='Time (min)',
+             ylabel='PDF',
+             title='Distribution of gap and elapsed times')
+      </input>
+    </program>
+
+    <image source="images/app_redline_fig3.png" width="80%"/>
+
+    <program language="python">
+      <input>
+    posterior_z.mean(), pmf_x.mean()
+      </input>
+    </program>
+
+    <pre>
+(8.89677416786441, 4.448387083932206)
+    </pre>
+
+    <p>
+      The mean elapsed time is 4.4 minutes, half the posterior mean of <c>z</c>.
+And that makes sense, since we expect to arrive in the middle of the gap, on average.
+    </p>
+  </section>
+
+  <section xml:id="sec-redline-counting-passengers">
+    <title>Counting passengers</title>
+
+    <p>
+      Now let's take into account the number of passengers waiting on the platform.
+Let's assume that passengers are equally likely to arrive at any time, and that they arrive at a rate, <c>λ</c>, that is known to be 2 passengers per minute.
+    </p>
+
+    <p>
+      Under those assumptions, the number of passengers who arrive in <c>x</c> minutes follows a Poisson distribution with parameter <c>λ x</c>
+So we can use the SciPy function <c>poisson</c> to compute the likelihood of 10 passengers for each possible value of <c>x</c>.
+    </p>
+
+    <program language="python">
+      <input>
+    from scipy.stats import poisson
+    
+    lam = 2
+    num_passengers = 10
+    likelihood = poisson(lam * pmf_x.qs).pmf(num_passengers)
+      </input>
+    </program>
+
+    <p>
+      With this likelihood, we can compute the posterior distribution of <c>x</c>.
+    </p>
+
+    <program language="python">
+      <input>
+    posterior_x = pmf_x * likelihood
+    posterior_x.normalize()
+      </input>
+    </program>
+
+    <pre>
+0.04757676716097805
+    </pre>
+
+    <p>
+      Here's what it looks like:
+    </p>
+
+    <program language="python">
+      <input>
+    pmf_x.plot(label='prior', color='C1')
+    posterior_x.plot(label='posterior', color='C2')
+    
+    decorate(xlabel='Time (min)',
+             ylabel='PDF',
+             title='Distribution of time since last train')
+      </input>
+    </program>
+
+    <image source="images/app_redline_fig4.png" width="80%"/>
+
+    <p>
+      Based on the number of passengers, we think it has been about 5 minutes since the last train.
+    </p>
+
+    <program language="python">
+      <input>
+    pmf_x.mean(), posterior_x.mean()
+      </input>
+    </program>
+
+    <pre>
+(4.448387083932206, 5.1439350761797495)
+    </pre>
+  </section>
+
+  <section xml:id="sec-redline-wait-time">
+    <title>Wait time</title>
+
+    <p>
+      Now how long do we think it will be until the next train?
+Based on what we know so far, the distribution of <c>z</c> is <c>posterior_z</c>, and the distribution of <c>x</c> is <c>posterior_x</c>.
+Remember that we defined
+    </p>
+
+    <p>
+      <c></c>`
+z = x + y
+<c></c>`
+    </p>
+
+    <p>
+      If we know <c>x</c> and <c>z</c>, we can compute
+    </p>
+
+    <p>
+      <c></c>`
+y = z - x
+<c></c>`
+    </p>
+
+    <p>
+      So we can use <c>sub_dist</c> to compute the distribution of <c>y</c>.
+    </p>
+
+    <program language="python">
+      <input>
+    posterior_y = Pmf.sub_dist(posterior_z, posterior_x)
+      </input>
+    </program>
+
+    <p>
+      Well, almost.  That distribution contains some negative values, which are impossible.
+But we can remove them and renormalize, like this:
+    </p>
+
+    <program language="python">
+      <input>
+    nonneg = (posterior_y.qs &gt;= 0)
+    posterior_y = Pmf(posterior_y[nonneg])
+    posterior_y.normalize()
+      </input>
+    </program>
+
+    <pre>
+0.8900343090047254
+    </pre>
+
+    <p>
+      Based on the information so far, here are the distributions for <c>x</c>, <c>y</c>, and <c>z</c>, shown as CDFs.
+    </p>
+
+    <program language="python">
+      <input>
+    posterior_x.make_cdf().plot(label='posterior of x', color='C2')
+    posterior_y.make_cdf().plot(label='posterior of y', color='C3')
+    posterior_z.make_cdf().plot(label='posterior of z', color='C4')
+    
+    decorate(xlabel='Time (min)',
+             ylabel='PDF',
+             title='Distribution of elapsed time, wait time, gap')
+      </input>
+    </program>
+
+    <image source="images/app_redline_fig5.png" width="80%"/>
+
+    <p>
+      Because of rounding errors, <c>posterior_y</c> contains quantities that are not in <c>posterior_x</c> and <c>posterior_z</c>; that's why I plotted it as a CDF, and why it appears jaggy.
+    </p>
+  </section>
+
+  <section xml:id="sec-redline-decision-analysis">
+    <title>Decision analysis</title>
+
+    <p>
+      At this point we can use the number of passengers on the platform to predict the distribution of wait times. Now let’s get to the second part of the question: when should I stop waiting for the train and go catch a taxi?
+    </p>
+
+    <p>
+      Remember that in the original scenario, I am trying to get to South Station to catch the commuter rail. Suppose I leave the office with enough time that I can wait 15 minutes and still make my connection at South Station.
+    </p>
+
+    <p>
+      In that case I would like to know the probability that <c>y</c> exceeds 15 minutes as a function of <c>num_passengers</c>.
+To answer that question, we can run the analysis from the previous section with range of <c>num_passengers</c>.
+    </p>
+
+    <p>
+      But there’s a problem. The analysis is sensitive to the frequency of long delays, and because long delays are rare, it is hard to estimate their frequency.
+    </p>
+
+    <p>
+      I only have data from one week, and the longest delay I observed was 15 minutes. So I can’t estimate the frequency of longer delays accurately.
+    </p>
+
+    <p>
+      However, I can use previous observations to make at least a coarse estimate. When I commuted by Red Line for a year, I saw three long delays caused by a signaling problem, a power outage, and “police activity” at another stop. So I estimate that there are about 3 major delays per year.
+    </p>
+
+    <p>
+      But remember that my observations are biased. I am more likely to observe long delays because they affect a large number of passengers. So we should treat my observations as a sample of <c>posterior_z</c> rather than <c>pmf_z</c>.
+    </p>
+
+    <p>
+      Here's how we can augment the observed distribution of gap times with some assumptions about long delays.
+From <c>posterior_z</c>, I'll draw a sample of 260 values (roughly the number of work days in a year).
+Then I'll add in delays of 30, 40, and 50 minutes (the number of long delays I observed in a year).
+    </p>
+
+    <program language="python">
+      <input>
+    sample = posterior_z.sample(260)
+    delays = [30, 40, 50]
+    augmented_sample = np.append(sample, delays)
+      </input>
+    </program>
+
+    <p>
+      I'll use this augmented sample to make a new estimate for the posterior distribution of <c>z</c>.
+    </p>
+
+    <program language="python">
+      <input>
+    qs = np.linspace(0, 60, 101)
+    augmented_posterior_z = kde_from_sample(augmented_sample, qs)
+      </input>
+    </program>
+
+    <p>
+      Here's what it looks like.
+    </p>
+
+    <program language="python">
+      <input>
+    augmented_posterior_z.plot(label='augmented posterior of z', color='C4')
+    
+    decorate(xlabel='Time (min)',
+             ylabel='PDF',
+             title='Distribution of time between trains')
+      </input>
+    </program>
+
+    <image source="images/app_redline_fig6.png" width="80%"/>
+
+    <p>
+      Now let's take the analysis from the previous sections and wrap it in a function.
+    </p>
+
+    <program language="python">
+      <input>
+    qs = augmented_posterior_z.qs
+    pmf_seq = [make_elapsed_dist(gap, qs) for gap in qs]
+    pmf_x = make_mixture(augmented_posterior_z, pmf_seq)
+    lam = 2
+    num_passengers = 10
+    
+    def compute_posterior_y(num_passengers):   
+        """Distribution of wait time based on `num_passengers`."""
+        likelihood = poisson(lam * qs).pmf(num_passengers)
+        posterior_x = pmf_x * likelihood
+        posterior_x.normalize()
+        posterior_y = Pmf.sub_dist(augmented_posterior_z, posterior_x)
+        nonneg = (posterior_y.qs &gt;= 0)
+        posterior_y = Pmf(posterior_y[nonneg])
+        posterior_y.normalize()
+        return posterior_y
+      </input>
+    </program>
+
+    <p>
+      Given the number of passengers when we arrive at the station, it computes the posterior distribution of <c>y</c>.
+As an example, here's the distribution of wait time if we see 10 passengers.
+    </p>
+
+    <program language="python">
+      <input>
+    posterior_y = compute_posterior_y(10)
+      </input>
+    </program>
+
+    <p>
+      We can use it to compute the mean wait time and the probability of waiting more than 15 minutes.
+    </p>
+
+    <program language="python">
+      <input>
+    posterior_y.mean()
+      </input>
+    </program>
+
+    <pre>
+4.774817797206827
+    </pre>
+
+    <program language="python">
+      <input>
+    1 - posterior_y.make_cdf()(15)
+      </input>
+    </program>
+
+    <pre>
+0.014549512746375837
+    </pre>
+
+    <p>
+      If we see 10 passengers, we expect to wait a little less than 5 minutes, and the chance of waiting more than 15 minutes is about 1%.
+    </p>
+
+    <p>
+      Let's see what happens if we sweep through a range of values for <c>num_passengers</c>.
+    </p>
+
+    <program language="python">
+      <input>
+    nums = np.arange(0, 37, 3)
+    posteriors = [compute_posterior_y(num) for num in nums]
+      </input>
+    </program>
+
+    <p>
+      Here's the mean wait as a function of the number of passengers.
+    </p>
+
+    <program language="python">
+      <input>
+    mean_wait = [posterior_y.mean()
+                 for posterior_y in posteriors]
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+    import matplotlib.pyplot as plt
+    
+    plt.plot(nums, mean_wait)
+    
+    decorate(xlabel='Number of passengers',
+             ylabel='Expected time until next train',
+             title='Expected wait time based on number of passengers')
+      </input>
+    </program>
+
+    <image source="images/app_redline_fig7.png" width="80%"/>
+
+    <p>
+      If there are no passengers on the platform when I arrive, I infer that I just missed a train; in that case, the expected wait time is the mean of <c>augmented_posterior_z</c>.
+    </p>
+
+    <p>
+      The more passengers I see, the longer I think it has been since the last train, and the more likely a train arrives soon.
+    </p>
+
+    <p>
+      But only up to a point.  If there are more than 30 passengers on the platform, that suggests that there is a long delay, and the expected wait time starts to increase.
+    </p>
+
+    <p>
+      Now here's the probability that wait time exceeds 15 minutes.
+    </p>
+
+    <program language="python">
+      <input>
+    prob_late = [1 - posterior_y.make_cdf()(15) 
+                 for posterior_y in posteriors]
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+    plt.plot(nums, prob_late)
+    
+    decorate(xlabel='Number of passengers',
+             ylabel='Probability of being late',
+             title='Probability of being late based on number of passengers')
+      </input>
+    </program>
+
+    <image source="images/app_redline_fig8.png" width="80%"/>
+
+    <p>
+      When the number of passengers is less than 20, we infer that the system is operating normally, so the probability of a long delay is small. If there are 30 passengers, we suspect that something is wrong and expect longer delays.
+    </p>
+
+    <p>
+      If we are willing to accept a 5% chance of missing the connection at South Station, we should stay and wait as long as there are fewer than 30 passengers, and take a taxi if there are more.
+    </p>
+
+    <p>
+      Or, to take this analysis one step further, we could quantify the cost of missing the connection and the cost of taking a taxi, then choose the threshold that minimizes expected cost.
+    </p>
+
+    <p>
+      This analysis is based on the assumption that the arrival rate, <c>lam</c>, is known.
+If it is not know precisely, but is estimated from data, we could represent our uncertainty about <c>lam</c> with a distribution, compute the distribution of <c>y</c> for each value of <c>lam</c>, and make a mixture to represent the distribution of <c>y</c>.
+I did that in the version of this problem in the first edition of <em>Think Bayes</em>; I left it out here because it is not the focus of the problem.
+    </p>
+  </section>
