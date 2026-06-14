@@ -17,6 +17,7 @@
   </solutions>
   
   <xi:include href="./app-redline.ptx" />
+  <xi:include href="./app-vaccine-efficacy.ptx" />
 
   <appendix>
     <title>List of Symbols</title>

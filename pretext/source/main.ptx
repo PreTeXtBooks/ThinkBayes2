@@ -36,7 +36,6 @@
     <xi:include href="./ch18-conjugate-priors.ptx" />
     <xi:include href="./ch19-mcmc.ptx" />
     <xi:include href="./ch20-abc.ptx" />
-    <xi:include href="./ch-examples.ptx" />
 
     <!-- Backmatter -->
     <xi:include href="./meta_backmatter.ptx" />

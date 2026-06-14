@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appendix xml:id="vaccine-efficacy" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <title>Estimating vaccine efficacy</title>
+
+  <introduction>
+    <p>In a recent vaccine trial, no one in the vaccinated group got the disease, so the makers of the vaccine reported that it is 100% effective. Of course, nothing in the real world is 100% effective, so this example raises a question: how do we estimate efficacy when the number of cases is 0?</p>
+
+    <p>In this article, I present a Bayesian way to answer this question -- and the answer turns out to be about 94%.</p>
+
+    <p><em>If you like this article, you might also like the second edition of <url href="https://greenteapress.com/wp/think-bayes/"><em>Think Bayes</em></url>.</em></p>
+
+    <p><url href="https://colab.research.google.com/github/AllenDowney/ThinkBayes2/blob/master/examples/vaccine2.ipynb">Click here to run this article on Colab</url></p>
+  </introduction>
+
+  <section xml:id="sec-vaccine-efficacy-data">
+    <title>The Data</title>
+
+    <p>According to <url href="https://www.pfizer.com/news/press-release/press-release-detail/pfizer-biontech-announce-positive-topline-results-pivotal">this press release</url></p>
+
+    <blockquote>
+      <p>...in a Phase 3 trial in adolescents 12 to 15 years of age with or without prior evidence of SARS-CoV-2 infection, the Pfizer-BioNTech COVID-19 vaccine BNT162b2 demonstrated 100% efficacy and robust antibody responses...</p>
+    </blockquote>
+
+    <p>Of course, it is good news that the vaccine seems to work in this age group as well as it does in adults, and possibly better. But reporting that the vaccine is 100% effective is a little strange.</p>
+
+    <p>The press release includes the following details about the results</p>
+
+    <blockquote>
+      <p>The trial enrolled 2,260 adolescents 12 to 15 years of age in the United States. In the trial, 18 cases of COVID-19 were observed in the placebo group (n=1,129) versus none in the vaccinated group (n=1,131).</p>
+    </blockquote>
+
+    <p>Since there were no cases in the vaccinated group, it is reasonable to think that the vaccine works, but in the real world, nothing is 100% effective. In a bigger trial, we should expect to see at least one case in the vaccinated group. But how can we estimate the frequency of something that has not happened yet?</p>
+
+    <p>Bayesian statistics provides a sensible way to do just that.</p>
+
+    <p>Here's the data as reported in the press release.</p>
+
+    <program language="python">
+      <input>
+n_control = 1129
+n_treatment = 1131
+
+cases_control = 18
+cases_treatment = 0
+      </input>
+    </program>
+
+    <p>To estimate the efficacy of the vaccine, I'll start by computing the risk in each group separately.</p>
+  </section>
+
+  <section xml:id="sec-vaccine-efficacy-beta">
+    <title>The Beta Distribution</title>
+
+    <p>If we start with a uniform prior distribution, the posterior is a beta distribution with parameters</p>
+
+    <pre>
+alpha = cases + 1
+beta = n - cases + 1
+    </pre>
+
+    <p>We can use SciPy to make beta distributions that represents the posteriors.</p>
+
+    <program language="python">
+      <input>
+from scipy.stats import beta
+
+def make_beta(n, cases):
+    return beta(cases+1, n-cases+1)
+      </input>
+    </program>
+
+    <p>Here's the posterior distribution for the control branch.</p>
+
+    <program language="python">
+      <input>
+dist_control = make_beta(n_control, cases_control)
+dist_control.mean() * 100
+      </input>
+    </program>
+
+    <pre>
+1.6799292661361624
+    </pre>
+
+    <p>The posterior mean is close to the observed proportion:</p>
+
+    <program language="python">
+      <input>
+cases_control / n_control * 100
+      </input>
+    </program>
+
+    <pre>
+1.5943312666076175
+    </pre>
+
+    <p>Here's the posterior distribution for the treatment branch.</p>
+
+    <program language="python">
+      <input>
+dist_treatment = make_beta(n_treatment, cases_treatment)
+dist_treatment.mean() * 100
+      </input>
+    </program>
+
+    <pre>
+0.088261253309797
+    </pre>
+
+    <p>The posterior mean is about 0.1%, which is small, but not 0.</p>
+
+    <p>To compute the distribution of risk ratios, I'll make a discrete approximation to the two posterior distributions, using the <c>Pmf</c> object from <c>empiricaldist</c>:</p>
+
+    <program language="python">
+      <input>
+# If we're running on Colab, install empiricaldist
+# https://pypi.org/project/empiricaldist/
+
+import sys
+IN_COLAB = 'google.colab' in sys.modules
+
+if IN_COLAB:
+    !pip install empiricaldist
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+import numpy as np
+from empiricaldist import Pmf
+
+def make_pmf(dist):
+    """PMF to approximate a beta distribution.
+
+    dist: SciPy `beta` object
+
+    returns: Pmf
+    """
+    qs = np.linspace(8e-6, 0.03, 1000)
+    ps = dist.pdf(qs)
+    pmf = Pmf(ps, qs)
+    pmf.normalize()
+    return pmf
+      </input>
+    </program>
+
+    <p>Here are the <c>Pmf</c> objects:</p>
+
+    <program language="python">
+      <input>
+pmf_control = make_pmf(dist_control).mul_dist(100)
+pmf_treatment = make_pmf(dist_treatment).mul_dist(100)
+      </input>
+    </program>
+
+    <p>And here's what they look like:</p>
+
+    <program language="python">
+      <input>
+import matplotlib.pyplot as plt
+
+pmf_control.plot(label='Control')
+pmf_treatment.plot(label='Treatment')
+
+plt.xlabel('Infection rate (%)')
+plt.ylabel('PMF')
+plt.title('Posterior distributions of infection rate')
+plt.legend();
+      </input>
+    </program>
+
+    <image source="images/vaccine2_fig1.png" width="80%"/>
+  </section>
+
+  <section xml:id="sec-vaccine-efficacy-computing">
+    <title>Computing Efficacy</title>
+
+    <p>Now, to compute efficacy, I'll use these distributions to compute the distribution of risk ratio, <c>RR</c>, and then compute the distribution of efficacy, which is the complement of risk ration, <c>1-RR</c>.</p>
+
+    <p>We can use <c>div_dist</c> to compute the risk ratio.</p>
+
+    <program language="python">
+      <input>
+pmf_ratio = pmf_treatment.div_dist(pmf_control)
+      </input>
+    </program>
+
+    <p>Here's the CDF of the risk ratio.  I cut it off at 1 because higher values have very low probabilities; that is, we are pretty sure the treatment is effective.</p>
+
+    <program language="python">
+      <input>
+pmf_ratio.make_cdf().plot()
+plt.xlim([0, 1])
+
+plt.xlabel('Risk ratio')
+plt.ylabel('CDF')
+plt.title('Posterior distribution of risk ratio');
+      </input>
+    </program>
+
+    <image source="images/vaccine2_fig2.png" width="80%"/>
+
+    <p>To compute the distribution of efficacy, we have to compute the distribution of <c>1-RR</c>, where <c>RR</c> is the risk ratio.  We can do that with <c>empiricaldist</c> by creating a deterministic <c>Pmf</c> with the quantity <c>1</c> and using <c>sub_dist</c> to subtract two <c>Pmf</c>s.</p>
+
+    <program language="python">
+      <input>
+efficacy = Pmf.from_seq(1).sub_dist(pmf_ratio)
+      </input>
+    </program>
+
+    <p>Here's the result.</p>
+
+    <program language="python">
+      <input>
+efficacy.make_cdf().plot()
+plt.xlim([0, 1])
+
+plt.xlabel('Efficacy')
+plt.ylabel('PMF')
+plt.title('Posterior distribution of efficacy');
+      </input>
+    </program>
+
+    <image source="images/vaccine2_fig3.png" width="80%"/>
+
+    <p>The posterior mean is about 94%.</p>
+
+    <program language="python">
+      <input>
+efficacy.mean()
+      </input>
+    </program>
+
+    <pre>
+0.9449759891115062
+    </pre>
+
+    <p>And the 95% credible interval is between 79% and 99.9%.</p>
+
+    <program language="python">
+      <input>
+efficacy.credible_interval(0.95)
+      </input>
+    </program>
+
+    <pre>
+array([0.78696377, 0.99943336])
+    </pre>
+
+    <p>By these estimates, the efficacy in teenagers is about the same as in adults.</p>
+
+    <p><em>If you like this article, you might also like the second edition of <url href="https://greenteapress.com/wp/think-bayes/"><em>Think Bayes</em></url>.</em></p>
+  </section>
+</appendix>
