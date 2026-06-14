@@ -1142,51 +1142,31 @@ dtype: float64
     <solution>
       <program language="python">
         <input>
-data2 = np.array([0, 73, 86, 49])
-        </input>
-      </program>
-      <program language="python">
-        <input>
-qs = np.arange(200, 500, step=5)
-prior_N = make_uniform(qs, name='N')
-prior_N.head(3)
-        </input>
-    </program>
-<pre>
-N
-200    0.016667
-205    0.016667
-210    0.016667
-dtype: float64
-</pre>
-      <program language="python">
-        <input>
-qs = np.linspace(0, 0.98, num=50)
-prior_p = make_uniform(qs, name='p')
-prior_p.head(3)
-        </input>
-    </program>
-<pre>
-p
-0.00    0.02
-0.02    0.02
-0.04    0.02
-dtype: float64
-</pre>
-      <program language="python">
-        <input>
 
 joint_prior = make_joint(prior_p, prior_N)
 joint_prior.head(3)
         </input>
       </program>
+<pre>
+p       0.00      0.02      0.04      0.06      0.08      0.10      0.12      0.14      0.16      0.18  ...     0.80      0.82      0.84      0.86      0.88      0.90      0.92      0.94      0.96      0.98
+N																					
+200	0.000333	0.000333	0.000333	0.000333	0.000333	0.000333	0.000333	0.000333	0.000333	0.000333	...	0.000333	0.000333	0.000333	0.000333	0.000333	0.000333	0.000333	0.000333	0.000333	0.000333
+205	0.000333	0.000333	0.000333	0.000333	0.000333	0.000333	0.000333	0.000333	0.000333	0.000333	...	0.000333	0.000333	0.000333	0.000333	0.000333	0.000333	0.000333	0.000333	0.000333	0.000333
+210	0.000333	0.000333	0.000333	0.000333	0.000333	0.000333	0.000333	0.000333	0.000333	0.000333	...	0.000333	0.000333	0.000333	0.000333	0.000333	0.000333	0.000333	0.000333	0.000333	0.000333
+</pre>
       <program language="python">
         <input>
-
 prior_pmf = Pmf(joint_prior.stack())
 prior_pmf.head(3)
         </input>
       </program>
+<pre>
+             probs
+  N    p	
+200	0.00  0.000333
+    0.02  0.000333
+    0.04  0.000333
+</pre>
       <program language="python">
         <input>
 
@@ -1219,12 +1199,12 @@ joint_posterior = posterior_pmf.unstack()
       </program>
       <program language="python">
         <input>
-
 plot_contour(joint_posterior)
 
 decorate(title='Joint posterior distribution of N and p')
         </input>
       </program>
+    <image source="images/ch15_joint_posterior_solution.png" width="80%"/>
       <program language="python">
         <input>
 
@@ -1236,6 +1216,7 @@ decorate(xlabel='Number of cases (N)',
          title='Posterior marginal distribution of N')
         </input>
       </program>
+    <image source="images/ch15_joint_posterior_solution_2.png" width="80%"/>
       <program language="python">
         <input>
 
@@ -1320,7 +1301,7 @@ df
           </input>
     </program>
 <pre>
-level_0  level_1  level_2
+   level_0  level_1  level_2
 0      0.8      0.8      0.8
 1      0.8      0.8      0.2
 2      0.8      0.2      0.8
@@ -1355,67 +1336,6 @@ dtype: float64
         </p>
       </statement>
     <solution>
-      <program language="python">
-        <input>
-data3 = np.array([0, 63, 55, 18, 69, 17, 21, 28])
-        </input>
-      </program>
-      <program language="python">
-        <input>
-q = 1-p
-ps = [q*q, q*p, p*q, p*p]
-        </input>
-      </program>
-      <program language="python">
-        <input>
-def cartesian_product(*args, **options):
-    """Cartesian product of sequences.
-    
-    args: any number of sequences
-    options: passes to `MultiIndex.from_product`
-    
-    returns: DataFrame with one column per sequence
-    """
-    index = pd.MultiIndex.from_product(args, **options)
-    return pd.DataFrame(index=index).reset_index()
-        </input>
-      </program>
-      <program language="python">
-        <input>
-p = 0.2
-t = (1-p, p)
-df = cartesian_product(t, t, t)
-df
-        </input>
-    </program>
-<pre>
-level_0  level_1  level_2
-0      0.8      0.8      0.8
-1      0.8      0.8      0.2
-2      0.8      0.2      0.8
-3      0.8      0.2      0.2
-4      0.2      0.8      0.8
-5      0.2      0.8      0.2
-6      0.2      0.2      0.8
-7      0.2      0.2      0.2
-</pre>
-      <program language="python">
-        <input>
-y = df.prod(axis=1)
-y
-        </input>
-    </program>
-<pre>
-0    0.512
-1    0.128
-2    0.128
-3    0.032
-4    0.128
-5    0.032
-6    0.032
-7    0.008
-dtype: float64
-</pre>
       <program language="python">
         <input>
 
@@ -1455,6 +1375,7 @@ plot_contour(joint_posterior)
 decorate(title='Joint posterior distribution of N and p')
         </input>
       </program>
+    <image source="images/ch15_joint_posterior_solution_3.png" width="80%"/>
       <program language="python">
         <input>
 
@@ -1472,6 +1393,7 @@ decorate(xlabel='Number of cases (N)',
          title='Posterior marginal distribution of N')
         </input>
       </program>
+    <image source="images/ch15_joint_posterior_solution_4.png" width="80%"/>
       <program language="python">
         <input>
 
