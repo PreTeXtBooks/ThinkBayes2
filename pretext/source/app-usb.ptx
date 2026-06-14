@@ -217,9 +217,9 @@ expr.simplify()
       </input>
     </program>
 
-    <pre>
+    <me>
 p/(p + q*exp(lam*t))
-    </pre>
+    </me>
 
     <p>
       You might recognize this as a form of the <url href="https://en.wikipedia.org/wiki/Logistic_function">logistic function</url>; we can compute it like this:
@@ -281,9 +281,9 @@ eqn
       </input>
     </program>
 
-    <pre>
-Eq(p*exp(-lam*t)/(p*exp(-lam*t) + q), r)
-    </pre>
+    <me>
+p*exp(-lam*t)/(p*exp(-lam*t) + q) = r
+    </me>
 
     <p>
       And here's the solution for <c>t</c> in terms of <c>p</c>, <c>q</c>, <c>r</c>, and <c>lam</c>.
@@ -295,9 +295,9 @@ solve(eqn, t)[0]
       </input>
     </program>
 
-    <pre>
-log(p*(1 - r)/(q*r))/lam
-    </pre>
+    <me>
+\frac{log(p*(1 - r)/(q*r))}/{lam}
+    </me>
 
     <p>
       And here's how we can express this solution in terms of the prior and posterior odds.

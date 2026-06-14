@@ -1,0 +1,391 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appendix xml:id="app-sister" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <title>The Left Handed Sister Problem</title>
+
+  <introduction>
+    <p>
+      Suppose you meet someone who looks like the brother of your friend Mary.
+      You ask if he has a sister named Mary, and he says "Yes I do, but I don't think I know you."
+    </p>
+
+    <p>
+      You remember that Mary has a sister who is left-handed, but you don't remember her name.
+      So you ask your new friend if he has another sister who is left-handed.
+    </p>
+
+    <p>
+      If he does, how much evidence does that provide that he is the brother of your friend, rather than a random person who coincidentally has a sister named Mary and another sister who is left-handed. In other words, what is the Bayes factor of the left-handed sister?
+    </p>
+
+    <p>
+      Let's assume:
+    </p>
+
+    <ul>
+      <li><p>Out of 100 families with children, 20 have one child, 30 have two children, 40 have three children, and 10 have four children.</p></li>
+      <li><p>All children are either boys or girls with equal probability, one girl in 10 is left-handed, and one girl in 100 is named Mary.</p></li>
+      <li><p>Name, sex, and handedness are independent, so every child has the same probability of being a girl, left-handed, or named Mary.</p></li>
+      <li><p>If the person you met had more than one sister named Mary, he would have said so, but he could have more than one sister who is left handed.</p></li>
+    </ul>
+  </introduction>
+
+  <section xml:id="sec-sister-prior">
+    <title>Constructing the prior</title>
+
+    <p>
+      I'll make a Pandas <c>Series</c> that enumerates possible families with 2, 3, or 4 children.
+    </p>
+
+    <program language="python">
+      <input>
+import pandas as pd
+
+qs = [(2, 0),
+      (1, 1),
+      (0, 2),
+      (3, 0),
+      (2, 1),
+      (1, 2),
+      (0, 3),
+      (4, 0),
+      (3, 1),
+      (2, 2),
+      (1, 3),
+      (0, 4),
+    ]
+index = pd.MultiIndex.from_tuples(qs, names=['Boys', 'Girls'])
+      </input>
+    </program>
+
+    <p>
+      To compute the proportion of each type of family, I'll use Scipy to compute the binomial distribution.
+    </p>
+
+    <program language="python">
+      <input>
+from scipy.stats import binom
+
+boys = index.to_frame()['Boys']
+girls = index.to_frame()['Girls']
+ps = binom.pmf(girls, boys+girls, 0.5)
+      </input>
+    </program>
+
+    <p>
+      And put the results into a Pandas <c>Series</c>.
+    </p>
+
+    <program language="python">
+      <input>
+prior1 = pd.Series(ps, index, name='Prior')
+pd.DataFrame(prior1)
+      </input>
+    </program>
+
+    <pre>
+             Prior
+Boys Girls
+2    0      0.2500
+1    1      0.5000
+0    2      0.2500
+3    0      0.1250
+2    1      0.3750
+1    2      0.3750
+0    3      0.1250
+4    0      0.0625
+3    1      0.2500
+2    2      0.3750
+1    3      0.2500
+0    4      0.0625
+    </pre>
+
+    <p>
+      But we also have the information frequencies of these families are proportional to 30%, 40%, and 10%, so we can multiply through.
+    </p>
+
+    <program language="python">
+      <input>
+ps = [30, 30, 30, 40, 40, 40, 40, 10, 10, 10, 10, 10]
+
+prior1 *= ps
+pd.DataFrame(prior1)
+      </input>
+    </program>
+
+    <pre>
+             Prior
+Boys Girls
+2    0       7.500
+1    1      15.000
+0    2       7.500
+3    0       5.000
+2    1      15.000
+1    2      15.000
+0    3       5.000
+4    0       0.625
+3    1       2.500
+2    2       3.750
+1    3       2.500
+0    4       0.625
+    </pre>
+
+    <p>
+      So that's the (unnormalized) prior.
+    </p>
+
+    <p>
+      I'll use the following function to do Bayesian updates.
+    </p>
+
+    <program language="python">
+      <input>
+import pandas as pd
+
+def make_table(prior, likelihood):
+    """Make a DataFrame representing a Bayesian update."""
+    table = pd.DataFrame(prior)
+    table.columns = ['Prior']
+    table['Likelihood'] = likelihood
+    table['Product'] = (table['Prior'] * table['Likelihood'])
+    total = table['Product'].sum()
+    table['Posterior'] = table['Product'] / total
+    return table
+      </input>
+    </program>
+
+    <p>
+      This function takes a prior and a likelihood and returns a <c>DataFrame</c>.
+    </p>
+  </section>
+
+  <section xml:id="sec-sister-first-update">
+    <title>The first update</title>
+
+    <p>
+      Due to <url href="https://towardsdatascience.com/the-inspection-paradox-is-everywhere-2ef1c2e9d709">length-biased sampling</url>, the person you met is more likely to come from family with more boys.
+      Specifically, the likelihood of meeting someone from a family with <m>n</m> boys is proportional to <m>n</m>.
+    </p>
+
+    <program language="python">
+      <input>
+likelihood1 = prior1.index.to_frame()['Boys']
+table1 = make_table(prior1, likelihood1)
+table1
+      </input>
+    </program>
+
+    <pre>
+             Prior  Likelihood  Product  Posterior
+Boys Girls
+2    0       7.500           2     15.0   0.136364
+1    1      15.000           1     15.0   0.136364
+0    2       7.500           0      0.0   0.000000
+3    0       5.000           3     15.0   0.136364
+2    1      15.000           2     30.0   0.272727
+1    2      15.000           1     15.0   0.136364
+0    3       5.000           0      0.0   0.000000
+4    0       0.625           4      2.5   0.022727
+3    1       2.500           3      7.5   0.068182
+2    2       3.750           2      7.5   0.068182
+1    3       2.500           1      2.5   0.022727
+0    4       0.625           0      0.0   0.000000
+    </pre>
+
+    <p>
+      So that's what we should believe about the family after the first update.
+    </p>
+  </section>
+
+  <section xml:id="sec-sister-second-update">
+    <title>The second update</title>
+
+    <p>
+      The likelihood that a person has exactly one sister named Mary is given by the binomial distribution where <c>n</c> is the number of girls in the family and <c>p</c> is the probability that a girl is named Mary.
+    </p>
+
+    <program language="python">
+      <input>
+from scipy.stats import binom
+
+ns = prior1.index.to_frame()['Girls']
+p = 1 / 100
+k = 1
+
+likelihood2 = binom.pmf(k, ns, p)
+likelihood2
+      </input>
+    </program>
+
+    <pre>
+array([0.        , 0.01      , 0.0198    , 0.        , 0.01      ,
+       0.0198    , 0.029403  , 0.        , 0.01      , 0.0198    ,
+       0.029403  , 0.03881196])
+    </pre>
+
+    <p>
+      Here's the second update.
+    </p>
+
+    <program language="python">
+      <input>
+prior2 = table1['Posterior']
+table2 = make_table(prior2, likelihood2)
+table2
+      </input>
+    </program>
+
+    <pre>
+               Prior  Likelihood   Product  Posterior
+Boys Girls
+2    0      0.136364    0.000000  0.000000   0.000000
+1    1      0.136364    0.010000  0.001364   0.143677
+0    2      0.000000    0.019800  0.000000   0.000000
+3    0      0.136364    0.000000  0.000000   0.000000
+2    1      0.272727    0.010000  0.002727   0.287354
+1    2      0.136364    0.019800  0.002700   0.284481
+0    3      0.000000    0.029403  0.000000   0.000000
+4    0      0.022727    0.000000  0.000000   0.000000
+3    1      0.068182    0.010000  0.000682   0.071839
+2    2      0.068182    0.019800  0.001350   0.142240
+1    3      0.022727    0.029403  0.000668   0.070409
+0    4      0.000000    0.038812  0.000000   0.000000
+    </pre>
+
+    <p>
+      Based on the sister named Mary, we can rule out families with no girls, and families with more than one girls are more likely.
+    </p>
+  </section>
+
+  <section xml:id="sec-sister-left-handed">
+    <title>Probability of a left-handed sister</title>
+
+    <p>
+      Finally, we can compute the probability that he has at least one left-handed sister.
+      The likelihood comes from the binomial distribution again, where <c>n</c> is the number of <em>additional</em> sisters, and we use the survival function to compute the probability that one or more are left-handed.
+    </p>
+
+    <program language="python">
+      <input>
+ns = prior1.index.to_frame()['Girls'] - 1
+ns.name = 'Additional sisters'
+neg = (ns &lt; 0)
+ns[neg] = 0
+pd.DataFrame(ns)
+      </input>
+    </program>
+
+    <pre>
+            Additional sisters
+Boys Girls
+2    0                       0
+1    1                       0
+0    2                       1
+3    0                       0
+2    1                       0
+1    2                       1
+0    3                       2
+4    0                       0
+3    1                       0
+2    2                       1
+1    3                       2
+0    4                       3
+    </pre>
+
+    <program language="python">
+      <input>
+p = 1 / 10
+k = 1
+
+likelihood3 = binom.sf(k-1, ns, p)
+likelihood3
+      </input>
+    </program>
+
+    <pre>
+array([0.   , 0.   , 0.1  , 0.   , 0.   , 0.1  , 0.19 , 0.   , 0.   ,
+       0.1  , 0.19 , 0.271])
+    </pre>
+
+    <p>
+      A convenient way to compute the total probability of an outcome is to do an update as if it happened, ignore the posterior probabilities, and compute the sum of the products.
+    </p>
+
+    <program language="python">
+      <input>
+prior3 = table2['Posterior']
+table3 = make_table(prior3, likelihood3)
+table3
+      </input>
+    </program>
+
+    <pre>
+               Prior  Likelihood   Product  Posterior
+Boys Girls
+2    0      0.000000       0.000  0.000000   0.000000
+1    1      0.143677       0.000  0.000000   0.000000
+0    2      0.000000       0.100  0.000000   0.000000
+3    0      0.000000       0.000  0.000000   0.000000
+2    1      0.287354       0.000  0.000000   0.000000
+1    2      0.284481       0.100  0.028448   0.507550
+0    3      0.000000       0.190  0.000000   0.000000
+4    0      0.000000       0.000  0.000000   0.000000
+3    1      0.071839       0.000  0.000000   0.000000
+2    2      0.142240       0.100  0.014224   0.253775
+1    3      0.070409       0.190  0.013378   0.238675
+0    4      0.000000       0.271  0.000000   0.000000
+    </pre>
+
+    <p>
+      At this point, there are only three family types left standing, (1,2), (2,2), and (1,3).
+    </p>
+
+    <p>
+      Here's the total probability that your new friend has a left-handed sister.
+    </p>
+
+    <program language="python">
+      <input>
+p = table3['Product'].sum()
+p
+      </input>
+    </program>
+
+    <pre>
+0.0560498128605398
+    </pre>
+  </section>
+
+  <section xml:id="sec-sister-bayes-factor">
+    <title>The Bayes factor</title>
+
+    <p>
+      If your interlocutor is the brother of your friend, the probability is 1 that he has a left-handed sister.
+      If he is not the brother of your friend, the probability is <c>p</c>.
+      So the Bayes factor is the ratio of these probabilities.
+    </p>
+
+    <program language="python">
+      <input>
+1/p
+      </input>
+    </program>
+
+    <pre>
+17.841272770850235
+    </pre>
+
+    <p>
+      This might be the hardest Bayesian puzzle I've created.
+      In fact, I got it wrong the first time, until <url href="https://twitter.com/aubreyclayton/status/1420041376377475075">Aubrey Clayton convinced me</url> I needed to take into account the number of boys and girls in each family, not just the size.
+      He solved the problem by enumerating the possible families in a giant spreadsheet!
+      So the fact that we get the same answer gives me more confidence it is correct.
+    </p>
+
+    <p>
+      Thanks to Aubrey and the other folks on Twitter who submitted answers, including
+      <url href="https://twitter.com/Corey_Yanofsky/status/1418627294256582664">Corey Yanofsky</url> and
+      <url href="https://twitter.com/MichalHaltuf/status/1418685902717693952">Michal Haltuf</url>.
+    </p>
+  </section>
+
+</appendix>
