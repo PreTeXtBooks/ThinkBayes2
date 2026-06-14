@@ -18,19 +18,19 @@
     <p>When another female student arrived a few minutes later, I started to think I was in the wrong room. When third female student arrived, I was confident I was in the wrong room. And as it turned out, I was.</p>
     
     <p>I'll use this anecdote to demonstrate Bayes's Rule on a logarithmic scale and show how it relates to logistic regression.</p>
-    <p>Using $H$ to represent the hypothesis that I was in the right room, and $F$ to represent the observation that the first other student was female, we can write Bayes's Rule like this:</p>
-    <p>$$O(H|F) = O(H) \frac{P(F|H)}{P(F|not H)}$$</p>
+    <p>Using <m>H</m> to represent the hypothesis that I was in the right room, and <m>F</m> to represent the observation that the first other student was female, we can write Bayes's Rule like this:</p>
+    <me>O(H|F) = O(H) \frac{P(F|H)}{P(F|not H)}</me>
     <p>Before I saw the other students, I was confident I was in the right room, so I might assign prior odds of 10:1 in favor:</p>
-    <p>$$O(H) = 10$$</p>
+    <me>O(H) = 10</me>
     
     <p>If I was in the right room, the likelihood of the first female student was about 17%. If I was not in the right room, the likelihood of the first female student was more like 50%,</p>
-    <p>$$\frac{P(F|H)}{P(F|not H)} = 17 / 50$$</p>
+    <me>\frac{P(F|H)}{P(F|not H)} = 17 / 50</me>
     <p>So the likelihood ratio is close to 1/3. Applying Bayes's Rule, the posterior odds were</p>
-    <p>$$O(H|F) = 10 / 3$$</p>
+    <me>O(H|F) = 10 / 3</me>
     <p>After two students, the posterior odds were</p>
-    <p>$$O(H|FF) = 10 / 9$$</p>
+    <me>O(H|FF) = 10 / 9</me>
     <p>And after three students:</p>
-    <p>$$O(H|FFF) = 10 / 27$$</p>
+    <me>O(H|FFF) = 10 / 27</me>
     <p>At that point, I was right to suspect I was in the wrong room.</p>
     
     <p>The following table shows the odds after each update, the corresponding probabilities, and the change in probability after each step, expressed in percentage points.</p>
@@ -57,7 +57,7 @@ table.fillna('--')
     </program>
 
     <p>Each update uses the same likelihood, but the changes in probability are not the same. The first update decreases the probability by about 14 percentage points, the second by 24, and the third by 26. That's normal for this kind of update, and in fact it's necessary; if the changes were the same size, we would quickly get into negative probabilities.</p>
-    <p>The odds follow a more obvious pattern. Because each update multiplies the odds by the same likelihood ratio, the odds form a geometric sequence. And that brings us to consider another way to represent uncertainty: <strong>log odds</strong>, which is the logarithm of odds, usually expressed using the natural log (base $e$).</p>
+    <p>The odds follow a more obvious pattern. Because each update multiplies the odds by the same likelihood ratio, the odds form a geometric sequence. And that brings us to consider another way to represent uncertainty: <strong>log odds</strong>, which is the logarithm of odds, usually expressed using the natural log (base <m>e</m>).</p>
     <p>Adding log odds to the table:</p>
 
     <program language="python">
@@ -84,17 +84,17 @@ np.log(1/3)
     </program>
 
     <p>That's true in this example, and we can show that it's true in general by taking the log of both sides of Bayes's Rule.</p>
-    <p>$$\log O(H|F) = \log O(H) + \log \frac{P(F|H)}{P(F|not H)}$$</p>
-    <p>On a log odds scale, a Bayesian update is additive. So if $F^x$ means that $x$ female students arrive while I am waiting, the posterior log odds that I am in the right room are:</p>
-    <p>$$\log O(H|F^x) = \log O(H) + x \log \frac{P(F|H)}{P(F|not H)}$$</p>
+    <me>\log O(H|F) = \log O(H) + \log \frac{P(F|H)}{P(F|not H)}</me>
+    <p>On a log odds scale, a Bayesian update is additive. So if <m>F^x</m> means that <m>x</m> female students arrive while I am waiting, the posterior log odds that I am in the right room are:</p>
+    <me>\log O(H|F^x) = \log O(H) + x \log \frac{P(F|H)}{P(F|not H)}</me>
     <p>This equation represents a linear relationship between the log likelihood ratio and the posterior log odds.</p>
 
-    <p>In this example the linear equation is exact, but even when it's not, it is common to use a linear function to model the relationship between an explanatory variable, $x$, and a dependent variable expressed in log odds, like this:</p>
-    <p>$$\log O(H | x) = \beta_0 + \beta_1 x$$</p>
-    <p>where $\beta_0$ and $\beta_1$ are unknown parameters:</p>
+    <p>In this example the linear equation is exact, but even when it's not, it is common to use a linear function to model the relationship between an explanatory variable, <m>x</m>, and a dependent variable expressed in log odds, like this:</p>
+    <me>\log O(H | x) = \beta_0 + \beta_1 x</me>
+    <p>where <m>\beta_0</m> and <m>\beta_1</m> are unknown parameters:</p>
     <ul>
-      <li>The intercept, $\beta_0$, is the log odds of the hypothesis when $x$ is 0.</li>
-      <li>The slope, $\beta_1$, is the log of the likelihood ratio.</li>
+      <li>The intercept, <m>\beta_0</m>, is the log odds of the hypothesis when <m>x</m> is 0.</li>
+      <li>The slope, <m>\beta_1</m>, is the log of the likelihood ratio.</li>
     </ul>
     <p>This equation is the basis of logistic regression.</p>
   </section>
@@ -187,8 +187,8 @@ plot_data(data)
 
     <p>When the outside temperature was below 65 degrees, there was always damage to the O-rings. When the temperature was above 65 degrees, there was usually no damage.</p>
     <p>Based on this figure, it seems plausible that the probability of damage is related to temperature. If we assume this probability follows a logistic model, we can write:</p>
-    <p>$$\log O(H | x) = \beta_0 + \beta_1 x$$</p>
-    <p>where $H$ is the hypothesis that the O-rings will be damaged, $x$ is temperature, and $\beta_0$ and $\beta_1$ are the parameters we will estimate. For reasons I'll explain soon, I'll define $x$ to be temperature shifted by an offset so its mean is 0.</p>
+    <me>\log O(H | x) = \beta_0 + \beta_1 x</me>
+    <p>where <m>H</m> is the hypothesis that the O-rings will be damaged, <m>x</m> is temperature, and <m>\beta_0</m> and <m>\beta_1</m> are the parameters we will estimate. For reasons I'll explain soon, I'll define <m>x</m> to be temperature shifted by an offset so its mean is 0.</p>
 
     <program language="python">
       <input>
@@ -504,7 +504,7 @@ results.params
   <section xml:id="sec-ch16-transforming">
     <title>Transforming Distributions</title>
 
-    <p>Let's interpret these parameters. Recall that the intercept is the log odds of the hypothesis when $x$ is 0, which is when temperature is about 70 degrees F (the value of <c>offset</c>). So we can interpret the quantities in <c>marginal_inter</c> as log odds.</p>
+    <p>Let's interpret these parameters. Recall that the intercept is the log odds of the hypothesis when <m>x</m> is 0, which is when temperature is about 70 degrees F (the value of <c>offset</c>). So we can interpret the quantities in <c>marginal_inter</c> as log odds.</p>
     <p>To convert them to probabilities, I'll use the following function, which transforms the quantities in a <c>Pmf</c> by applying a given function:</p>
 
     <program language="python">
@@ -555,7 +555,7 @@ mean_prob
     </program>
 
     <p>This result shows the second reason I defined <c>x</c> to be zero when temperature is 70 degrees F; this way, the intercept corresponds to the probability of damage at a relevant temperature, rather than 0 degrees F.</p>
-    <p>Now let's look more closely at the estimated slope. In the logistic model, the parameter $\beta_1$ is the log of the likelihood ratio.</p>
+    <p>Now let's look more closely at the estimated slope. In the logistic model, the parameter <m>\beta_1</m> is the log of the likelihood ratio.</p>
     <p>So we can interpret the quantities in <c>marginal_slope</c> as log likelihood ratios, and we can use <c>exp</c> to transform them to likelihood ratios (also known as Bayes factors).</p>
 
     <program language="python">
