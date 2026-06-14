@@ -1492,6 +1492,8 @@ results.resid.std()
         </p>
       </statement>
     <solution>
+      <program language="python">
+        <input>
 qs = np.linspace(0, 0.1, num=51)
 prior_slope = make_uniform(qs, 'Slope')
         </input>
