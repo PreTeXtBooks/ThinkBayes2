@@ -28,21 +28,6 @@
       Data from this and many other weather stations is available from the <url href="https://www.ncdc.noaa.gov/cdo-web/search">National Oceanic and Atmospheric Administration</url> (NOAA).  I collected data from the Blue Hill Observatory from May 11, 1967 to May 11, 2020.
     </p>
     <p>
-      To get more data, go to <url href="https://www.ncdc.noaa.gov/cdo-web/search">National Oceanic and Atmospheric Administration</url>, select daily summaries, choose a date range, and search for Stations with search term "Blue Hill Coop". Add it to the cart.
-    </p>
-    <p>
-      Open cart and select "Custom GHCN-Daily CSV", then continue.
-    </p>
-    <p>
-      Select all data types (but particularly Precipitation) and continue.
-    </p>
-    <p>
-      Provide an email address and submit order.
-    </p>
-    <p>
-      You'll get an email with a download link. Download the CSV file and move it into the current directory.
-    </p>
-    <p>
       The following cell downloads the data as a CSV file.
     </p>
     <program language="python">
@@ -87,11 +72,10 @@ STATION                   NAME       DATE  PRCP  SNOW  SNWD  TMAX  \
     <p>
       The columns we'll use are:
     </p>
-    <p>
-      * <c>DATE</c>, which is the date of each observation,
-    </p>
-    <p>
-      * <c>SNOW</c>, which is the total snowfall in inches.
+    <ul>
+<li><c>DATE</c>, which is the date of each observation,</li>
+<li><c>SNOW</c>, which is the total snowfall in inches.</li>
+</ul>
     </p>
     <p>
       I'll add a column that contains just the year part of the dates.
@@ -257,7 +241,7 @@ data.head(3)
       </input>
     </program>
 <pre>
-YEAR  SNOW
+   YEAR  SNOW
 0  1968  44.7
 1  1969  99.2
 2  1970  66.8
@@ -381,6 +365,7 @@ prior.head(3)
       </input>
     </program>
 <pre>
+                              probs
 Slope  Intercept  Sigma
 -0.5   54.0       20.0     0.000015
                   20.5     0.000015
@@ -545,11 +530,10 @@ decorate(xlabel='$\sigma$, standard deviation of $\epsilon$',
     <p>
       Nevertheless, it is good to check the marginal distributions to make sure
     </p>
-    <p>
-      * The location is consistent with our expectations, and
-    </p>
-    <p>
-      * The posterior probabilities are near 0 at the extremes of the range, which indicates that the prior distribution covers all parameters with non-negligible probability.
+    <ul>
+      <li> The location is consistent with our expectations, and</li>
+      <li>The posterior probabilities are near 0 at the extremes of the range, which indicates that the prior distribution covers all parameters with non-negligible probability.</li>
+    </ul>
     </p>
     <p>
       In this example, the posterior distribution of <c>sigma</c> looks fine.
@@ -763,6 +747,7 @@ posterior2.head(3)
       </input>
     </program>
 <pre>
+                           probs
 Slope  Intercept
 -0.5   54.000       7.633362e-08
        54.525       1.013295e-07
@@ -970,15 +955,24 @@ data = table.loc[recent].copy()
 data.head()
       </input>
     </program>
+<pre>
+    Time      Name                 Nationality	  Date	            Event/Place               Source	           Notes	date        time                    y
+32	2:09:28.8 Ron Hill             United Kingdom July 23, 1970     Edinburgh, Scotland       ARRS[9]	           NaN    1970-07-23  0 days 02:09:28.800000  12.140871
+33	2:09:12   Ian Thompson         United Kingdom January 31, 1974  Christchurch, New Zealand	ARRS[9]	           NaN    1974-01-31  0 days 02:09:12         12.167183
+34	2:09:05.6 Shigeru So	         Japan          February 5, 1978  Beppu-Ōita Marathon       ARRS[9]            NaN    1978-02-05  0 days 02:09:05.600000  12.177236
+35	2:09:01   Gerard Nijboer       Netherlands    April 26, 1980    Amsterdam Marathon        ARRS[9]            NaN    1980-04-26  0 days 02:09:01         12.184472
+36	2:08:18   Robert De Castella   Australia      December 6, 1981  Fukuoka Marathon          IAAF,[53] ARRS[9]  NaN    1981-12-06  0 days 02:08:18         12.252533
+</pre>
     <p>
       In the notebook for this chapter, you can see how I loaded and cleaned the data.  The result is a <c>DataFrame</c> that contains the following columns (and additional information we won't use):
-    </p>
-    <p>
-      * <c>date</c>, which is a Pandas <c>Timestamp</c> representing the date when the world record was broken, and
-    </p>
-    <p>
-      * <c>speed</c>, which records the record-breaking pace in mph.
-    </p>
+<ul>
+      <li> <c>date</c>, which is a Pandas <c>Timestamp</c> representing the date when the world record was broken, and
+    </li>
+    <li>
+      <c>speed</c>, which records the record-breaking pace in mph.
+    </li>
+</ul>
+</p>
     <p>
       Here's what the results look like, starting in 1970:
     </p>
@@ -1037,8 +1031,8 @@ results.params
       </input>
     </program>
 <pre>
-Intercept    64.446325
-x             0.511880
+Intercept    12.460507
+x             0.015464
 dtype: float64
 </pre>
     <p>
@@ -1054,9 +1048,6 @@ results.resid.std()
     </program>
 <pre>
 0.041399612201932
-</pre>
-<pre>
-25.385680731210623
 </pre>
     <p>
       These parameters give us a good idea where we should put the prior distributions.
@@ -1097,10 +1088,12 @@ prior.head()
       </input>
     </program>
 <pre>
-Slope  Intercept  Sigma   
-0.012  12.4       0.010000    0.000015
-                  0.016667    0.000015
-                  0.023333    0.000015
+Slope  Intercept  Sigma  
+                              probs
+0.0	        48.0	 0.50	   0.000015
+                   0.55    0.000015
+                   0.60    0.000015 
+
 dtype: float64
 </pre>
     <p>
@@ -1130,9 +1123,6 @@ posterior.normalize()
     </program>
 <pre>
 654100803618.6724
-</pre>
-<pre>
-6.769832641515688e-107
 </pre>
     <p>
       And unpack the marginals:
@@ -1193,14 +1183,12 @@ summarize(posterior_slope)
 <pre>
 0.015 [0.01428 0.01668]
 </pre>
-<pre>
-0.512 [0.1 0.9]
-</pre>
     <p>
       The posterior mean is about 0.015 mph per year, or 0.15 mph per decade.
     </p>
     <p>
       That's interesting, but it doesn't answer the question we're interested in: When will there be a two-hour marathon? To answer that, we have to make predictions.
+<fn>(Note: There has now been a sub-2- hour marathon, broken by two individuals on the same race in London 2026)</fn>
     </p>
   </section>
 
@@ -1213,11 +1201,6 @@ summarize(posterior_slope)
     <p>
       <c>Pmf</c> provides <c>choice</c>, which we can use to draw a random sample with replacement, using the posterior probabilities as weights.
     </p>
-    <program language="python">
-      <input>
-np.random.seed(17)
-      </input>
-    </program>
     <program language="python">
       <input>
 sample = posterior.choice(101)
@@ -1286,13 +1269,14 @@ pd.DataFrame(dict(datetime=dts),
       </input>
     </program>
 <pre>
-datetime
+       datetime
 early  2030-06-21 12:40:01.592340389
 median 2036-09-20 09:03:28.522400448
 late   2042-08-13 11:20:06.313348412
 </pre>
     <p>
-      The median prediction is 2036, with a 90% credible interval from 2032 to 2043.  So there is about a 5% chance we'll see a two-hour marathon before 2032.
+      The median prediction is 2036, with a 90% credible interval from 2032 to 2043.  So there is about a 5% chance we'll see a two-hour marathon before 2032.<fn>In April 2026, at London Marathon,
+two individuals broke the 2 hour mark: Kenyan runner Sabastian Sawe with an astonishing time of 1:59:30, and Yomif Kejelcha finished second in the race with an official time of 1:59:41</fn>
     </p>
   </section>
 
@@ -1466,8 +1450,8 @@ results.params
           </input>
     </program>
 <pre>
-Intercept    64.446325
-x             0.511880
+Intercept    49.430172
+x             0.044252
 dtype: float64
 </pre>
         <p>
@@ -1480,9 +1464,6 @@ results.resid.std()
     </program>
 <pre>
 1.041705765390206
-</pre>
-<pre>
-25.385680731210623
 </pre>
         <p>
           According to the least squares regression model, annual average temperature is increasing by about 0.044 degrees F per year.
@@ -1513,131 +1494,6 @@ results.resid.std()
         </p>
       </statement>
     <solution>
-      <program language="python">
-        <input>
-df = pd.read_csv('2239075.csv', parse_dates=[2])
-df.head(3)
-        </input>
-    </program>
-<pre>
-STATION                   NAME       DATE  PRCP  SNOW  SNWD  TMAX  \
-0  USC00190736  BLUE HILL COOP, MA US 1967-05-11  0.43   0.0   0.0    57   
-1  USC00190736  BLUE HILL COOP, MA US 1967-05-12  0.00   0.0   0.0    58   
-2  USC00190736  BLUE HILL COOP, MA US 1967-05-13  0.00   0.0   0.0    64   
-
-   TMIN  TOBS  WESD  WT01  WT03  WT04  WT05  WT06  WT08  WT09  WT11  WT16  \
-0  36.0   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   
-1  39.0   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   
-2  38.0   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   
-
-   WT18  
-0   NaN  
-1   NaN  
-2   NaN
-</pre>
-      <program language="python">
-        <input>
-df['YEAR'] = df['DATE'].dt.year
-        </input>
-      </program>
-      <program language="python">
-        <input>
-df['TMID'] = (df['TMIN'] + df['TMAX']) / 2
-        </input>
-      </program>
-      <program language="python">
-        <input>
-tmid = df.groupby('YEAR')['TMID'].mean()
-len(tmid)
-        </input>
-    </program>
-<pre>
-54
-</pre>
-      <program language="python">
-        <input>
-complete = tmid.iloc[1:-1]
-len(complete)
-        </input>
-    </program>
-<pre>
-52
-</pre>
-      <program language="python">
-        <input>
-complete.plot(ls='', marker='o', alpha=0.5)
-
-decorate(xlabel='Year',
-         ylabel='Annual average of daily temperature (deg F)')
-        </input>
-      </program>
-    <image source="images/ch17_regression_cdbec8dd.png" width="80%"/>
-      <program language="python">
-        <input>
-data = complete.reset_index()
-data.head()
-        </input>
-    </program>
-<pre>
-YEAR       TMID
-0  1968  48.071038
-1  1969  48.687671
-2  1970  48.258904
-3  1971  48.804110
-4  1972  47.112022
-</pre>
-      <program language="python">
-        <input>
-offset = round(data['YEAR'].mean())
-offset
-        </input>
-    </program>
-<pre>
-1994
-</pre>
-      <program language="python">
-        <input>
-data['x'] = data['YEAR'] - offset
-data['x'].mean()
-        </input>
-    </program>
-<pre>
--0.5
-</pre>
-      <program language="python">
-        <input>
-data['y'] = data['TMID']
-data['y'].std()
-        </input>
-    </program>
-<pre>
-1.2389114009625752
-</pre>
-      <program language="python">
-        <input>
-import statsmodels.formula.api as smf
-
-formula = 'y ~ x'
-results = smf.ols(formula, data=data).fit()
-results.params
-        </input>
-    </program>
-<pre>
-Intercept    64.446325
-x             0.511880
-dtype: float64
-</pre>
-      <program language="python">
-        <input>
-results.resid.std()
-        </input>
-    </program>
-<pre>
-25.385680731210623
-</pre>
-      <program language="python">
-        <input>
-
 qs = np.linspace(0, 0.1, num=51)
 prior_slope = make_uniform(qs, 'Slope')
         </input>
@@ -1664,6 +1520,7 @@ prior.head()
         </input>
     </program>
 <pre>
+                                 probs
 Slope  Intercept  Sigma   
 0.012  12.4       0.010000    0.000015
                   0.016667    0.000015
@@ -1694,9 +1551,6 @@ posterior.normalize()
 <pre>
 6.471589606597477e-36
 </pre>
-<pre>
-6.769832641515688e-107
-</pre>
       <program language="python">
         <input>
 
@@ -1714,6 +1568,7 @@ decorate(xlabel='intercept (inches)',
          title='Posterior marginal distribution of intercept')
         </input>
       </program>
+    <image source="images/ch17_solution_1.png" width="80%"/>
       <program language="python">
         <input>
 
@@ -1732,6 +1587,7 @@ decorate(xlabel='Slope (inches per year)',
          title='Posterior marginal distribution of slope')
         </input>
       </program>
+    <image source="images/ch17_solution_2.png" width="80%"/>
       <program language="python">
         <input>
 
@@ -1781,6 +1637,7 @@ decorate(xlabel='Year',
          ylabel='Annual average of daily temperature (deg F)')
         </input>
       </program>
+    <image source="images/ch17_solution_3.png" width="80%"/>
       <program language="python">
         <input>
 
