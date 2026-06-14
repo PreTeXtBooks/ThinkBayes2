@@ -3,7 +3,6 @@
 <chapter xml:id="ch-examples" xmlns:xi="http://www.w3.org/2001/XInclude">
   <title>Examples</title>
 
-    <xi:include href="./examples/ex1-red-line.ptx" />
     <xi:include href="./examples/ex2-vaccine-effectiveness.ptx" />
     <xi:include href="./examples/ex3-usb.ptx" />
     <xi:include href="./examples/ex4-sister.ptx" />
