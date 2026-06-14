@@ -55,7 +55,13 @@ table['prob diff'] = table['prob'].diff() * 100
 table.fillna('--')
       </input>
     </program>
-
+<pre>
+                odds      prob	 prob diff
+prior      10.000000  0.909091	        --
+1 student   3.333333  0.769231  -13.986014
+2 students  1.111111  0.526316  -24.291498
+3 students  0.370370  0.270270  -25.604552
+</pre>
     <p>Each update uses the same likelihood, but the changes in probability are not the same. The first update decreases the probability by about 14 percentage points, the second by 24, and the third by 26. That's normal for this kind of update, and in fact it's necessary; if the changes were the same size, we would quickly get into negative probabilities.</p>
     <p>The odds follow a more obvious pattern. Because each update multiplies the odds by the same likelihood ratio, the odds form a geometric sequence. And that brings us to consider another way to represent uncertainty: <strong>log odds</strong>, which is the logarithm of odds, usually expressed using the natural log (base <m>e</m>).</p>
     <p>Adding log odds to the table:</p>
@@ -75,6 +81,14 @@ table.fillna('--')
       <li>When probability is greater than 0.5, odds are greater than 1, and log odds are positive.</li>
       <li>When probability is less than 0.5, odds are less than 1, and log odds are negative.</li>
     </ul>
+
+<pre>
+                odds      prob	 prob diff   log odds  log odds diff
+prior      10.000000  0.909091	        --   2.302585             --
+1 student   3.333333  0.769231  -13.986014   1.203973      -1.098612
+2 students  1.111111  0.526316  -24.291498   0.105361      -1.098612
+3 students  0.370370  0.270270  -25.604552  -0.993252      -1.098612
+</pre>
     <p>You might also notice that the log odds are equally spaced. The change in log odds after each update is the logarithm of the likelihood ratio.</p>
 
     <program language="python">
@@ -82,6 +96,9 @@ table.fillna('--')
 np.log(1/3)
       </input>
     </program>
+<pre>
+-1.0986122886681098
+</pre>
 
     <p>That's true in this example, and we can show that it's true in general by taking the log of both sides of Bayes's Rule.</p>
     <me>\log O(H|F) = \log O(H) + \log \frac{P(F|H)}{P(F|not H)}</me>
@@ -136,6 +153,34 @@ data
       </input>
     </program>
 
+<pre>
+
+         Date	Temperature	Damage
+0	 04/12/1981	         66	     0
+1	 11/12/1981	         70	     1
+2	    3/22/82		       69	     0
+4	 01/11/1982		       68	     0
+5	 04/04/1983		       67	     0
+6	    6/18/83		       72	     0
+7	    8/30/83		       73	     0
+8	   11/28/83		       70	     0
+9	 02/03/1984		       57	     1
+10 04/06/1984		       63	     1
+11	  8/30/84		       70	     1
+12 10/05/1984		       78	     0
+13 11/08/1984		       67	     0
+14    1/24/85		       53	     1
+15 04/12/1985		       67	     0
+16    4/29/85		       75	     0
+17    6/17/85		       70	     0
+18    7/29/85		       81	     0
+19    8/27/85		       76	     0
+20 10/03/1985		       79	     0
+21   10/30/85		       75	     1
+22   11/26/85		       76	     0
+23 01/12/1986	       	 58	     1
+</pre>
+
     <p>Here are the first few rows:</p>
 
     <program language="python">
@@ -143,6 +188,15 @@ data
 data.head()
       </input>
     </program>
+
+<pre>
+        Date  Temperature	Damage
+0	 04/12/1981	         66	     0
+1	 11/12/1981	         70	     1
+2	    3/22/82		       69	     0
+4	 01/11/1982		       68	     0
+5	 04/04/1983		       67	     0
+</pre>
 
     <p>The columns are:</p>
     <ul>
@@ -157,6 +211,9 @@ data.head()
 len(data), data['Damage'].sum()
       </input>
     </program>
+<pre>
+(23, 7)
+</pre>
 
     <p>The following figure shows the relationship between damage and temperature.</p>
 
@@ -185,6 +242,8 @@ plot_data(data)
       </input>
     </program>
 
+        <image source="images/ch16_logistic_regression_1.png" width="80%"/>
+
     <p>When the outside temperature was below 65 degrees, there was always damage to the O-rings. When the temperature was above 65 degrees, there was usually no damage.</p>
     <p>Based on this figure, it seems plausible that the probability of damage is related to temperature. If we assume this probability follows a logistic model, we can write:</p>
     <me>\log O(H | x) = \beta_0 + \beta_1 x</me>
@@ -197,6 +256,9 @@ data['x'] = data['Temperature'] - offset
 offset
       </input>
     </program>
+<pre>
+70.0
+</pre>
 
     <p>And for consistency I'll create a copy of the <c>Damage</c> columns called <c>y</c>.</p>
 
@@ -217,6 +279,11 @@ results = smf.logit(formula, data=data).fit(disp=False)
 results.params
       </input>
     </program>
+<pre>
+Intercept   -1.208490
+x           -0.232163
+dtype: float64
+</pre>
 
     <p><c>results</c> contains a "point estimate" for each parameter, that is, a single value rather than a posterior distribution.</p>
     <p>The intercept is about -1.2, and the estimated slope is about -0.23. To see what these parameters mean, I'll use them to compute probabilities for a range of temperatures. Here's the range:</p>
@@ -251,6 +318,9 @@ ps = odds / (odds + 1)
 ps.mean()
       </input>
     </program>
+<pre>
+0.4155141126966854
+</pre>
 
     <p>Converting log odds to probabilities is a common enough operation that it has a name, <c>expit</c>, and SciPy provides a function that computes it.</p>
 
@@ -277,6 +347,7 @@ plt.plot(xs+offset, ps, label='model', color='C1')
 plot_data(data)
       </input>
     </program>
+        <image source="images/ch16_logistic_regression_2.png" width="80%"/>
 
     <p>At low temperatures, the probability of damage is high; at high temperatures, it drops off to near 0.</p>
     <p>But that's based on conventional logistic regression. Now we'll do the Bayesian version.</p>
@@ -324,6 +395,13 @@ joint_pmf = Pmf(joint.stack())
 joint_pmf.head()
       </input>
     </program>
+<pre>
+		               probs
+Slope	Intercept	
+-0.8     -5.00	0.000098
+         -4.94	0.000098
+         -4.88	0.000098
+</pre>
 
     <p><c>joint_pmf</c> is a <c>Pmf</c> with two levels in the index, one for each parameter. That makes it easy to loop through possible pairs of parameters, as we'll see in the next section.</p>
   </section>
@@ -340,6 +418,16 @@ grouped = data.groupby('x')['y'].agg(['count', 'sum'])
 grouped.head()
       </input>
     </program>
+
+<pre>
+      count	sum
+    x		
+-17.0	    1	  1
+-13.0	    1	  1
+-12.0	    1	  1
+ -7.0	    1	  1
+ -4.0	    1	  0
+</pre>
 
     <p>The result is a <c>DataFrame</c> with two columns: <c>count</c> is the number of launches at each temperature; <c>sum</c> is the number of damage incidents. To be consistent with the parameters of the binomial distributions, I'll assign them to variables named <c>ns</c> and <c>ks</c>.</p>
 
@@ -371,6 +459,12 @@ likes = binom.pmf(ks, ns, ps)
 likes
       </input>
     </program>
+<pre>
+array([0.93924781, 0.85931657, 0.82884484, 0.60268105, 0.56950687,
+       0.24446388, 0.67790595, 0.72637895, 0.18815003, 0.8419509 ,
+       0.87045398, 0.15645171, 0.86667894, 0.95545945, 0.96435859,
+       0.97729671])
+</pre>
 
     <p>Each element of <c>likes</c> is the probability of seeing <c>k</c> damage incidents in <c>n</c> launches if the probability of damage is <c>p</c>. The likelihood of the whole dataset is the product of this array.</p>
 
@@ -380,6 +474,9 @@ likes.prod()
       </input>
     </program>
 
+<pre>
+0.0004653644508250075
+</pre>
     <p>That's how we compute the likelihood of the data for a particular pair of parameters. Now we can compute the likelihood of the data for all possible pairs:</p>
 
     <program language="python">
@@ -416,6 +513,11 @@ pd.Series(posterior_pmf.max_prob(),
           index=['slope', 'inter'])
       </input>
     </program>
+<pre>
+slope   -0.233
+inter   -1.220
+dtype: float64
+</pre>
 
     <p>So we can confirm that the results of the Bayesian update are consistent with the maximum likelihood estimate computed by StatsModels:</p>
 
@@ -424,6 +526,11 @@ pd.Series(posterior_pmf.max_prob(),
 results.params
       </input>
     </program>
+<pre>
+Intercept   -1.208490
+x           -0.232163
+dtype: float64
+</pre>
 
     <p>They are approximately the same, within the precision of the grid we're using.</p>
     <p>If we unstack the posterior <c>Pmf</c> we can make a contour plot of the joint posterior distribution.</p>
@@ -437,6 +544,9 @@ plot_contour(joint_posterior)
 decorate(title='Joint posterior distribution')
       </input>
     </program>
+
+        <image source="images/ch16_logistic_regression_3.png" width="80%"/>
+
 
     <p>The ovals in the contour plot are aligned along a diagonal, which indicates that there is some correlation between <c>slope</c> and <c>inter</c> in the posterior distribution.</p>
     <p>But the correlation is weak, which is one of the reasons we subtracted off the mean launch temperature when we computed <c>x</c>; centering the data minimizes the correlation between the parameters.</p>
@@ -471,6 +581,8 @@ decorate(xlabel='Intercept',
       </input>
     </program>
 
+        <image source="images/ch16_logistic_regression_4.png" width="80%"/>
+
     <p>And here's the posterior distribution of <c>slope</c>.</p>
 
     <program language="python">
@@ -483,6 +595,8 @@ decorate(xlabel='Slope',
       </input>
     </program>
 
+        <image source="images/ch16_logistic_regression_5.png" width="80%"/>
+
     <p>Here are the posterior means.</p>
 
     <program language="python">
@@ -491,13 +605,22 @@ pd.Series([marginal_inter.mean(), marginal_slope.mean()],
           index=['inter', 'slope'])
       </input>
     </program>
-
+<pre>
+inter   -1.376107
+slope   -0.289795
+dtype: float64
+</pre>
     <p>Both marginal distributions are moderately skewed, so the posterior means are somewhat different from the point estimates.</p>
     
     <program language="python">
       <input>
 results.params
       </input>
+<pre>
+Intercept   -1.208490
+x           -0.232163
+dtype: float64
+</pre>
     </program>
   </section>
 
@@ -547,12 +670,17 @@ decorate(xlabel='Probability of damage at 70 deg F',
 
     <p>The mean of this distribution is about 22%, which is the probability of damage at 70 degrees F, according to the model.</p>
 
+        <image source="images/ch16_logistic_regression_6.png" width="80%"/>
+
     <program language="python">
       <input>
 mean_prob = marginal_probs.mean()
 mean_prob
       </input>
     </program>
+<pre>
+0.2201937884647988
+</pre>
 
     <p>This result shows the second reason I defined <c>x</c> to be zero when temperature is 70 degrees F; this way, the intercept corresponds to the probability of damage at a relevant temperature, rather than 0 degrees F.</p>
     <p>Now let's look more closely at the estimated slope. In the logistic model, the parameter <m>\beta_1</m> is the log of the likelihood ratio.</p>
@@ -576,12 +704,17 @@ decorate(xlabel='Likelihood ratio of 1 deg F',
       </input>
     </program>
 
+        <image source="images/ch16_logistic_regression_7.png" width="80%"/>
+
     <program language="python">
       <input>
 mean_lr = marginal_lr.mean()
 mean_lr
       </input>
     </program>
+<pre>
+0.7542914170110268
+</pre>
 
     <p>The mean of this distribution is about 0.75, which means that each additional degree Fahrenheit provides evidence against the possibility of damage, with a likelihood ratio (Bayes factor) of 0.75.</p>
     
@@ -599,6 +732,9 @@ mean_lr
 expit(marginal_inter.mean()), marginal_probs.mean()
       </input>
     </program>
+<pre>
+(0.2016349762400815, 0.2201937884647988)
+</pre>
 
     <p>And here's the posterior mean of <c>marginal_slope</c>, transformed to a likelihood ratio, compared to the mean <c>marginal_lr</c>.</p>
 
@@ -607,6 +743,9 @@ expit(marginal_inter.mean()), marginal_probs.mean()
 np.exp(marginal_slope.mean()), marginal_lr.mean()
       </input>
     </program>
+<pre>
+(0.7484167954660071, 0.7542914170110268)
+</pre>
 
     <p>In this example, the differences are not huge, but they can be. As a general rule, transform first, then compute summary statistics.</p>
   </section>
@@ -616,12 +755,6 @@ np.exp(marginal_slope.mean()), marginal_lr.mean()
 
     <p>In the logistic model, the parameters are interpretable, at least after transformation. But often what we care about are predictions, not parameters. In the Space Shuttle problem, the most important prediction is, "What is the probability of O-ring damage if the outside temperature is 31 degrees F?"</p>
     <p>To make that prediction, I'll draw a sample of parameter pairs from the posterior distribution.</p>
-
-    <program language="python">
-      <input>
-np.random.seed(17)
-      </input>
-    </program>
 
     <program language="python">
       <input>
@@ -636,19 +769,26 @@ sample = posterior_pmf.choice(101)
 sample.shape
       </input>
     </program>
+<pre>
+(101,)
+</pre>
 
     <program language="python">
       <input>
 sample.dtype
       </input>
     </program>
-
+<pre>
+dtype('O')
+</pre>
     <program language="python">
       <input>
 type(sample[0])
       </input>
     </program>
-
+<pre>
+tuple
+</pre>
     <p>To generate predictions, I'll use a range of temperatures from 31 degrees F (the temperature when the Challenger launched) to 82 degrees F (the highest observed temperature).</p>
 
     <program language="python">
@@ -680,6 +820,7 @@ for ps in pred:
 plot_data(data)
       </input>
     </program>
+        <image source="images/ch16_logistic_regression_9.png" width="80%"/>
 
     <p>The overlapping lines in this figure give a sense of the most likely value at each temperature and the degree of uncertainty.</p>
     <p>In each column, I'll compute the median to quantify the central tendency and a 90% credible interval to quantify the uncertainty.</p>
@@ -703,6 +844,8 @@ plot_data(data)
       </input>
     </program>
 
+        <image source="images/ch16_logistic_regression_8.png" width="80%"/>
+
     <p>According to these results, the probability of damage to the O-rings at 80 degrees F is near 2%, but there is some uncertainty about that prediction; the upper bound of the CI is around 10%.</p>
     <p>At 60 degrees, the probability of damage is near 80%, but the CI is even wider, from 48% to 97%.</p>
     <p>But the primary goal of the model is to predict the probability of damage at 31 degrees F, and the answer is at least 97%, and more likely to be more than 99.9%.</p>
@@ -721,6 +864,9 @@ t = 80
 print(median[t], (low[t], high[t]))
       </input>
     </program>
+<pre>
+0.016956535510200765 (0.000563939208692237, 0.1335417225332125)
+</pre>
 
     <program language="python">
       <input>
@@ -728,14 +874,18 @@ t = 60
 print(median[t], (low[t], high[t]))
       </input>
     </program>
-
+<pre>
+0.7738185742694538 (0.45512110762641983, 0.9654437697137236)
+</pre>
     <program language="python">
       <input>
 t = 31
 print(median[t], (low[t], high[t]))
       </input>
     </program>
-
+<pre>
+0.9998129598124814 (0.97280101769455, 0.999999987740933)
+</pre>
     <p>One conclusion we might draw is this: If the people responsible for the Challenger launch had taken into account all of the data, and not just the seven damage incidents, they could have predicted that the probability of damage at 31 degrees F was nearly certain. If they had, it seems likely they would have postponed the launch.</p>
     <p>At the same time, if they considered the previous figure, they might have realized that the model makes predictions that extend far beyond the data. When we extrapolate like that, we have to remember not just the uncertainty quantified by the model, which we expressed as a credible interval; we also have to consider the possibility that the model itself is unreliable.</p>
     <p>This example is based on a logistic model, which assumes that each additional degree of temperature contributes the same amount of evidence in favor of (or against) the possibility of damage. Within a narrow range of temperatures, that might be a reasonable assumption, especially if it is supported by data. But over a wider range, and beyond the bounds of the data, reality has no obligation to stick to the model.</p>
@@ -764,34 +914,36 @@ print(median[t], (low[t], high[t]))
     <exercise xml:id="ex-ch16-1">
       <statement>
         <p>
-          Suppose a political pundit claims to be able to predict the outcome of elections
-          based on an algorithm that considers economic factors.
-          Suppose we start with prior odds of 4:1 that the pundit's algorithm is legitimate.
-        </p>
-        <p>
-          Compute the prior log odds.
-        </p>
-        <program language="python">
-          <input>
-# Solution goes here
-          </input>
-        </program>
-        <p>
-          Compute the log likelihood ratios for each of three election outcomes.
-        </p>
-        <program language="python">
-          <input>
-# Solution goes here
-          </input>
-        </program>
-        <p>
-          Compute the posterior log odds after three updates.
-        </p>
-        <program language="python">
-          <input>
-# Solution goes here
-          </input>
-        </program>
+         Suppose a political pundit claims to be able to predict the outcome of elections, but instead of picking a winner, they give each candidate a probability of winning. With that kind of prediction, it can be hard to say whether it is right or wrong.
+</p>
+<p>For example, suppose the pundit says that Alice has a 70% chance of beating Bob, and then Bob wins the election. Does that mean the pundit was wrong?
+</p><p>
+One way to answer this question is to consider two hypotheses:
+<ul>
+<li><c>H</c>: The pundit’s algorithm is legitimate; the probabilities it produces are correct in the sense that they accurately reflect the candidates’ probabilities of winning.
+</li>
+<li><c>not H</c>: The pundit’s algorithm is bogus; the probabilities it produces are random values with a mean of 50%.
+</li>
+</ul>
+</p><p>
+If the pundit says Alice has a 70% chance of winning, and she does, that provides evidence in favor of <c>H</c> with likelihood ratio 70/50.
+</p><p>
+If the pundit says Alice has a 70% chance of winning, and she loses, that’s evidence against <c>H</c> with a likelihood ratio of 50/30.
+</p><p>
+Suppose we start with some confidence in the algorithm, so the prior odds are 4 to 1. And suppose the pundit generates predictions for three elections:
+<ul>
+<li>
+In the first election, the pundit says Alice has a 70% chance of winning and she does.
+</li><li>
+In the second election, the pundit says Bob has a 30% chance of winning and he does.
+</li><li>
+In the third election, the pundit says Carol has an 90% chance of winning and she does.
+</li></ul>
+</p><p>
+What is the log likelihood ratio for each of these outcomes? Use the log-odds form of Bayes’s Rule to compute the posterior log odds for <c>H</c> after these outcomes. In total, do these outcomes increase or decrease your confidence in the pundit?
+</p><p>
+If you are interested in this topic, you can <url href = "http://allendowney.blogspot.com/2016/11/why-are-we-so-surprised.html">read more about it in this blog post</url>.
+</p>
       </statement>
       <solution>
     <program language="python">
@@ -840,15 +992,29 @@ posterior_log_odds
     <exercise xml:id="ex-ch16-2">
       <statement>
         <p>
-          An article in the <em>New England Journal of Medicine</em> reports results suggesting
-          that children born just after the cutoff date for school enrollment are more likely
-          to be diagnosed with ADHD than children born just before the cutoff date.
-          The article suggests that this difference is due to the relative age effect.
-        </p>
-        <p>
-          Here are the number of children born in each month and the number diagnosed with ADHD.
+         An article in the New England Journal of Medicine reports results from a study that looked at the diagnosis rate of Attention Deficit Hyperactivity Disorder (ADHD) as a function of birth month: 
+<url href = "https://www.nejm.org/doi/10.1056/NEJMoa1806828">"Attention Deficit–Hyperactivity Disorder and Month of School Enrollment"</url>.
+</p><p>
+They found that children born in June, July, and August were substantially more likely to be diagnosed with ADHD, compared to children born in September, but only in states that use a September cutoff for children to enter kindergarten. In these states, children born in August start school almost a year younger than children born in September. The authors of the study suggest that the cause is “age-based variation in behavior that may be attributed to ADHD rather than to the younger age of the children”.
+</p><p>
+Use the methods in this chapter to estimate the probability of diagnosis as a function of birth month. The notebook for this chapter provides the data and some suggestions for getting started.
+</p><p>
+The paper includes this figure:
         </p>
         <image source="images/ch16_logistic_regression_1a2b3c4d.svg" width="80%"/>
+<p>
+In my opinion, this representation of the data does not show the effect as clearly as it could.
+</p><p>
+But the figure includes the raw data, so we can analyze it ourselves.
+</p><p>
+Note: there is an error in the figure, confirmed by personal correspondence:
+</p>
+<blockquote><p>
+The May and June [diagnoses] are reversed. May should be 317 (not 287) and June should be 287 (not 317).
+</p></blockquote>
+<p>
+So here is the corrected data, where n is the number of children born in each month, starting with January, and k is the number of children diagnosed with ADHD.
+</p>
     <program language="python">
       <input>
 n = np.array([32690, 31238, 34405, 34565, 34977, 34415, 
@@ -859,7 +1025,7 @@ k = np.array([265, 280, 307, 312, 317, 287,
       </input>
     </program>
         <p>
-          I'm going to "roll" the data so it starts in September rather than January.
+First, I’m going to “roll” the data so it starts in September rather than January.
         </p>
     <program language="python">
       <input>
@@ -878,6 +1044,21 @@ adhd['rate'] = adhd['k'] / adhd['n'] * 10000
 adhd
       </input>
     </program>
+<pre>
+	   x	  k	    n	    rate
+0	   0	225	35353	63.643821
+1	   1	240	34405	69.757303
+2	   2	232	31285	74.156944
+3	   3	243	31617	76.857387
+4	   4	265	32690	81.064546
+5	   5	280	31238	89.634420
+6	   6	307	34405	89.231216
+7	   7	312	34565	90.264719
+8	   8	317	34977	90.630986
+9	   9	287	34415	83.393869
+10	10	320	36577	87.486672
+11	11	309	36319	85.079435
+</pre>
         <p>
           Here's what the diagnosis rates look like.
         </p>
@@ -900,12 +1081,15 @@ def plot_adhd(adhd):
 plot_adhd(adhd)
       </input>
     </program>
+        <image source="images/ch16_logistic_regression_10.png" width="80%"/>
         <p>
-          For the first 9 months, from September to May, we see what we would expect if some
-          children are misdiagnosed due to the relative age effect.
-        </p>
-        <p>
-          Here are the prior distributions.
+For the first 9 months, from September to May, we see what we would expect if some of the excess diagnoses are due to “age-based variation in behavior”. For each month of difference in age, we see an increase in the number of diagnoses.
+</p><p>
+This pattern breaks down for the last three months, June, July, and August. This might be explained by random variation, but it also might be due to parental manipulation; if some parents hold back children born near the deadline, the observations for these month would include a mixture of children who are relatively old for their grade and therefore less likely to be diagnosed.
+</p><p>
+Unfortunately, the dataset includes only month of birth, not year, so we don’t know the actual ages of these students when they started school. However, we can use the first nine months to estimate the effect of age on diagnosis rate; then we can think about what to do with the other three months.
+</p><p>
+Use the methods in this chapter to estimate the probability of diagnosis as a function of birth month. Start with the following prior distributions.
         </p>
     <program language="python">
       <input>
@@ -920,14 +1104,13 @@ prior_slope = make_uniform(qs, 'Slope')
       </input>
     </program>
         <p>
-          Make a joint prior distribution and update it using the data for the first nine months.
-          Then update with the data for the last three months.
-        </p>
-        <program language="python">
-          <input>
-# Solution goes here
-          </input>
-        </program>
+<ol>
+<li>Make a joint prior distribution and update it using the data for the first nine months.
+</li><li>
+Then draw a sample from the posterior distribution and use it to compute the median probability of diagnosis for each month and a 90% credible interval.
+</li><li>
+As a bonus exercise, do a second update using the data from the last three months, but treating the observed number of diagnoses as a lower bound on the number of diagnoses there would be if no children were kept back.
+</li></ol></p>
       </statement>
       <solution>
     <program language="python">
@@ -938,35 +1121,62 @@ joint = make_joint(prior_inter, prior_slope)
 joint.head()
       </input>
     </program>
+<pre>
+Intercept	-5.200	  -5.188	  -5.176	  -5.164	  -5.152	  -5.140  	-5.128  	-5.116	  -5.104	  -5.092	...  	-4.708	  -4.696	  -4.684  	-4.672  	-4.660	  -4.648	  -4.636	  -4.624  	-4.612  	-4.600
+Slope																					
+0.0000	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	...	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384
+0.0016	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	...	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384
+0.0032	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	...	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384
+0.0048	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	...	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384
+0.0064	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	...	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384	0.000384
+</pre>
     <program language="python">
       <input>
-# Solution
-
 joint_pmf = Pmf(joint.stack())
 joint_pmf.head()
       </input>
     </program>
+<pre>
+                   probs
+Slope	Intercept	
+0.0	     -5.200	0.000384
+         -5.188	0.000384
+         -5.176	0.000384
+</pre>
+
     <program language="python">
       <input>
-# Solution
-
 num_legit = 9
 adhd1 = adhd.loc[0:num_legit-1]
 adhd2 = adhd.loc[num_legit:]
 adhd1
       </input>
     </program>
+<pre>
+  x	  k	    n	     rate
+0	0	225	35353	63.643821
+1	1	240	34405	69.757303
+2	2	232	31285	74.156944
+3	3	243	31617	76.857387
+4	4	265	32690	81.064546
+5	5	280	31238	89.634420
+6	6	307	34405	89.231216
+7	7	312	34565	90.264719
+8	8	317	34977	90.630986
+</pre>
     <program language="python">
       <input>
-# Solution
-
 adhd2
       </input>
     </program>
+<pre>
+     x	  k	    n	     rate
+9	   9	287	34415	83.393869
+10	10	320	36577	87.486672
+11	11	309	36319	85.079435
+</pre>
     <program language="python">
       <input>
-# Solution
-
 from scipy.stats import binom
 
 likelihood1 = joint_pmf.copy()
@@ -988,8 +1198,6 @@ likelihood1.sum()
 </pre>
     <program language="python">
       <input>
-# Solution
-
 # This update uses the binomial survival function to compute
 # the probability that the number of cases *exceeds* `ks`.
 
@@ -1012,8 +1220,6 @@ likelihood2.sum()
 </pre>
     <program language="python">
       <input>
-# Solution
-
 posterior_pmf = joint_pmf * likelihood1
 posterior_pmf.normalize()
       </input>
@@ -1023,8 +1229,6 @@ posterior_pmf.normalize()
 </pre>
     <program language="python">
       <input>
-# Solution
-
 posterior_pmf.max_prob()
       </input>
     </program>
@@ -1033,8 +1237,6 @@ posterior_pmf.max_prob()
 </pre>
     <program language="python">
       <input>
-# Solution
-
 posterior_pmf = joint_pmf * likelihood1 * likelihood2
 posterior_pmf.normalize()
       </input>
@@ -1044,8 +1246,6 @@ posterior_pmf.normalize()
 </pre>
     <program language="python">
       <input>
-# Solution
-
 posterior_pmf.max_prob()
       </input>
     </program>
@@ -1054,18 +1254,15 @@ posterior_pmf.max_prob()
 </pre>
     <program language="python">
       <input>
-# Solution
-
 joint_posterior = posterior_pmf.unstack()
 
 plot_contour(joint_posterior)
 decorate(title='Joint posterior distribution')
       </input>
     </program>
+        <image source="images/ch16_logistic_regression_11.png" width="80%"/>
     <program language="python">
       <input>
-# Solution
-
 marginal_inter = marginal(joint_posterior, 0)
 marginal_slope = marginal(joint_posterior, 1)
 
@@ -1077,18 +1274,16 @@ marginal_inter.mean(), marginal_slope.mean()
 </pre>
     <program language="python">
       <input>
-# Solution
-
 marginal_inter.plot(color='C4')
 decorate(xlabel='Intercept',
          ylabel='PDF',
          title='Posterior marginal distribution of intercept')
       </input>
     </program>
+        <image source="images/ch16_logistic_regression_12.png" width="80%"/>
+
     <program language="python">
       <input>
-# Solution
-
 marginal_slope.plot(color='C2')
 
 decorate(xlabel='Slope',
@@ -1096,10 +1291,10 @@ decorate(xlabel='Slope',
          title='Posterior marginal distribution of slope')
       </input>
     </program>
+        <image source="images/ch16_logistic_regression_13.png" width="80%"/>
+
     <program language="python">
       <input>
-# Solution
-
 sample = posterior_pmf.choice(101)
 xs = adhd['x']
 ps = np.empty((len(sample), len(xs)))
@@ -1115,16 +1310,17 @@ ps.shape
 </pre>
     <program language="python">
       <input>
-# Solution
-
 low, median, high = np.percentile(ps, [2.5, 50, 97.5], axis=0)
 median
       </input>
     </program>
+<pre>
+array([0.00663988, 0.00695303, 0.00728085, 0.00762401, 0.00798321,
+       0.00835919, 0.00875272, 0.00915734, 0.00955774, 0.00997548,
+       0.01043603, 0.01094356])
+</pre>
     <program language="python">
       <input>
-# Solution
-
 plt.fill_between(xs, low*10000, high*10000, 
                  color='C1', alpha=0.2)
 
@@ -1134,6 +1330,7 @@ plt.plot(xs, median*10000, label='model',
 plot_adhd(adhd)
       </input>
     </program>
+        <image source="images/ch16_logistic_regression_14.png" width="80%"/>
       </solution>
     </exercise>
 
