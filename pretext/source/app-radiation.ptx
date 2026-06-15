@@ -1,0 +1,648 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appendix xml:id="app-radiation" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <title>The Emitter-Detector Problem</title>
+
+  <introduction>
+    <p>
+      Here's an example from Jaynes, <em>Probability Theory</em>, page 168:
+    </p>
+
+    <blockquote>
+      <p>
+        We have a radioactive source ... which is emitting particles of some sort ... There is a rate <m>p</m>, in particles per second, at which a radioactive nucleus sends particles through our counter; and each particle passing through produces counts at the rate <m>\theta</m>. From measuring the number {c1 , c2 , . . .} of counts in different seconds, what can we say about the numbers {n1 , n2 , . . .} actually passing through the counter in each second, and what can we say about the strength of the source?
+      </p>
+    </blockquote>
+
+    <p>
+      I presented a <url href="https://www.greenteapress.com/thinkbayes/html/thinkbayes015.html#sec130">version of this problem</url> in the first edition of <em>Think Bayes</em>, but I don't think I explained it well, and my solution was a bit of a mess.
+      In the second edition, I use more NumPy and SciPy, which makes it possible to express the solution more clearly and concisely, so let me give it another try.
+    </p>
+
+    <p>
+      As a model of the radioactive source, Jaynes suggests we imagine "<m>N</m> nuclei, each of which has independently the probability <m>r</m> of sending a particle through our counter in any one second".
+      If <m>N</m> is large and <m>r</m> is small, the number or particles emitted in a given second is well modeled by a Poisson distribution with parameter <m>s = Nr</m>, where <m>s</m> is the strength of the source.
+    </p>
+
+    <p>
+      As a model of the sensor, we'll assume that "each particle passing through the counter has independently the probability <m>\phi</m> of making a count".
+      So if we know the actual number of particles, <m>n</m>, and the efficiency of the sensor, <m>\phi</m>, the distribution of the count is <m>\mathrm{Binomial}(n, \phi)</m>.
+    </p>
+
+    <p>
+      With that, we are ready to solve the problem, but first, an aside: I am not sure why Jaynes states the problem in terms of <m>p</m> and <m>\theta</m>, and then solves it in terms of <m>s</m> and <m>\phi</m>.
+      It might have been an oversight, or there might be subtle distinction he intended to draw the reader's attention to.
+      The book is full of dire warnings about distinctions like this, but in this case I don't see an explanation.
+    </p>
+
+    <p>
+      Anyway, following Jaynes, I'll start with a uniform prior for <m>s</m>, over a range of values wide enough to cover the region where the likelihood of the data is non-negligible.
+    </p>
+
+    <program language="python">
+      <input>
+import numpy as np
+from empiricaldist import Pmf
+
+ss = np.linspace(0, 350, 101)
+prior_s = Pmf(1, ss)
+prior_s.head()
+      </input>
+    </program>
+
+    <pre>
+0.0    1
+3.5    1
+7.0    1
+Name: , dtype: int64
+    </pre>
+
+    <p>
+      For each value of <m>s</m>, the distribution of <m>n</m> is Poisson, so we can form the joint prior of <m>s</m> and <m>n</m> using the <c>poisson</c> function from SciPy.
+      I'll use a range of values for <m>n</m> that, again, covers the region where the likelihood of the data is non-negligible.
+    </p>
+
+    <program language="python">
+      <input>
+from scipy.stats import poisson
+
+ns = np.arange(0, 350)
+S, N = np.meshgrid(ss, ns)
+ps = poisson(S).pmf(N)
+ps.shape
+      </input>
+    </program>
+
+    <pre>
+(350, 101)
+    </pre>
+
+    <p>
+      The result is an array with one row for each value of <m>n</m> and one column for each value of <m>s</m>.
+      To get the prior probability for each pair, we multiply each row by the prior probabilities of <m>s</m>.
+      The following function encapsulates this computation and puts the result in a Pandas <c>DataFrame</c> that represents the joint prior.
+    </p>
+
+    <program language="python">
+      <input>
+import pandas as pd
+
+def make_joint(prior_s, ns):
+    ss = prior_s.qs
+    S, N = np.meshgrid(ss, ns)
+    ps = poisson(S).pmf(N) * prior_s.ps
+    joint = pd.DataFrame(ps, index=ns, columns=ss)
+    joint.index.name = 'n'
+    joint.columns.name = 's'
+    return joint
+      </input>
+    </program>
+
+    <p>
+      Here's the joint prior:
+    </p>
+
+    <program language="python">
+      <input>
+joint = make_joint(prior_s, ns)
+joint.head()
+      </input>
+    </program>
+
+    <pre>
+s  0.0       3.5       7.0       10.5          14.0          17.5   \
+n
+0    1.0  0.030197  0.000912  0.000028  8.315287e-07  2.510999e-08
+1    0.0  0.105691  0.006383  0.000289  1.164140e-05  4.394249e-07
+2    0.0  0.184959  0.022341  0.001518  8.148981e-05  3.844967e-06
+3    0.0  0.215785  0.052129  0.005313  3.802858e-04  2.242898e-05
+4    0.0  0.188812  0.091226  0.013946  1.331000e-03  9.812677e-05
+
+s         21.0          24.5          28.0          31.5   ...          318.5  \
+n                                                          ...
+0  7.582560e-10  2.289735e-11  6.914400e-13  2.087968e-14  ...  4.755624e-139
+1  1.592338e-08  5.609850e-10  1.936032e-11  6.577099e-13  ...  1.514666e-136
+2  1.671955e-07  6.872067e-09  2.710445e-10  1.035893e-11  ...  2.412106e-134
+3  1.170368e-06  5.612188e-08  2.529749e-09  1.087688e-10  ...  2.560853e-132
+4  6.144433e-06  3.437465e-07  1.770824e-08  8.565541e-10  ...  2.039079e-130
+
+s          322.0          325.5          329.0          332.5          336.0  \
+n
+0  1.436074e-140  4.336568e-142  1.309530e-143  3.954438e-145  1.194137e-146
+1  4.624158e-138  1.411553e-139  4.308354e-141  1.314851e-142  4.012300e-144
+2  7.444895e-136  2.297302e-137  7.087242e-139  2.185939e-140  6.740663e-142
+3  7.990854e-134  2.492573e-135  7.772342e-137  2.422749e-138  7.549543e-140
+4  6.432637e-132  2.028331e-133  6.392751e-135  2.013910e-136  6.341616e-138
+
+s          339.5          343.0          346.5          350.0
+n
+0  3.605981e-148  1.088912e-149  3.288229e-151  9.929590e-153
+1  1.224230e-145  3.734968e-147  1.139371e-148  3.475357e-150
+2  2.078131e-143  6.405469e-145  1.973961e-146  6.081874e-148
+3  2.351752e-141  7.323587e-143  2.279925e-144  7.095520e-146
+4  1.996049e-139  6.279975e-141  1.974985e-142  6.208580e-144
+
+[5 rows x 101 columns]
+    </pre>
+
+    <p>
+      Now we're ready to compute the likelihood of the data.
+      In this problem, it depends only on <m>n</m>, regardless of <m>s</m>, so we only have to compute it once for each value of <m>n</m>.
+    </p>
+
+    <program language="python">
+      <input>
+from scipy.stats import binom
+
+phi = 0.1
+c = 10
+likelihood = binom(ns, phi).pmf(c)
+likelihood.shape
+      </input>
+    </program>
+
+    <pre>
+(350,)
+    </pre>
+
+    <p>
+      The result is an array of likelihoods, one for each value of <m>n</m>.
+      To do the Bayesian update, we need to multiply each column in the prior by this array of likelihoods.
+      We can do that using the <c>multiply</c> method with the <c>axis</c> argument.
+    </p>
+
+    <program language="python">
+      <input>
+product = joint.multiply(likelihood, axis=0)
+product.head()
+      </input>
+    </program>
+
+    <pre>
+s  0.0    3.5    7.0    10.5   14.0   17.5   21.0   24.5   28.0   31.5   ...  \
+n                                                                        ...
+0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0  ...
+1    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0  ...
+2    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0  ...
+3    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0  ...
+4    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0  ...
+
+s  318.5  322.0  325.5  329.0  332.5  336.0  339.5  343.0  346.5  350.0
+n
+0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0
+1    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0
+2    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0
+3    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0
+4    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0
+
+[5 rows x 101 columns]
+    </pre>
+
+    <p>
+      The following function encapsulates this computation, normalizes the result, and returns the posterior distribution.
+    </p>
+
+    <program language="python">
+      <input>
+from utils import normalize
+
+def update(joint, phi, c):
+    ns = joint.index
+    likelihood = binom(ns, phi).pmf(c)
+    posterior = joint.multiply(likelihood, axis=0)
+    normalize(posterior)
+    return posterior
+      </input>
+    </program>
+  </introduction>
+
+  <section xml:id="sec-radiation-first-update">
+    <title>First update</title>
+
+    <p>
+      Let's test the update function with the first example, on page 178 of <em>Probability Theory</em>:
+    </p>
+
+    <blockquote>
+      <p>
+        During the first second, <c>c1 = 10</c> counts are registered. What can [we] say about the number <c>n1</c> of particles?
+      </p>
+    </blockquote>
+
+    <p>
+      Here's the update:
+    </p>
+
+    <program language="python">
+      <input>
+c1 = 10
+phi = 0.1
+posterior = update(joint, phi, c1)
+posterior.head()
+      </input>
+    </program>
+
+    <pre>
+s  0.0    3.5    7.0    10.5   14.0   17.5   21.0   24.5   28.0   31.5   ...  \
+n                                                                        ...
+0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0  ...
+1    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0  ...
+2    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0  ...
+3    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0  ...
+4    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0  ...
+
+s  318.5  322.0  325.5  329.0  332.5  336.0  339.5  343.0  346.5  350.0
+n
+0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0
+1    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0
+2    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0
+3    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0
+4    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0
+
+[5 rows x 101 columns]
+    </pre>
+
+    <p>
+      The following figure is a contour plot of the joint posterior distribution.
+      As you might expect, <m>s</m> and <m>n</m> are highly correlated; that is, if we believe <m>s</m> is low, we should believe that <m>n</m> is low, and contrariwise if <m>s</m> is high.
+    </p>
+
+    <program language="python">
+      <input>
+from utils import plot_contour
+
+plot_contour(posterior);
+      </input>
+    </program>
+
+    <image source="images/radiation_fig0.png" width="80%"/>
+
+    <p>
+      From the posterior distribution, we can extract the marginal distributions of <m>s</m> and <m>n</m>.
+    </p>
+
+    <program language="python">
+      <input>
+from utils import marginal
+
+posterior_s = marginal(posterior, 0)
+posterior_s.plot()
+posterior_s.mean()
+      </input>
+    </program>
+
+    <image source="images/radiation_fig1.png" width="80%"/>
+
+    <program language="python">
+      <input>
+posterior_n = marginal(posterior, 1)
+posterior_n.plot()
+posterior_n.mean()
+      </input>
+    </program>
+
+    <image source="images/radiation_fig2.png" width="80%"/>
+
+    <p>
+      The posterior mean of <m>n</m> is close to 109, which is consistent with Equation 6.116.
+    </p>
+
+    <program language="python">
+      <input>
+posterior_n.idxmax(), c/phi
+      </input>
+    </program>
+
+    <pre>
+(99, 100.0)
+    </pre>
+
+    <p>
+      The MAP is 99, which is one less than the analytic result in Equation 6.113, which is 100.
+      It looks like the posterior probabilities for 99 and 100 are the same, but the floating-point results differ slightly.
+    </p>
+
+    <program language="python">
+      <input>
+posterior_n[99] - posterior_n[100]
+      </input>
+    </program>
+
+    <pre>
+5.065392549852277e-16
+    </pre>
+  </section>
+
+  <section xml:id="sec-radiation-jeffreys">
+    <title>Jeffreys prior</title>
+
+    <p>
+      Instead of a uniform prior for <m>s</m>, we can use a Jeffreys prior, in which the prior probability for each value of <m>s</m> is proportional to <m>1/s</m>.
+      This has the advantage of "invariance under certain changes of parameters", which is "the only correct way to express complete ignorance of a scale parameter."
+      However, Jaynes suggests that it is not clear "whether <m>s</m> can properly be regarded as a scale parameter in this problem."
+    </p>
+
+    <p>
+      Nevertheless, he suggests we try it and see what happens.
+      Here's the Jeffreys prior for <m>s</m>.
+    </p>
+
+    <program language="python">
+      <input>
+prior_jeff = Pmf(1/ss[1:], ss[1:])
+prior_jeff.head()
+      </input>
+    </program>
+
+    <pre>
+3.5     0.285714
+7.0     0.142857
+10.5    0.095238
+Name: , dtype: float64
+    </pre>
+
+    <p>
+      We can use it to compute the joint prior of <m>s</m> and <m>n</m>, and update it with <c>c1</c>.
+    </p>
+
+    <program language="python">
+      <input>
+joint_jeff = make_joint(prior_jeff, ns)
+posterior_jeff = update(joint_jeff, phi, c1)
+      </input>
+    </program>
+
+    <p>
+      Here's the marginal posterior distribution of <m>n</m>:
+    </p>
+
+    <program language="python">
+      <input>
+posterior_n = marginal(posterior_jeff, 1)
+posterior_n.plot()
+posterior_n.mean()
+      </input>
+    </program>
+
+    <image source="images/radiation_fig3.png" width="80%"/>
+
+    <program language="python">
+      <input>
+posterior_n.idxmax()
+      </input>
+    </program>
+
+    <pre>
+91
+    </pre>
+
+    <p>
+      The posterior mean is close to 100 and the MAP is 91; both are consistent with the results in Equation 6.122.
+    </p>
+  </section>
+
+  <section xml:id="sec-radiation-robot-a">
+    <title>Robot A</title>
+
+    <p>
+      Now we get to what I think is the most interesting part of this example, which is to take into account a second observation under two models of the scenario:
+    </p>
+
+    <blockquote>
+      <p>
+        Two robots, [A and B], have different prior information about the source of the particles.
+        The source is hidden in another room which A and B are not allowed to enter.
+        A has no knowledge at all about the source of particles; for all [it] knows, ... the other room might be full of little [people] who run back and forth, holding first one radioactive source, then another, up to the exit window.
+      </p>
+      <p>
+        B has one additional qualitative fact: [it] knows that the source is a radioactive sample of long lifetime, in a fixed position.
+      </p>
+    </blockquote>
+
+    <p>
+      In other words, B has reason to believe that the source strength <m>s</m> is constant from one interval to the next, while A admits the possibility that <m>s</m> is different for each interval.
+    </p>
+
+    <p>
+      The following figure, from Jaynes, represents these models graphically (Jaynes calls them "logical situations" because he seems to be allergic to the word "model").
+    </p>
+
+    <image source="images/jaynes177.png" width="60%"/>
+
+    <p>
+      For A, the "different intervals are logically independent", so the update with <c>c2 = 16</c> starts with the same prior.
+    </p>
+
+    <program language="python">
+      <input>
+c2 = 16
+posterior2 = update(joint, phi, c2)
+      </input>
+    </program>
+
+    <p>
+      Here's the posterior marginal distribution of <c>n2</c>.
+    </p>
+
+    <program language="python">
+      <input>
+posterior_n2 = marginal(posterior2, 1)
+posterior_n2.plot()
+posterior_n2.mean()
+      </input>
+    </program>
+
+    <image source="images/radiation_fig4.png" width="80%"/>
+
+    <program language="python">
+      <input>
+posterior_n2.idxmax()
+      </input>
+    </program>
+
+    <pre>
+160
+    </pre>
+
+    <p>
+      The posterior mean is close to 169, which is consistent with the result in Equation 6.124.
+      The MAP is 160, which is consistent with 6.123.
+    </p>
+  </section>
+
+  <section xml:id="sec-radiation-robot-b">
+    <title>Robot B</title>
+
+    <p>
+      For B, the "logical situation" is different. If we consider <m>s</m> to be constant, we can -- and should! -- take the information from the first update into account when we perform the second update.
+      We can do that by using the posterior distribution of <m>s</m> from the first update to form the joint prior for the second update, like this:
+    </p>
+
+    <program language="python">
+      <input>
+joint = make_joint(posterior_s, ns)
+posterior = update(joint, phi, c2)
+posterior_n = marginal(posterior, 1)
+posterior_n.plot()
+posterior_n.mean()
+      </input>
+    </program>
+
+    <image source="images/radiation_fig5.png" width="80%"/>
+
+    <p>
+      The posterior mean of <m>n</m> is close to 137.5, which is consistent with Equation 6.134.
+      The MAP is 132, which is one less than the analytic result, 133.
+      But again, there are two values with the same probability except for floating-point errors.
+    </p>
+
+    <program language="python">
+      <input>
+posterior_n.idxmax()
+      </input>
+    </program>
+
+    <pre>
+132
+    </pre>
+
+    <program language="python">
+      <input>
+posterior_n[132] - posterior_n[133]
+      </input>
+    </program>
+
+    <pre>
+2.914335439641036e-16
+    </pre>
+
+    <p>
+      Under B's model, the data from the first interval updates our belief about <m>s</m>, which influences what we believe about <c>n2</c>.
+    </p>
+  </section>
+
+  <section xml:id="sec-radiation-going-other-way">
+    <title>Going the other way</title>
+
+    <p>
+      That might not seem surprising, but there is an additional point Jaynes makes with this example, which is that it also works the other way around: Having seen <c>c2</c>, we have more information about <m>s</m>, which means we can -- and should! -- go back and reconsider what we concluded about <c>n1</c>.
+    </p>
+
+    <p>
+      We can do that by imagining we did the experiments in the opposite order, so
+    </p>
+
+    <ol>
+      <li><p>We'll start again with a joint prior based on a uniform distribution for <m>s</m>,</p></li>
+      <li><p>Update it based on <c>c2</c>,</p></li>
+      <li><p>Use the posterior distribution of <m>s</m> to form a new joint prior,</p></li>
+      <li><p>Update it based on <c>c1</c>, and</p></li>
+      <li><p>Extract the marginal posterior for <c>n1</c>.</p></li>
+    </ol>
+
+    <program language="python">
+      <input>
+joint = make_joint(prior_s, ns)
+posterior = update(joint, phi, c2)
+posterior_s = marginal(posterior, 0)
+posterior_s.mean()
+      </input>
+    </program>
+
+    <pre>
+169.94393251129674
+    </pre>
+
+    <program language="python">
+      <input>
+joint = make_joint(posterior_s, ns)
+posterior = update(joint, phi, c1)
+posterior_n2 = marginal(posterior, 1)
+posterior_n2.mean()
+      </input>
+    </program>
+
+    <pre>
+131.49999935386944
+    </pre>
+
+    <p>
+      The posterior mean is close to 131.5, which is consistent with Equation 6.133.
+      And the MAP is 126, which is one less than the result in Equation 6.132, again due to floating-point error.
+    </p>
+
+    <program language="python">
+      <input>
+posterior_n2.idxmax()
+      </input>
+    </program>
+
+    <pre>
+126
+    </pre>
+
+    <program language="python">
+      <input>
+posterior_n2[126] - posterior_n2[127]
+      </input>
+    </program>
+
+    <pre>
+3.8163916471489756e-16
+    </pre>
+
+    <p>
+      Here's what the new distribution of <c>n1</c> looks like compared to the original, which was based on <c>c1</c> only.
+    </p>
+
+    <program language="python">
+      <input>
+joint = make_joint(prior_s, ns)
+posterior = update(joint, phi, c1)
+posterior_n = marginal(posterior, 1)
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+from utils import decorate
+
+posterior_n.plot(label='Model A')
+posterior_n2.plot(label='Model B')
+decorate(title='Posterior distributions of n1 under different models')
+      </input>
+    </program>
+
+    <image source="images/radiation_fig6.png" width="80%"/>
+
+    <p>
+      With the additional information from <c>c2</c>:
+    </p>
+
+    <ul>
+      <li><p>We give higher probability to large values of <m>s</m>, so we also give higher probability to large values of <c>n1</c>, and</p></li>
+      <li><p>The width of the distribution is narrower, which shows that with more information about <m>s</m>, we have more information about <c>n1</c>.</p></li>
+    </ul>
+
+    <p>
+      This is one of several examples Jaynes uses to distinguish between "logical and causal dependence." In this example, causal dependence only goes in the forward direction: "<m>s</m> is the physical cause which partially determines <m>n</m>; and then <m>n</m> in turn is the physical cause which partially determines <m>c</m>".
+    </p>
+
+    <p>
+      Therefore, <c>c1</c> and <c>c2</c> are causally independent: if the number of particles counted in one interval is unusually high (or low), that does not cause the number of particles during any other interval to be higher or lower.
+    </p>
+
+    <p>
+      But if <m>s</m> is unknown, they are not <em>logically</em> independent. For example, if <c>c1</c> is lower than expected, that implies that lower values of <m>s</m> are more likely, which implies that lower values of <c>n2</c> are more likely, which implies that lower values of <c>c2</c> are more likely.
+    </p>
+
+    <p>
+      And, as we've seen, it works the other way, too.
+      For example, if <c>c2</c> is higher than expected, that implies that higher values of <m>s</m>, <c>n1</c>, and <c>c1</c> are more likely.
+    </p>
+
+    <p>
+      If you find the second result more surprising -- that is, if you think it's weird that <c>c2</c> changes what we believe about <c>n1</c> -- that implies that you are not (yet) distinguishing between logical and causal dependence.
+    </p>
+  </section>
+
+</appendix>

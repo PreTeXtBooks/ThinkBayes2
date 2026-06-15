@@ -20,6 +20,12 @@
   <xi:include href="./app-vaccine-efficacy.ptx" />
   <xi:include href="./app-usb.ptx" />
   <xi:include href="./app-sister.ptx" />
+  <xi:include href="./app-bayes-dice.ptx" />
+  <xi:include href="./app-radiation.ptx" />
+  <xi:include href="./app-grid-hierarchical.ptx" />
+  <xi:include href="./app-birth-rates.ptx" />
+  <xi:include href="./app-typos.ptx" />
+  <xi:include href="./app-bookstore.ptx" />
 
   <appendix>
     <title>List of Symbols</title>

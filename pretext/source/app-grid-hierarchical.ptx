@@ -1,0 +1,1070 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appendix xml:id="app-grid-hierarchical" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <title>Grid Algorithms for Hierarchical Models</title>
+
+  <introduction>
+    <p>
+      It is widely believed that grid algorithms are only practical for models with 1-3 parameters, or maybe 4-5 if you are careful.
+      <url href="https://allendowney.github.io/ThinkBayes2/chap19.html">I've said so myself</url>.
+    </p>
+
+    <p>
+      But recently I used a grid algorithm to solve the <url href="https://www.allendowney.com/blog/2021/09/05/emitter-detector-redux/">emitter-detector problem</url>, and along the way I noticed something about the structure of the problem: although the model has two parameters, the data only depend on one of them.
+      That makes it possible to evaluate the likelihood function and update the model very efficiently.
+    </p>
+
+    <p>
+      Many hierarchical models have a similar structure: the data depend on a small number of parameters, which depend on a small number of hyperparameters.
+      I wondered whether the same method would generalize to more complex models, and it does.
+    </p>
+
+    <p>
+      As an example, in this notebook I'll use a logitnormal-binomial hierarchical model to solve a problem with two hyperparameters and 13 parameters.
+      The grid algorithm is not just practical; it's substantially faster than MCMC.
+    </p>
+
+    <p>
+      The following are some utility functions I'll use.
+    </p>
+
+    <program language="python">
+      <input>
+import matplotlib.pyplot as plt
+
+def legend(**options):
+    """Make a legend only if there are labels."""
+    handles, labels = plt.gca().get_legend_handles_labels()
+    if len(labels):
+        plt.legend(**options)
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+def decorate(**options):
+    plt.gca().set(**options)
+    legend()
+    plt.tight_layout()
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+from empiricaldist import Cdf
+
+def compare_cdf(pmf, sample):
+    pmf.make_cdf().step(label='grid')
+    Cdf.from_seq(sample).plot(label='mcmc')
+    print(pmf.mean(), sample.mean())
+    decorate()
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+from empiricaldist import Pmf
+
+def make_pmf(ps, qs, name):
+    pmf = Pmf(ps, qs)
+    pmf.normalize()
+    pmf.index.name = name
+    return pmf
+      </input>
+    </program>
+  </introduction>
+
+  <section xml:id="sec-grid-hier-data">
+    <title>Heart Attack Data</title>
+
+    <p>
+      The problem I'll solve is based on <url href="https://bayesball.github.io/BOOK/bayesian-hierarchical-modeling.html#example-deaths-after-heart-attack">Chapter 10 of <em>Probability and Bayesian Modeling</em></url>; it uses data on death rates due to heart attack for patients treated at various hospitals in New York City.
+    </p>
+
+    <p>
+      We can use Pandas to read the data into a <c>DataFrame</c>.
+    </p>
+
+    <program language="python">
+      <input>
+import os
+
+filename = 'DeathHeartAttackManhattan.csv'
+if not os.path.exists(filename):
+    !wget https://github.com/AllenDowney/BayesianInferencePyMC/raw/main/DeathHeartAttackManhattan.csv
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+import pandas as pd
+
+df = pd.read_csv(filename)
+df
+      </input>
+    </program>
+
+    <pre>
+                                        Hospital  Cases  Deaths  Death %
+0                       Bellevue Hospital Center    129       4    3.101
+1                         Harlem Hospital Center     35       1    2.857
+2                            Lenox Hill Hospital    228      18    7.894
+3                   Metropolitan Hospital Center     84       7    8.333
+4                        Mount Sinai Beth Israel    291      24    8.247
+5                           Mount Sinai Hospital    270      16    5.926
+6                          Mount Sinai Roosevelt     46       6   13.043
+7                         Mount Sinai St. Luke's    293      19    6.485
+8                           NYU Hospitals Center    241      15    6.224
+9                  NYP Hospital - Allen Hospital    105      13   12.381
+10   NYP Hospital - Columbia Presbyterian Center    353      25    7.082
+11  NYP Hospital - New York Weill Cornell Center    250      11    4.400
+12                  NYP/Lower Manhattan Hospital     41       4    9.756
+    </pre>
+
+    <p>
+      The columns we need are <c>Cases</c>, which is the number of patients treated at each hospital, and <c>Deaths</c>, which is the number of those patients who died.
+    </p>
+
+    <program language="python">
+      <input>
+data_ns = df['Cases'].values
+data_ks = df['Deaths'].values
+      </input>
+    </program>
+  </section>
+
+  <section xml:id="sec-grid-hier-pymc">
+    <title>Solution with PyMC</title>
+
+    <p>
+      Here's a hierarchical model that estimates the death rate for each hospital and simultaneously estimates the distribution of rates across hospitals.
+    </p>
+
+    <program language="python">
+      <input>
+import pymc3 as pm
+
+def make_model():
+    with pm.Model() as model:
+        mu = pm.Normal('mu', 0, 2)
+        sigma = pm.HalfNormal('sigma', sigma=1)
+        xs = pm.LogitNormal('xs', mu=mu, sigma=sigma, shape=len(data_ns))
+        ks = pm.Binomial('ks', n=data_ns, p=xs, observed=data_ks)
+    return model
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+%time model = make_model()
+pm.model_to_graphviz(model)
+      </input>
+    </program>
+
+    <pre>
+CPU times: user 875 ms, sys: 51.7 ms, total: 927 ms
+Wall time: 2.22 s
+    </pre>
+
+    <image source="images/hospital_fig0.png" width="60%"/>
+
+    <program language="python">
+      <input>
+with model:
+    pred = pm.sample_prior_predictive(1000)
+    %time trace = pm.sample(500, target_accept=0.97)
+      </input>
+    </program>
+
+    <pre>
+Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [xs, sigma, mu]
+Sampling 4 chains for 1_000 tune and 500 draw iterations (4_000 + 2_000 draws total) took 8 seconds.
+There were 2 divergences after tuning. Increase `target_accept` or reparameterize.
+The acceptance probability does not match the target. It is 0.9060171753417431, but should be close to 0.97. Try to increase the number of tuning steps.
+There was 1 divergence after tuning. Increase `target_accept` or reparameterize.
+There were 7 divergences after tuning. Increase `target_accept` or reparameterize.
+The acceptance probability does not match the target. It is 0.9337619072936738, but should be close to 0.97. Try to increase the number of tuning steps.
+The estimated number of effective samples is smaller than 200 for some parameters.
+CPU times: user 5.12 s, sys: 153 ms, total: 5.27 s
+Wall time: 12.3 s
+    </pre>
+
+    <p>
+      To be fair, PyMC doesn't like this parameterization much (although I'm not sure why). One most runs, there are a moderate number of divergences. Even so, the results are good enough.
+    </p>
+
+    <p>
+      Here are the posterior distributions of the hyperparameters.
+    </p>
+
+    <program language="python">
+      <input>
+import arviz as az
+
+with model:
+    az.plot_posterior(trace, var_names=['mu', 'sigma'])
+      </input>
+    </program>
+
+    <image source="images/hospital_fig1.png" width="80%"/>
+
+    <p>
+      And we can extract the posterior distributions of the <c>xs</c>.
+    </p>
+
+    <program language="python">
+      <input>
+trace_xs = trace['xs'].transpose()
+trace_xs.shape
+      </input>
+    </program>
+
+    <pre>
+(13, 2000)
+    </pre>
+
+    <p>
+      As an example, here's the posterior distribution of <c>x</c> for the first hospital.
+    </p>
+
+    <program language="python">
+      <input>
+with model:
+    az.plot_posterior(trace_xs[0])
+      </input>
+    </program>
+
+    <image source="images/hospital_fig2.png" width="80%"/>
+  </section>
+
+  <section xml:id="sec-grid-hier-priors">
+    <title>The grid priors</title>
+
+    <p>
+      Now let's solve the same problem using a grid algorithm.
+      I'll use the same priors for the hyperparameters, approximated by a grid with about 100 elements in each dimension.
+    </p>
+
+    <program language="python">
+      <input>
+import numpy as np
+from scipy.stats import norm
+
+mus = np.linspace(-6, 6, 101)
+ps = norm.pdf(mus, 0, 2)
+prior_mu = make_pmf(ps, mus, 'mu')
+
+prior_mu.plot()
+decorate(title='Prior distribution of mu')
+      </input>
+    </program>
+
+    <image source="images/hospital_fig3.png" width="80%"/>
+
+    <program language="python">
+      <input>
+from scipy.stats import logistic
+
+sigmas = np.linspace(0.03, 3.6, 90)
+ps = norm.pdf(sigmas, 0, 1)
+prior_sigma = make_pmf(ps, sigmas, 'sigma')
+
+prior_sigma.plot()
+decorate(title='Prior distribution of sigma')
+      </input>
+    </program>
+
+    <image source="images/hospital_fig4.png" width="80%"/>
+
+    <p>
+      The following cells confirm that these priors are consistent with the prior samples from PyMC.
+    </p>
+
+    <program language="python">
+      <input>
+compare_cdf(prior_mu, pred['mu'])
+decorate(title='Prior distribution of mu')
+      </input>
+    </program>
+
+    <pre>
+2.6020852139652106e-18 -0.06372282505953483
+    </pre>
+
+    <image source="images/hospital_fig5.png" width="80%"/>
+
+    <program language="python">
+      <input>
+compare_cdf(prior_sigma, pred['sigma'])
+decorate(title='Prior distribution of sigma')
+      </input>
+    </program>
+
+    <pre>
+0.8033718951689776 0.8244605687886865
+    </pre>
+
+    <image source="images/hospital_fig6.png" width="80%"/>
+  </section>
+
+  <section xml:id="sec-grid-hier-joint-hyper">
+    <title>The joint distribution of hyperparameters</title>
+
+    <p>
+      I'll use <c>make_joint</c> to make an array that represents the joint prior distribution of the hyperparameters.
+    </p>
+
+    <program language="python">
+      <input>
+def make_joint(prior_x, prior_y):
+    X, Y = np.meshgrid(prior_x.ps, prior_y.ps, indexing='ij')
+    hyper = X * Y
+    return hyper
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+prior_hyper = make_joint(prior_mu, prior_sigma)
+prior_hyper.shape
+      </input>
+    </program>
+
+    <pre>
+(101, 90)
+    </pre>
+
+    <p>
+      Here's what it looks like.
+    </p>
+
+    <program language="python">
+      <input>
+import pandas as pd
+from utils import plot_contour
+
+plot_contour(pd.DataFrame(prior_hyper, index=mus, columns=sigmas))
+decorate(title="Joint prior of mu and sigma")
+      </input>
+    </program>
+
+    <image source="images/hospital_fig7.png" width="80%"/>
+  </section>
+
+  <section xml:id="sec-grid-hier-joint-prior-x">
+    <title>Joint prior of hyperparameters and x</title>
+
+    <p>
+      Now we're ready to lay out the grid for <c>x</c>, which is the proportion we'll estimate for each hospital.
+    </p>
+
+    <program language="python">
+      <input>
+xs = np.linspace(0.01, 0.99, 295)
+      </input>
+    </program>
+
+    <p>
+      For each pair of hyperparameters, we'll compute the distribution of <c>x</c>.
+    </p>
+
+    <program language="python">
+      <input>
+from scipy.special import logit
+
+M, S, X = np.meshgrid(mus, sigmas, xs, indexing='ij')
+LO = logit(X)
+LO.sum()
+      </input>
+    </program>
+
+    <pre>
+-6.440927791118156e-10
+    </pre>
+
+    <program language="python">
+      <input>
+from scipy.stats import norm
+
+%time normpdf = norm.pdf(LO, M, S)
+normpdf.sum()
+      </input>
+    </program>
+
+    <pre>
+CPU times: user 69.6 ms, sys: 16.5 ms, total: 86.1 ms
+Wall time: 84.9 ms
+214125.5678798693
+    </pre>
+
+    <p>
+      We can speed this up by computing skipping the terms that don't depend on <c>x</c>.
+    </p>
+
+    <program language="python">
+      <input>
+%%time
+
+z = (LO-M) / S
+normpdf = np.exp(-z**2/2)
+      </input>
+    </program>
+
+    <pre>
+CPU times: user 26 ms, sys: 10.6 ms, total: 36.6 ms
+Wall time: 35.1 ms
+    </pre>
+
+    <p>
+      The result is a 3-D array with axes for <c>mu</c>, <c>sigma</c>, and <c>x</c>.
+    </p>
+
+    <p>
+      Now we need to normalize each distribution of <c>x</c>.
+    </p>
+
+    <program language="python">
+      <input>
+totals = normpdf.sum(axis=2)
+totals.shape
+      </input>
+    </program>
+
+    <pre>
+(101, 90)
+    </pre>
+
+    <p>
+      To normalize, we have to use a safe version of <c>divide</c> where <c>0/0</c> is <c>0</c>.
+    </p>
+
+    <program language="python">
+      <input>
+def divide(x, y):
+    out = np.zeros_like(x)
+    return np.divide(x, y, out=out, where=(y!=0))
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+shape = totals.shape + (1,)
+normpdf = divide(normpdf, totals.reshape(shape))
+normpdf.shape
+      </input>
+    </program>
+
+    <pre>
+(101, 90, 295)
+    </pre>
+
+    <p>
+      The result is an array that contains the distribution of <c>x</c> for each pair of hyperparameters.
+    </p>
+
+    <p>
+      Now, to get the prior distribution, we multiply through by the joint distribution of the hyperparameters.
+    </p>
+
+    <program language="python">
+      <input>
+def make_prior(hyper):
+
+    # reshape hyper so we can multiply along axis 0
+    shape = hyper.shape + (1,)
+    prior = normpdf * hyper.reshape(shape)
+
+    return prior
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+%time prior = make_prior(prior_hyper)
+prior.sum()
+      </input>
+    </program>
+
+    <pre>
+CPU times: user 5.57 ms, sys: 0 ns, total: 5.57 ms
+Wall time: 4.87 ms
+0.999937781278039
+    </pre>
+
+    <p>
+      The result is a 3-D array that represents the joint prior distribution of <c>mu</c>, <c>sigma</c>, and <c>x</c>.
+    </p>
+
+    <p>
+      To check that it is correct, I'll extract the marginal distributions and compare them to the priors.
+    </p>
+
+    <program language="python">
+      <input>
+def marginal(joint, axis):
+    axes = [i for i in range(3) if i != axis]
+    return joint.sum(axis=tuple(axes))
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+prior_mu.plot()
+marginal_mu = Pmf(marginal(prior, 0), mus)
+marginal_mu.plot()
+decorate(title='Checking the marginal distribution of mu')
+      </input>
+    </program>
+
+    <image source="images/hospital_fig8.png" width="80%"/>
+
+    <program language="python">
+      <input>
+prior_sigma.plot()
+marginal_sigma = Pmf(marginal(prior, 1), sigmas)
+marginal_sigma.plot()
+decorate(title='Checking the marginal distribution of sigma')
+      </input>
+    </program>
+
+    <image source="images/hospital_fig9.png" width="80%"/>
+
+    <p>
+      We didn't compute the prior distribution of <c>x</c> explicitly; it follows from the distribution of the hyperparameters. But we can extract the prior marginal of <c>x</c> from the joint prior.
+    </p>
+
+    <program language="python">
+      <input>
+marginal_x = Pmf(marginal(prior, 2), xs)
+marginal_x.plot()
+decorate(title='Checking the marginal distribution of x',
+         ylim=[0, np.max(marginal_x) * 1.05])
+      </input>
+    </program>
+
+    <image source="images/hospital_fig10.png" width="80%"/>
+
+    <p>
+      And compare it to the prior sample from PyMC.
+    </p>
+
+    <program language="python">
+      <input>
+pred_xs = pred['xs'].transpose()
+pred_xs.shape
+      </input>
+    </program>
+
+    <pre>
+(13, 1000)
+    </pre>
+
+    <program language="python">
+      <input>
+compare_cdf(marginal_x, pred_xs[0])
+decorate(title='Prior distribution of x')
+      </input>
+    </program>
+
+    <pre>
+0.49996889063901967 0.4879934000104224
+    </pre>
+
+    <image source="images/hospital_fig11.png" width="80%"/>
+
+    <p>
+      The prior distribution of <c>x</c> I get from the grid is a bit different from what I get from PyMC. I'm not sure why, but it doesn't seem to affect the results much.
+    </p>
+
+    <p>
+      In addition to the marginals, we'll also find it useful to extract the joint marginal distribution of the hyperparameters.
+    </p>
+
+    <program language="python">
+      <input>
+def get_hyper(joint):
+    return joint.sum(axis=2)
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+hyper = get_hyper(prior)
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+plot_contour(pd.DataFrame(hyper,
+                          index=mus,
+                          columns=sigmas))
+decorate(title="Joint prior of mu and sigma")
+      </input>
+    </program>
+
+    <image source="images/hospital_fig12.png" width="80%"/>
+  </section>
+
+  <section xml:id="sec-grid-hier-update">
+    <title>The Update</title>
+
+    <p>
+      The likelihood of the data only depends on <c>x</c>, so we can compute it like this.
+    </p>
+
+    <program language="python">
+      <input>
+from scipy.stats import binom
+
+data_k = data_ks[0]
+data_n = data_ns[0]
+
+like_x = binom.pmf(data_k, data_n, xs)
+like_x.shape
+      </input>
+    </program>
+
+    <pre>
+(295,)
+    </pre>
+
+    <program language="python">
+      <input>
+plt.plot(xs, like_x)
+decorate(title='Likelihood of the data')
+      </input>
+    </program>
+
+    <image source="images/hospital_fig13.png" width="80%"/>
+
+    <p>
+      And here's the update.
+    </p>
+
+    <program language="python">
+      <input>
+def update(prior, data):
+    n, k = data
+    like_x = binom.pmf(k, n, xs)
+    posterior = prior * like_x
+    posterior /= posterior.sum()
+    return posterior
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+data = data_n, data_k
+%time posterior = update(prior, data)
+      </input>
+    </program>
+
+    <pre>
+CPU times: user 11.6 ms, sys: 11.9 ms, total: 23.5 ms
+Wall time: 7.66 ms
+    </pre>
+  </section>
+
+  <section xml:id="sec-grid-hier-serial">
+    <title>Serial updates</title>
+
+    <p>
+      At this point we can do an update based on a single hospital, but how do we update based on all of the hospitals?
+    </p>
+
+    <p>
+      As a step toward the right answer, I'll start with a wrong answer, which is to do the updates one at a time.
+    </p>
+
+    <p>
+      After each update, we extract the posterior distribution of the hyperparameters and use it to create the prior for the next update.
+    </p>
+
+    <p>
+      At the end, the posterior distribution of hyperparameters is correct, and the marginal posterior of <c>x</c> for the <em>last</em> hospital is correct, but the other marginals are wrong because they do not take into account data from subsequent hospitals.
+    </p>
+
+    <program language="python">
+      <input>
+def multiple_updates(prior, ns, ks):
+    for data in zip(ns, ks):
+        print(data)
+        posterior = update(prior, data)
+        hyper = get_hyper(posterior)
+        prior = make_prior(hyper)
+    return posterior
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+%time posterior = multiple_updates(prior, data_ns, data_ks)
+      </input>
+    </program>
+
+    <pre>
+(129, 4)
+(35, 1)
+(228, 18)
+(84, 7)
+(291, 24)
+(270, 16)
+(46, 6)
+(293, 19)
+(241, 15)
+(105, 13)
+(353, 25)
+(250, 11)
+(41, 4)
+CPU times: user 185 ms, sys: 35.4 ms, total: 220 ms
+Wall time: 172 ms
+    </pre>
+
+    <p>
+      Here are the posterior distributions of the hyperparameters, compared to the results from PyMC.
+    </p>
+
+    <program language="python">
+      <input>
+marginal_mu = Pmf(marginal(posterior, 0), mus)
+compare_cdf(marginal_mu, trace['mu'])
+      </input>
+    </program>
+
+    <pre>
+-2.6478808810110768 -2.5956645549514694
+    </pre>
+
+    <image source="images/hospital_fig14.png" width="80%"/>
+
+    <program language="python">
+      <input>
+marginal_sigma = Pmf(marginal(posterior, 1), sigmas)
+compare_cdf(marginal_sigma, trace['sigma'])
+      </input>
+    </program>
+
+    <pre>
+0.19272226451430116 0.18501785022543282
+    </pre>
+
+    <image source="images/hospital_fig15.png" width="80%"/>
+
+    <program language="python">
+      <input>
+marginal_x = Pmf(marginal(posterior, 2), xs)
+compare_cdf(marginal_x, trace_xs[-1])
+      </input>
+    </program>
+
+    <pre>
+0.07330826956150183 0.07297933578329886
+    </pre>
+
+    <image source="images/hospital_fig16.png" width="80%"/>
+  </section>
+
+  <section xml:id="sec-grid-hier-parallel">
+    <title>Parallel updates</title>
+
+    <p>
+      Doing updates one at time is not quite right, but it gives us an insight.
+    </p>
+
+    <p>
+      Suppose we start with a uniform distribution for the hyperparameters and do an update with data from one hospital. If we extract the posterior joint distribution of the hyperparameters, what we get is the likelihood function associated with one dataset.
+    </p>
+
+    <p>
+      The following function computes these likelihood functions and saves them in an array called <c>hyper_likelihood</c>.
+    </p>
+
+    <program language="python">
+      <input>
+def compute_hyper_likelihood(ns, ks):
+    shape = ns.shape + mus.shape + sigmas.shape
+    hyper_likelihood = np.empty(shape)
+
+    for i, data in enumerate(zip(ns, ks)):
+        print(data)
+        n, k = data
+        like_x = binom.pmf(k, n, xs)
+        posterior = normpdf * like_x
+        hyper_likelihood[i] = get_hyper(posterior)
+    return hyper_likelihood
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+%time hyper_likelihood = compute_hyper_likelihood(data_ns, data_ks)
+      </input>
+    </program>
+
+    <pre>
+(129, 4)
+(35, 1)
+(228, 18)
+(84, 7)
+(291, 24)
+(270, 16)
+(46, 6)
+(293, 19)
+(241, 15)
+(105, 13)
+(353, 25)
+(250, 11)
+(41, 4)
+CPU times: user 82 ms, sys: 55.2 ms, total: 137 ms
+Wall time: 75.5 ms
+    </pre>
+
+    <p>
+      We can multiply this out to get the product of the likelihoods.
+    </p>
+
+    <program language="python">
+      <input>
+%time hyper_likelihood_all = hyper_likelihood.prod(axis=0)
+hyper_likelihood_all.sum()
+      </input>
+    </program>
+
+    <pre>
+CPU times: user 279 µs, sys: 0 ns, total: 279 µs
+Wall time: 158 µs
+1.685854062633571e-14
+    </pre>
+
+    <p>
+      This is useful because it provides an efficient way to compute the marginal posterior distribution of <c>x</c> for any hospital.
+      Here's an example.
+    </p>
+
+    <program language="python">
+      <input>
+i = 3
+data = data_ns[i], data_ks[i]
+data
+      </input>
+    </program>
+
+    <pre>
+(84, 7)
+    </pre>
+
+    <p>
+      Suppose we did the updates serially and saved this hospital for last.
+      The prior distribution for the final update would reflect the updates from all previous hospitals, which we can compute by dividing out <c>hyper_likelihood[i]</c>.
+    </p>
+
+    <program language="python">
+      <input>
+%time hyper_i = divide(prior_hyper * hyper_likelihood_all, hyper_likelihood[i])
+hyper_i.sum()
+      </input>
+    </program>
+
+    <pre>
+CPU times: user 310 µs, sys: 147 µs, total: 457 µs
+Wall time: 342 µs
+4.3344287278716945e-17
+    </pre>
+
+    <p>
+      We can use <c>hyper_i</c> to make the prior for the last update.
+    </p>
+
+    <program language="python">
+      <input>
+prior_i = make_prior(hyper_i)
+      </input>
+    </program>
+
+    <p>
+      And then do the update.
+    </p>
+
+    <program language="python">
+      <input>
+posterior_i = update(prior_i, data)
+      </input>
+    </program>
+
+    <p>
+      And we can confirm that the results are similar to the results from PyMC.
+    </p>
+
+    <program language="python">
+      <input>
+marginal_mu = Pmf(marginal(posterior_i, 0), mus)
+marginal_sigma = Pmf(marginal(posterior_i, 1), sigmas)
+marginal_x = Pmf(marginal(posterior_i, 2), xs)
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+compare_cdf(marginal_mu, trace['mu'])
+      </input>
+    </program>
+
+    <pre>
+-2.647880881011078 -2.5956645549514694
+    </pre>
+
+    <image source="images/hospital_fig17.png" width="80%"/>
+
+    <program language="python">
+      <input>
+compare_cdf(marginal_sigma, trace['sigma'])
+      </input>
+    </program>
+
+    <pre>
+0.19272226451430124 0.18501785022543282
+    </pre>
+
+    <image source="images/hospital_fig18.png" width="80%"/>
+
+    <program language="python">
+      <input>
+compare_cdf(marginal_x, trace_xs[i])
+      </input>
+    </program>
+
+    <pre>
+0.07245354421667904 0.07224440565018131
+    </pre>
+
+    <image source="images/hospital_fig19.png" width="80%"/>
+  </section>
+
+  <section xml:id="sec-grid-hier-all-marginals">
+    <title>Compute all marginals</title>
+
+    <p>
+      The following function computes the marginals for all hospitals and stores the results in an array.
+    </p>
+
+    <program language="python">
+      <input>
+def compute_all_marginals(ns, ks):
+    shape = len(ns), len(xs)
+    marginal_xs = np.zeros(shape)
+    numerator = prior_hyper * hyper_likelihood_all
+
+    for i, data in enumerate(zip(ns, ks)):
+        hyper_i = divide(numerator, hyper_likelihood[i])
+        prior_i = make_prior(hyper_i)
+        posterior_i = update(prior_i, data)
+        marginal_xs[i] = marginal(posterior_i, 2)
+
+    return marginal_xs
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+%time marginal_xs = compute_all_marginals(data_ns, data_ks)
+      </input>
+    </program>
+
+    <pre>
+CPU times: user 184 ms, sys: 49.8 ms, total: 234 ms
+Wall time: 173 ms
+    </pre>
+
+    <p>
+      Here's what the results look like, compared to the results from PyMC.
+    </p>
+
+    <program language="python">
+      <input>
+for i, ps in enumerate(marginal_xs):
+    pmf = Pmf(ps, xs)
+    plt.figure()
+    compare_cdf(pmf, trace_xs[i])
+    decorate(title=f'Posterior marginal of x for Hospital {i}',
+             xlabel='Death rate',
+             ylabel='CDF',
+             xlim=[trace_xs[i].min(), trace_xs[i].max()])
+      </input>
+    </program>
+
+    <pre>
+0.06123636407822421 0.0617519291444324
+0.06653003152551518 0.06643868288267936
+0.07267383211481376 0.07250041300148316
+0.07245354421667904 0.07224440565018131
+0.07430385699796423 0.07433369435815212
+0.06606326919655045 0.06646020352443961
+0.07774639529896528 0.07776805141855801
+0.06788483681522386 0.06807113157490664
+0.06723306224279789 0.06735326167909643
+0.08183332535205982 0.08115900598539395
+0.07003760661997555 0.0704088595242495
+0.06136130741477605 0.06159674913422137
+0.07330826956150185 0.07297933578329886
+    </pre>
+
+    <image source="images/hospital_fig20.png" width="80%"/>
+
+    <p>
+      And here are the percentage differences between the results from the grid algorithm and PyMC. Most of them are less than 1%.
+    </p>
+
+    <program language="python">
+      <input>
+for i, ps in enumerate(marginal_xs):
+    pmf = Pmf(ps, xs)
+    diff = abs(pmf.mean() - trace_xs[i].mean()) / pmf.mean()
+    print(diff * 100)
+      </input>
+    </program>
+
+    <pre>
+0.841926319383687
+0.13730437329010417
+0.23862662568368032
+0.28865194761527047
+0.04015586995533174
+0.6008396688759207
+0.027854821447936134
+0.274427646029194
+0.17878024931315142
+0.8240155997142278
+0.5300765148763152
+0.38369736461746806
+0.44869941709241024
+    </pre>
+
+    <p>
+      The total time to do all of these computations is about 300 ms, compared to more than 10 seconds to make and run the PyMC model. And PyMC used 4 cores; I only used one.
+    </p>
+
+    <p>
+      The grid algorithm is easy to parallelize, and it's incremental. If you get data from a new hospital, or new data for an existing one, you can:
+    </p>
+
+    <ol>
+      <li><p>Compute the posterior distribution of <c>x</c> for the updated hospital, using existing <c>hyper_likelihoods</c> for the other hospitals.</p></li>
+      <li><p>Update <c>hyper_likelihoods</c> for the other hospitals, and run their updates again.</p></li>
+    </ol>
+
+    <p>
+      The total time would be about half of what it takes to start from scratch, and it's easy to parallelize.
+    </p>
+
+    <p>
+      One drawback of the grid algorithm is that it generates marginal distributions for each hospital rather than a sample from the joint distribution of all of them. So it's less easy to see the correlations among them.
+    </p>
+
+    <p>
+      The other drawback, in general, is that it takes more work to set up the grid algorithm. If we switch to another parameterization, it's easier to change the PyMC model.
+    </p>
+  </section>
+
+</appendix>

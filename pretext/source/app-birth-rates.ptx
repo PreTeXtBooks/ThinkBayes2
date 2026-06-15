@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appendix xml:id="app-birth-rates" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <title>Comparing Birth Rates</title>
+
+  <p>
+    Here's an exercise that was in a draft of <em>Think Bayes</em>, but I ended up cutting it.
+  </p>
+
+  <exercise>
+    <statement>
+      <p>
+        Two doctors fresh out of medical school are arguing about whose hospital delivers more babies. The first doctor says, "I've been at Hospital A for one week, and already we've had a day when we delivered 19 babies."
+      </p>
+      <p>
+        The second doctor says, "I've been at Hospital B for two weeks, and already there's been a 20-baby day."
+      </p>
+      <p>
+        Which hospital do you think delivers more babies on average? You can assume that the number of babies born in a day is well modeled by a <url href="https://en.wikipedia.org/wiki/Poisson_distribution">Poisson distribution</url> with parameter <m>\lambda</m>, which is the Greek letter pronounced "lambda".
+      </p>
+      <p>
+        The following function computes the PMF of a Poisson distribution with parameter <c>lam</c> over a range of integers, <c>qs</c>:
+      </p>
+
+      <program language="python">
+        <input>
+from empiricaldist import Pmf
+from scipy.stats import poisson
+
+def make_poisson_pmf(lam, qs):
+    """Make a PMF of a Poisson distribution.
+
+    lam: event rate
+    qs: sequence of values for `k`
+
+    returns: Pmf
+    """
+    ps = poisson(lam).pmf(qs)
+    pmf = Pmf(ps, qs)
+    pmf.normalize()
+    return pmf
+        </input>
+      </program>
+
+      <p>
+        For example, if the actual value of <m>\lambda</m> is 8, we can compute the distribution of babies born in a single day like this:
+      </p>
+
+      <program language="python">
+        <input>
+import numpy as np
+
+lam = 8
+qs = np.arange(24)
+pmf = make_poisson_pmf(lam, qs)
+        </input>
+      </program>
+
+      <p>
+        And here's what it looks like.
+      </p>
+
+      <program language="python">
+        <input>
+from utils import decorate
+
+pmf.bar(alpha=0.7)
+decorate(xlabel='Number of babies',
+         ylabel='PMF',
+         title='Distribution of babies in a single day')
+        </input>
+      </program>
+
+      <image source="images/birth_rates_fig0.png" width="80%"/>
+
+      <p>
+        The mean of this distribution is the parameter, <m>\lambda</m>.
+      </p>
+
+      <program language="python">
+        <input>
+pmf.mean()
+        </input>
+      </program>
+
+      <pre>
+7.999938721091352
+      </pre>
+
+      <p>
+        And here's what the distributions look like for the maximum number of babies after one week or two weeks.
+      </p>
+
+      <program language="python">
+        <input>
+pmf_max1 = pmf.max_dist(7)
+pmf_max1.bar(label='one week', align='edge', width=-0.45)
+
+pmf_max2 = pmf.max_dist(2 * 7)
+pmf_max2.bar(label='two weeks', align='edge', width=0.45)
+
+decorate(xlabel='Number of babies',
+         xlim=[5, 22],
+         ylabel='PMF',
+         title='Distribution of maximum babies in one day')
+        </input>
+      </program>
+
+      <image source="images/birth_rates_fig1.png" width="80%"/>
+
+      <p>
+        Now you finish it off from there.
+      </p>
+    </statement>
+    <solution>
+      <program language="python">
+        <input>
+# Here's a prior distribution for the values of lambda
+
+hypos = np.linspace(0, 25, 101)
+prior = Pmf(1, hypos)
+        </input>
+      </program>
+
+      <program language="python">
+        <input>
+# Here's the likelihood of the data for each hypothetical
+# value of lambda, for the doctor who reported the maximum
+# number of babies in one week
+
+days = 1 * 7      # one week
+data = 19         # maximum of 19 babies
+
+likelihood1 = [make_poisson_pmf(hypo, qs).max_dist(days)(data)
+               for hypo in hypos]
+        </input>
+      </program>
+
+      <program language="python">
+        <input>
+# And here's the first posterior distribution
+
+posterior1 = prior * likelihood1
+posterior1.normalize()
+        </input>
+      </program>
+
+      <pre>
+4.201483589848796
+      </pre>
+
+      <program language="python">
+        <input>
+# Here's the likelihood for the doctor who reported the
+# maximum number of babies in two weeks.
+
+days = 2 * 7
+data = 20
+
+likelihood2 = [make_poisson_pmf(hypo, qs).max_dist(days)(data)
+               for hypo in hypos]
+        </input>
+      </program>
+
+      <program language="python">
+        <input>
+# And here's the second posterior
+
+posterior2 = prior * likelihood2
+posterior2.normalize()
+        </input>
+      </program>
+
+      <pre>
+4.259983296308155
+      </pre>
+
+      <program language="python">
+        <input>
+# And here's what the two posterior distributions look like
+
+posterior1.plot(label='A, one week, 19 babies max')
+posterior2.plot(label='B, two weeks, 20 babies max')
+
+decorate(xlabel='Average babies per day (lambda)',
+         ylabel='PDF',
+         title='Posterior distribution of the parameter lambda')
+        </input>
+      </program>
+
+      <image source="images/birth_rates_fig2.png" width="80%"/>
+
+      <program language="python">
+        <input>
+# The posterior mean is a little higher for hospital A,
+# based on one week of data and a slightly lower maximum
+
+posterior1.mean(), posterior2.mean()
+        </input>
+      </program>
+
+      <pre>
+(14.794330239819137, 14.327038448986379)
+      </pre>
+
+      <program language="python">
+        <input>
+# And here's the probability that the birth rate is
+# higher in Hospital A
+
+posterior1.gt_dist(posterior2) + posterior1.eq_dist(posterior2) / 2
+        </input>
+      </program>
+
+      <pre>
+0.5511810168369614
+      </pre>
+    </solution>
+  </exercise>
+
+</appendix>

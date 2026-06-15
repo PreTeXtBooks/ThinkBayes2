@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appendix xml:id="app-bayes-dice" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <title>Bayesian Dice</title>
+
+  <introduction>
+    <p>
+      I've been enjoying Aubrey Clayton's new book <url href="https://aubreyclayton.com/bernoulli"><em>Bernoulli's Fallacy</em></url>. Chapter 1, which is about the historical development of competing definitions of probability, is worth the price of admission alone.
+    </p>
+
+    <p>
+      One of the examples in the first chapter is a simplified version of a problem posed by Thomas Bayes. The original version, <url href="https://allendowney.blogspot.com/2015/06/bayesian-billiards.html">which I wrote about here</url>, involves a billiards (pool) table; Clayton's version uses dice:
+    </p>
+
+    <blockquote>
+      <p>
+        Your friend rolls a six-sided die and secretly records the outcome; this number becomes the target <em>T</em>. You then put on a blindfold and roll the same six-sided die over and over. You're unable to see how it lands, so each time your friend [...] tells you <em>only</em> whether the number you just rolled was greater than, equal to, or less than <em>T</em>.
+      </p>
+      <p>
+        Suppose in one round of the game we had this sequence of outcomes, with G representing a greater roll, L a lesser roll, and E an equal roll:
+      </p>
+      <p>
+        G, G, L, E, L, L, L, E, G, L
+      </p>
+    </blockquote>
+
+    <p>
+      Based on this data, what is the posterior distribution of <em>T</em>?
+    </p>
+  </introduction>
+
+  <section xml:id="sec-dice-likelihoods">
+    <title>Computing likelihoods</title>
+
+    <p>
+      There are two parts of my solution; computing the likelihood of the data under each hypothesis and then using those likelihoods to compute the posterior distribution of <em>T</em>.
+    </p>
+
+    <p>
+      To compute the likelihoods, I'll demonstrate one of my favorite idioms, using a meshgrid to apply an operation, like <c>&gt;</c>, to all pairs of values from two sequences.
+    </p>
+
+    <p>
+      In this case, the sequences are:
+    </p>
+
+    <ul>
+      <li><p><c>hypos</c>: The hypothetical values of <em>T</em>, and</p></li>
+      <li><p><c>outcomes</c>: possible outcomes each time we roll the dice.</p></li>
+    </ul>
+
+    <program language="python">
+      <input>
+hypos = [1,2,3,4,5,6]
+outcomes = [1,2,3,4,5,6]
+      </input>
+    </program>
+
+    <p>
+      If we compute a meshgrid of <c>outcomes</c> and <c>hypos</c>, the result is two arrays.
+    </p>
+
+    <program language="python">
+      <input>
+import numpy as np
+
+O, H = np.meshgrid(outcomes, hypos)
+      </input>
+    </program>
+
+    <p>
+      The first contains the possible outcomes repeated down the columns.
+    </p>
+
+    <program language="python">
+      <input>
+O
+      </input>
+    </program>
+
+    <pre>
+array([[1, 2, 3, 4, 5, 6],
+       [1, 2, 3, 4, 5, 6],
+       [1, 2, 3, 4, 5, 6],
+       [1, 2, 3, 4, 5, 6],
+       [1, 2, 3, 4, 5, 6],
+       [1, 2, 3, 4, 5, 6]])
+    </pre>
+
+    <p>
+      The second contains the hypotheses repeated across the rows.
+    </p>
+
+    <program language="python">
+      <input>
+H
+      </input>
+    </program>
+
+    <pre>
+array([[1, 1, 1, 1, 1, 1],
+       [2, 2, 2, 2, 2, 2],
+       [3, 3, 3, 3, 3, 3],
+       [4, 4, 4, 4, 4, 4],
+       [5, 5, 5, 5, 5, 5],
+       [6, 6, 6, 6, 6, 6]])
+    </pre>
+
+    <p>
+      If we apply an operator like <c>&gt;</c>, the result is a Boolean array.
+    </p>
+
+    <program language="python">
+      <input>
+O &gt; H
+      </input>
+    </program>
+
+    <pre>
+array([[False,  True,  True,  True,  True,  True],
+       [False, False,  True,  True,  True,  True],
+       [False, False, False,  True,  True,  True],
+       [False, False, False, False,  True,  True],
+       [False, False, False, False, False,  True],
+       [False, False, False, False, False, False]])
+    </pre>
+
+    <p>
+      Now we can use <c>mean</c> with <c>axis=1</c> to compute the fraction of <c>True</c> values in each row.
+    </p>
+
+    <program language="python">
+      <input>
+(O &gt; H).mean(axis=1)
+      </input>
+    </program>
+
+    <pre>
+array([0.83333333, 0.66666667, 0.5       , 0.33333333, 0.16666667,
+       0.        ])
+    </pre>
+
+    <p>
+      The result is the probability that the outcome is greater than <em>T</em>, for each hypothetical value of <em>T</em>.
+      I'll name this array <c>gt</c>:
+    </p>
+
+    <program language="python">
+      <input>
+gt = (O &gt; H).mean(axis=1)
+gt
+      </input>
+    </program>
+
+    <pre>
+array([0.83333333, 0.66666667, 0.5       , 0.33333333, 0.16666667,
+       0.        ])
+    </pre>
+
+    <p>
+      The first element of the array is 5/6, which indicates that if <em>T</em> is 1, the probability of exceeding it is 5/6.
+      The second element is 2/3, which indicates that if <em>T</em> is 2, the probability of exceeding it is 2/3.
+      And so on.
+    </p>
+
+    <p>
+      Now we can compute the corresponding arrays for less than and equal.
+    </p>
+
+    <program language="python">
+      <input>
+lt = (O &lt; H).mean(axis=1)
+lt
+      </input>
+    </program>
+
+    <pre>
+array([0.        , 0.16666667, 0.33333333, 0.5       , 0.66666667,
+       0.83333333])
+    </pre>
+
+    <program language="python">
+      <input>
+eq = (O == H).mean(axis=1)
+eq
+      </input>
+    </program>
+
+    <pre>
+array([0.16666667, 0.16666667, 0.16666667, 0.16666667, 0.16666667,
+       0.16666667])
+    </pre>
+
+    <p>
+      In the next section, we'll use these arrays to do a Bayesian update.
+    </p>
+  </section>
+
+  <section xml:id="sec-dice-update">
+    <title>The Update</title>
+
+    <p>
+      In this example, computing the likelihoods was the hard part. The Bayesian update is easy.
+      Since <em>T</em> was chosen by rolling a fair die, the prior distribution for <em>T</em> is uniform.
+      I'll use a Pandas <c>Series</c> to represent it.
+    </p>
+
+    <program language="python">
+      <input>
+import pandas as pd
+
+pmf = pd.Series(1/6, hypos)
+pmf
+      </input>
+    </program>
+
+    <pre>
+1    0.166667
+2    0.166667
+3    0.166667
+4    0.166667
+5    0.166667
+6    0.166667
+dtype: float64
+    </pre>
+
+    <p>
+      Now here's the sequence of data, encoded using the likelihoods we computed in the previous section.
+    </p>
+
+    <program language="python">
+      <input>
+data = [gt, gt, lt, eq, lt, lt, lt, eq, gt, lt]
+      </input>
+    </program>
+
+    <p>
+      The following loop updates the prior distribution by multiplying by each of the likelihoods.
+    </p>
+
+    <program language="python">
+      <input>
+for datum in data:
+    pmf *= datum
+      </input>
+    </program>
+
+    <p>
+      Finally, we normalize the posterior.
+    </p>
+
+    <program language="python">
+      <input>
+pmf /= pmf.sum()
+pmf
+      </input>
+    </program>
+
+    <pre>
+1    0.000000
+2    0.016427
+3    0.221766
+4    0.498973
+5    0.262834
+6    0.000000
+dtype: float64
+    </pre>
+
+    <p>
+      Here's what it looks like.
+    </p>
+
+    <program language="python">
+      <input>
+pmf.plot.bar(xlabel='Target value',
+             ylabel='PMF',
+             title='Posterior distribution of $T$');
+      </input>
+    </program>
+
+    <image source="images/bayes_dice_fig0.png" width="80%"/>
+
+    <p>
+      As an aside, you might have noticed that the values in <c>eq</c> are all the same.
+      So when the value we roll is equal to <m>T</m>, we don't get any new information about <em>T</em>.
+      We could leave the instances of <c>eq</c> out of the data, and we would get the same answer.
+    </p>
+  </section>
+
+</appendix>

@@ -1,0 +1,399 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appendix xml:id="app-bookstore" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <title>How Many Books?</title>
+
+  <introduction>
+    <p>
+      Suppose you are the author of a book like <em>Probably Overthinking It</em>, and when you visit a local bookstore, like Newtonville Books in Newton, MA, you see that they have two copies of your book on display.
+    </p>
+
+    <p>
+      Is it good that they have only a few copies, because it suggests they started with more and sold some? Or is it bad because it suggests they only keep a small number in stock, and they have not sold. More generally, what number of books would you like to see?
+    </p>
+
+    <p>
+      To answer these questions, we have to make some modeling decisions. To keep it simple, I'll assume:
+    </p>
+
+    <ul>
+      <li><p>The bookstore orders books on some regular cycle of unknown duration.</p></li>
+      <li><p>At the beginning of every cycle, they start with <c>k</c> books.</p></li>
+      <li><p>People buy the book at a rate of <m>\lambda</m> books per cycle.</p></li>
+      <li><p>When you visit the store, you arrive at a random time <c>t</c> during the cycle.</p></li>
+    </ul>
+
+    <p>
+      We'll start by defining prior distributions for these parameters, and then we'll update it with the observed data. Here are some libraries we'll need.
+    </p>
+
+    <program language="python">
+      <input>
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+from empiricaldist import Pmf
+from utils import decorate
+      </input>
+    </program>
+  </introduction>
+
+  <section xml:id="sec-bookstore-priors">
+    <title>Priors</title>
+
+    <p>
+      For some books, the store only keeps one copy in stock. For others it might keep as many as ten. If we would be equally unsurprised by any value in this range, the prior distribution of <c>k</c> is uniform between <c>1</c> and <c>10</c>.
+    </p>
+
+    <program language="python">
+      <input>
+ks = np.arange(1, 11)
+prior_k = Pmf(1, ks)
+prior_k.normalize()
+prior_k.index.name = 'k'
+      </input>
+    </program>
+
+    <p>
+      If we arrive at a random point in the cycle, the prior distribution of <c>t</c> is uniform between <c>0</c> and <c>1</c>, measured in cycles.
+    </p>
+
+    <program language="python">
+      <input>
+ts = np.linspace(0, 1, 21)
+prior_t = Pmf(1, ts)
+prior_t.normalize()
+prior_t.index.name = 't'
+      </input>
+    </program>
+
+    <p>
+      Now let's figure the book-buying rate is probably between <c>2</c> and <c>3</c> copies per cycle, but it could be substantially higher -- with low probability.
+      We can choose a lognormal distribution that has a mean and shape that seem reasonable.
+    </p>
+
+    <program language="python">
+      <input>
+from scipy.stats import norm
+
+λs = np.linspace(0.01, 20, 50)
+qs = np.log(λs)
+
+mu, sigma = 0.3, 0.7
+ps = norm.pdf(qs, mu, sigma)
+
+prior_λ = Pmf(ps, λs)
+prior_λ.normalize()
+prior_λ.index.name = 'λ'
+
+prior_λ.mean()
+      </input>
+    </program>
+
+    <pre>
+2.7952013319456332
+    </pre>
+
+    <p>
+      Here's what it looks like.
+    </p>
+
+    <program language="python">
+      <input>
+prior_λ.plot()
+decorate(xlabel='Book selling rate',
+        ylabel='PMF',
+        title='Prior')
+      </input>
+    </program>
+
+    <image source="images/bookstore_fig0.png" width="80%"/>
+
+    <p>
+      To form the joint prior distribution, I'll use <c>meshgrid</c> with the <c>ij</c> indexing order, which makes the order of the dimensions the same as the order of the arguments: <c>k</c>, <m>\lambda</m>, <c>t</c>.
+    </p>
+
+    <program language="python">
+      <input>
+def meshgrid(*args, **options):
+    if 'indexing' not in options:
+        options['indexing'] = 'ij'
+    return np.meshgrid(*args, **options)
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+PK, Pλ, PT = meshgrid(prior_k, prior_λ, prior_t)
+prior = PK * Pλ * PT
+prior.shape
+      </input>
+    </program>
+
+    <pre>
+(10, 50, 21)
+    </pre>
+  </section>
+
+  <section xml:id="sec-bookstore-update">
+    <title>The update</title>
+
+    <p>
+      Now for the update, we have to handle two cases:
+    </p>
+
+    <ul>
+      <li><p>If we observe at least one book, <c>n</c>, the probability of the data is the probability of selling <c>k-n</c> books at rate <m>\lambda</m> over period <c>t</c>, which is given by the Poisson PMF.</p></li>
+      <li><p>If there are no copies left, we have to add in the probability that the number of books sold in this period could have exceeded <c>k</c>, which is given by the Poisson survival function.</p></li>
+    </ul>
+
+    <p>
+      The following function computes the probability of the data for all values of the parameters, multiplies by the prior, and normalizes the result.
+    </p>
+
+    <program language="python">
+      <input>
+from scipy.stats import poisson
+
+def update(prior, n):
+    K, λ, T = meshgrid(ks, λs, ts)
+
+    like = poisson(mu=λ*T).pmf(K-n)
+    if n == 0:
+        like += poisson(mu=λ*T).sf(K)
+
+    posterior = prior * like
+    posterior /= posterior.sum()
+
+    return posterior
+      </input>
+    </program>
+
+    <p>
+      As an example, we'll do an update with the hypothetically observed <c>2</c> books.
+    </p>
+
+    <program language="python">
+      <input>
+n = 2
+posterior = update(prior, n)
+      </input>
+    </program>
+
+    <p>
+      From the joint posterior, we can extract the marginal distributions of <c>k</c> and <m>\lambda</m>, and compute their means.
+    </p>
+
+    <program language="python">
+      <input>
+posterior_k = Pmf(posterior.sum(axis=(1, 2)), ks)
+posterior_λ = Pmf(posterior.sum(axis=(0, 2)), λs)
+
+posterior_k.mean(), posterior_λ.mean()
+      </input>
+    </program>
+
+    <pre>
+(3.294088962095148, 2.720709517121936)
+    </pre>
+
+    <p>
+      Seeing two books suggests that the store starts each cycle with 3-4 books and sells 2-3 per cycle. Here's the posterior distribution of <c>k</c> compared to its prior.
+    </p>
+
+    <program language="python">
+      <input>
+prior_k.plot(label=f'prior', color='gray')
+posterior_k.plot(label=f'n = {n}')
+decorate(xlabel='Number of books, k',
+         ylabel='PMF',
+         title='Posterior distribution of k')
+      </input>
+    </program>
+
+    <image source="images/bookstore_fig1.png" width="80%"/>
+
+    <p>
+      And here's the posterior distribution of <m>\lambda</m>.
+    </p>
+
+    <program language="python">
+      <input>
+prior_λ.plot(label='prior', color='gray')
+posterior_λ.plot(label=f'n = {n}')
+decorate(xlabel='Book-selling rate, λ',
+         ylabel='PMF',
+         title='Posterior distribution of λ')
+      </input>
+    </program>
+
+    <image source="images/bookstore_fig2.png" width="80%"/>
+
+    <p>
+      Seeing two books doesn't provide much information about the book-selling rate.
+    </p>
+  </section>
+
+  <section xml:id="sec-bookstore-optimization">
+    <title>Optimization</title>
+
+    <p>
+      Now let's consider the more general question, "What number of books would you most like to see?" There are two ways we might answer:
+    </p>
+
+    <ul>
+      <li><p>One answer might be the observation that leads to the highest estimate of <m>\lambda</m>. But if the book-selling rate is high, relative to <c>k</c>, the book will sometimes be out of stock, leading to lost sales.</p></li>
+      <li><p>So an alternative is to choose the observation that implies the highest number of books sold per cycle.</p></li>
+    </ul>
+
+    <p>
+      To compute the second one, we'll need the following function, which makes a <c>Pmf</c> that represents the distribution of books sold during one cycle with rate <m>\lambda</m> and upper bound <c>k</c>.
+    </p>
+
+    <program language="python">
+      <input>
+def make_poisson(λ, k):
+    """Make a truncated Poisson distribution.
+    """
+    qs = np.arange(k+1)
+    ps = poisson.pmf(qs, λ)
+    pmf = Pmf(ps, qs)
+
+    # assign the total probability mass above `k` to `k`.
+    pmf[k] += poisson.sf(k, λ)
+    return pmf
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+pmf = make_poisson(5, 10)
+pmf.bar()
+      </input>
+    </program>
+
+    <image source="images/bookstore_fig3.png" width="80%"/>
+
+    <p>
+      Now if we are given a posterior distribution, we can compute the expected sales for each pair of parameters and make a Pmf that maps from each expectation to its probability.
+    </p>
+
+    <program language="python">
+      <input>
+def compute_sales(posterior):
+    """Expected number of books sold per cycle.
+
+    posterior: array of posterior probabilities for k, λ, t
+    """
+    # make the marginal joint posterior of k, λ
+    posterior_joint = pd.DataFrame(posterior.sum(axis=2),
+                                   index=ks, columns=λs)
+
+    res = []
+    for (k, lam), p in posterior_joint.stack().items():
+        exp_sales = make_poisson(lam, k).mean()
+        res.append((p, exp_sales))
+
+    ps, qs = np.transpose(res)
+    pmf = Pmf(ps, qs)
+    return pmf.mean()
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+compute_sales(posterior)
+      </input>
+    </program>
+
+    <pre>
+2.0364396231583672
+    </pre>
+
+    <p>
+      Finally, let's loop over possible values of <c>n</c> and compute for each one the posterior mean values of <c>k</c> and <m>\lambda</m>.
+    </p>
+
+    <program language="python">
+      <input>
+res = []
+
+for n in range(11):
+    posterior = update(prior, n)
+    posterior_k = Pmf(posterior.sum(axis=(1, 2)), ks)
+    posterior_λ = Pmf(posterior.sum(axis=(0, 2)), λs)
+
+    k, λ = posterior_k.mean(), posterior_λ.mean()
+    sales = compute_sales(posterior)
+    res.append((n, k, λ, sales))
+
+df = pd.DataFrame(res, columns=['n', 'mean k', 'mean λ', 'exp sales'])
+df
+      </input>
+    </program>
+
+    <pre>
+     n     mean k    mean λ  exp sales
+0    0   2.409571  4.361937   2.025360
+1    1   2.322331  2.740616   1.643844
+2    2   3.294089  2.720710   2.036440
+3    3   4.254728  2.693604   2.269578
+4    4   5.199590  2.656726   2.393205
+5    5   6.122093  2.606749   2.441859
+6    6   7.013147  2.539618   2.435680
+7    7   7.860703  2.450961   2.384995
+8    8   8.649959  2.337343   2.295145
+9    9   9.365430  2.199540   2.172083
+10  10  10.000000  2.056530   2.037294
+    </pre>
+
+    <p>
+      Here's the implied sales rate as a function of the observed number of books.
+      By this metric, the best number of books to see is <c>0</c>.
+    </p>
+
+    <program language="python">
+      <input>
+df['mean λ'].plot()
+decorate(xlabel='Observed number of books',
+         ylabel='Average sales rate')
+      </input>
+    </program>
+
+    <image source="images/bookstore_fig4.png" width="80%"/>
+
+    <p>
+      And here's the implied number of books sold per cycle.
+    </p>
+
+    <program language="python">
+      <input>
+df['exp sales'].plot()
+decorate(xlabel='Observed number of books',
+         ylabel='Expected sales')
+df['exp sales'].argmax()
+      </input>
+    </program>
+
+    <pre>
+5
+    </pre>
+
+    <image source="images/bookstore_fig5.png" width="80%"/>
+
+    <p>
+      This result is a little more interesting.
+      Seeing <c>0</c> books is still good, but the optimal value is around <c>5</c>.
+    </p>
+
+    <p>
+      Now, we should not take this value too seriously, as it is based on a very small amount of data and a lot of assumptions -- both in the model and in the priors.
+      But it is interesting that the optimal point is neither many nor none.
+    </p>
+
+    <p>
+      Thanks to Aubrey Clayton for <url href="https://twitter.com/aubreyclayton/status/1735467931490734251">this tweet</url>, which gave me the idea for this article.
+    </p>
+  </section>
+
+</appendix>
