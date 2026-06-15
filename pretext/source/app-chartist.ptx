@@ -1,0 +1,776 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appendix xml:id="app-chartist" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <title>What's a Chartist?</title>
+
+  <introduction>
+    <p>
+      Recently I heard the word "chartist" for the first time in my life (that I recall).
+      And then later the same day, I heard it again.
+      So that raises two questions:
+    </p>
+
+    <ul>
+      <li><p>What are the chances of going 57 years without hearing a word, and then hearing it twice in one day?</p></li>
+      <li><p>Also, what's a chartist?</p></li>
+    </ul>
+
+    <p>
+      To answer the second question first, it's someone who supported chartism, which was "a working-class movement for political reform in the United Kingdom that erupted from 1838 to 1857", quoth <url href="https://en.wikipedia.org/wiki/Chartism">Wikipedia</url>. The name comes from the People's Charter of 1838, which called for voting rights for unpropertied men, among other reforms.
+    </p>
+
+    <p>
+      To answer the first question, we'll do some Bayesian statistics.
+      My solution is based on a model that's not very realistic, so we should not take the result too seriously, but it demonstrates some interesting methods, I think.
+      And as you'll see, there is a connection to Zipf's law, <url href="https://www.allendowney.com/blog/2024/11/10/zipfs-law/">which I wrote about last week</url>.
+    </p>
+
+    <p>
+      Since last week's post was at the beginner level, I should warn you that this one is more advanced -- in rapid succession, it involves the beta distribution, the <m>t</m> distribution, the negative binomial, and the binomial.
+    </p>
+
+    <program language="python">
+      <input>
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+from empiricaldist import Pmf
+from utils import decorate
+
+plt.rcParams["figure.dpi"] = 75
+plt.rcParams["figure.figsize"] = [6, 3.5]
+      </input>
+    </program>
+  </introduction>
+
+  <section xml:id="sec-chartist-word-freq">
+    <title>Word Frequencies</title>
+
+    <p>
+      If you don't hear a word for more than 50 years, that suggests it is not a common word.
+      We can use Bayes's theorem to quantify this intuition.
+      First we'll compute the posterior distribution of the word's frequency, then the posterior predictive distribution of hearing it again within a day.
+    </p>
+
+    <p>
+      Because we have only one piece of data -- the time until first appearance -- we'll need a good prior distribution.
+      Which means we'll need a large, good quality sample of English text.
+      For that, I'll use a free sample of the COCA dataset from <url href="https://www.corpusdata.org/formats.asp">CorpusData.org</url>. The following cells download and read the data.
+    </p>
+
+    <program language="python">
+      <input>
+from os.path import basename, exists
+
+def download(url):
+    filename = basename(url)
+    if not exists(filename):
+        from urllib.request import urlretrieve
+        local, _ = urlretrieve(url, filename)
+        print("Downloaded " + local)
+
+download("https://www.corpusdata.org/coca/samples/coca-samples-text.zip")
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+import zipfile
+
+def generate_lines(zip_path="coca-samples-text.zip"):
+    with zipfile.ZipFile(zip_path, "r") as zip_file:
+        file_list = zip_file.namelist()
+        for file_name in file_list:
+            with zip_file.open(file_name) as file:
+                lines = file.readlines()
+                for line in lines:
+                    yield (line.decode("utf-8"))
+      </input>
+    </program>
+
+    <p>
+      We'll use a <c>Counter</c> to count the number of times each word appears.
+    </p>
+
+    <program language="python">
+      <input>
+import re
+from collections import Counter
+
+pattern = r"[ /\n]+|--"
+
+counter = Counter()
+for line in generate_lines():
+    words = re.split(pattern, line)[1:]
+    counter.update(word.lower() for word in words if word)
+      </input>
+    </program>
+
+    <p>
+      The dataset includes about 188,000 unique strings, but not all of them are what we would consider words.
+    </p>
+
+    <program language="python">
+      <input>
+len(counter), counter.total()
+      </input>
+    </program>
+
+    <pre>
+(188086, 11503819)
+    </pre>
+
+    <p>
+      To narrow it down, I'll remove anything that starts or ends with a non-alphabetical character -- so hyphens and apostrophes are allowed in the middle of a word.
+    </p>
+
+    <program language="python">
+      <input>
+for s in list(counter.keys()):
+    if not s[0].isalpha() or not s[-1].isalpha():
+        del counter[s]
+      </input>
+    </program>
+
+    <p>
+      This filter reduces the number of unique words to about 151,000.
+    </p>
+
+    <program language="python">
+      <input>
+num_words = counter.total()
+len(counter), num_words
+      </input>
+    </program>
+
+    <pre>
+(151414, 8889694)
+    </pre>
+
+    <p>
+      The most common words are what you would expect, with the exception of "n't", which is there because the COCA corpus treats it as a separate word.
+    </p>
+
+    <p>
+      Of the 50 most common words, all of them have one syllable except number 38.
+      Before you look at the list, can you guess the most common two-syllable word?
+      Here's a theory about <url href="https://news.mit.edu/2011/words-count-0210">why common words are short</url>.
+    </p>
+
+    <program language="python">
+      <input>
+for i, (word, freq) in enumerate(counter.most_common(50)):
+    print(f'{i+1}\t{word}\t{freq}')
+      </input>
+    </program>
+
+    <pre>
+1	the	461991
+2	to	237929
+3	and	231459
+4	of	217363
+5	a	203302
+6	in	153323
+7	i	137931
+8	that	123818
+9	you	109635
+10	it	103712
+11	is	93996
+12	for	78755
+13	on	64869
+14	was	64388
+15	with	59724
+16	he	57684
+17	this	51879
+18	as	51202
+19	n't	49291
+20	we	47694
+21	are	47192
+22	have	46963
+23	be	46563
+24	not	43872
+25	but	42434
+26	they	42411
+27	at	42017
+28	do	41568
+29	what	35637
+30	from	34557
+31	his	33578
+32	by	32583
+33	or	32146
+34	she	29945
+35	all	29391
+36	my	29390
+37	an	28580
+38	about	27804
+39	there	27291
+40	so	27081
+41	her	26363
+42	one	26022
+43	had	25656
+44	if	25373
+45	your	24641
+46	me	24551
+47	who	23500
+48	can	23311
+49	their	23221
+50	out	22902
+    </pre>
+
+    <p>
+      There are about 72,000 words that only appear once in the corpus, technically known as <url href="https://en.wikipedia.org/wiki/Hapax_legomenon">hapax legomena</url>.
+    </p>
+
+    <program language="python">
+      <input>
+singletons = [word for (word, freq) in counter.items() if freq == 1]
+len(singletons), len(singletons) / counter.total() * 100
+      </input>
+    </program>
+
+    <pre>
+(72159, 0.811715228893143)
+    </pre>
+
+    <p>
+      Here's a random selection of them. Many are proper names, typos, or other non-words, but some are legitimate but rare words.
+    </p>
+
+    <program language="python">
+      <input>
+np.random.choice(singletons, 100)
+      </input>
+    </program>
+
+    <pre>
+array(['laneer', 'emc', 'literature-like', 'tomyworld', 'roald',
+       'unreleased', 'basemen', 'kielhau', 'clobber', 'feydeau',
+       'symptomless', 'channelmaster', 'v-i', 'tipsha', 'mjlkdroppen',
+       'harlots', 'phaetons', 'grlinger', 'naniwa', 'dadian',
+       'banafionen', 'ceramaseal', 'vine-covered', 'terrafirmahome.com',
+       'hesten', 'undertheorized', 'fantastycznie', 'kaido', 'noughts',
+       'hannelie', 'cacoa', 'subelement', 'mestothelioma', 'gut-level',
+       'abis', 'potterville', 'quarter-to-quarter', 'lokkii', 'telemed',
+       'whitewood', 'dualmode', 'plebiscites', 'loubrutton',
+       'off-loading', 'abbot-t-t', 'whackaloons', 'tuinal', 'guyi',
+       'samanthalaughs', 'editor-sponsored', 'neurosciences', 'lunched',
+       'chicken-and-brisket', 'korekane', 'ruby-colored',
+       'double-elimination', 'cornhusker', 'wjounds', 'mendy', 'red.ooh',
+       'delighters', 'tuviera', 'spot-lit', 'tuskarr', 'easy-many',
+       'timepoint', 'mouthfuls', 'catchy-titled', 'b.l', 'four-ply',
+       "sa'ud", 'millenarianism', 'gelder', 'cinnam',
+       'documentary-filmmaking', 'huviesen', 'by-gone', 'boy-friend',
+       'heartlight', 'farecompare.com', 'nurya', 'overstaying',
+       'johnny-turn', 'rashness', 'mestier', 'trivedi', 'koshanska',
+       'tremulousness', 'movies-another', 'womenfolks', 'bawdy',
+       'all-her-life', 'lakhani', 'screeeeaming', 'marketings', 'girthy',
+       'non-discriminatory', 'chumpy', 'resque', 'lysing'], dtype='&lt;U24')
+    </pre>
+  </section>
+
+  <section xml:id="sec-chartist-zipf">
+    <title>Zipf's Law</title>
+
+    <p>
+      One way to visualize the distribution is a Zipf plot, which shows the ranks on the x-axis and the frequencies on the y-axis.
+    </p>
+
+    <program language="python">
+      <input>
+freqs = np.array(sorted(counter.values(), reverse=True))
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+n = len(freqs)
+ranks = range(1, n + 1)
+      </input>
+    </program>
+
+    <p>
+      Here's what it looks like on a log-log scale.
+    </p>
+
+    <program language="python">
+      <input>
+plt.plot(ranks, freqs)
+
+decorate(
+    title="Zipf plot", xlabel="Rank", ylabel="Frequency", xscale="log", yscale="log"
+)
+      </input>
+    </program>
+
+    <image source="images/chartist_fig0.png" width="80%"/>
+
+    <p>
+      Zipf's law suggest that the result should be a straight line with slope close to -1.
+      It's not exactly a straight line, but it's close, and the slope is about -1.1.
+    </p>
+
+    <program language="python">
+      <input>
+rise = np.log10(freqs[-1]) - np.log10(freqs[0])
+rise
+      </input>
+    </program>
+
+    <pre>
+-5.664633515191604
+    </pre>
+
+    <program language="python">
+      <input>
+run = np.log10(ranks[-1]) - np.log10(ranks[0])
+run
+      </input>
+    </program>
+
+    <pre>
+5.180166032638616
+    </pre>
+
+    <program language="python">
+      <input>
+rise / run
+      </input>
+    </program>
+
+    <pre>
+-1.0935235433575892
+    </pre>
+
+    <p>
+      The Zipf plot is a well-known visual representation of the distribution of frequencies, but for the current problem, we'll switch to a different representation.
+    </p>
+  </section>
+
+  <section xml:id="sec-chartist-tail">
+    <title>Tail Distribution</title>
+
+    <p>
+      Given the number of times each word appear in the corpus, we can compute the rates, which is the number of times we expect each word to appear in a sample of a given size, and the inverse rates, which are the number of words we need to see before we expect a given word to appear.
+    </p>
+
+    <p>
+      We will find it most convenient to work with the distribution of inverse rates on a log scale.
+      The first step is to use the observed frequencies to estimate word rates -- we'll estimate the rate at which each word would appear in a random sample.
+    </p>
+
+    <p>
+      We'll do that by creating a beta distribution that represents the posterior distribution of word rates, given the observed frequencies (see <url href="https://allendowney.github.io/ThinkBayes2/chap18.html#the-conjugate-prior">this section of <em>Think Bayes</em></url>) -- and then drawing a random sample from the posterior.
+      So words that have the same frequency will not generally have the same inferred rate.
+    </p>
+
+    <program language="python">
+      <input>
+from scipy.stats import beta
+
+np.random.seed(17)
+alphas = freqs + 1
+betas = num_words - freqs + 1
+inferred_rates = beta(alphas, betas).rvs()
+      </input>
+    </program>
+
+    <p>
+      Now we can compute the inverse rates, which are the number of words we have to sample before we expect to see each word once.
+    </p>
+
+    <program language="python">
+      <input>
+inverse_rates = 1 / inferred_rates
+      </input>
+    </program>
+
+    <p>
+      And here are their magnitudes, expressed as logarithms base 10.
+    </p>
+
+    <program language="python">
+      <input>
+mags = np.log10(inverse_rates)
+      </input>
+    </program>
+
+    <p>
+      To represent the distribution of these magnitudes, we'll use a <c>Surv</c> object, which represents survival functions, but we'll use a variation of the survival function which is the probability that a randomly-chosen value is greater than or equal to a given quantity.
+      The following function computes this version of a survival function, which is called a tail probability.
+    </p>
+
+    <program language="python">
+      <input>
+from empiricaldist import Surv
+
+def make_surv(seq):
+    """Make a non-standard survival function, P(X>=x)"""
+    pmf = Pmf.from_seq(seq)
+    surv = pmf.make_surv() + pmf
+
+    # correct for numerical error
+    surv.iloc[0] = 1
+    return Surv(surv)
+      </input>
+    </program>
+
+    <p>
+      Here's how we make the survival function.
+    </p>
+
+    <program language="python">
+      <input>
+surv = make_surv(mags)
+      </input>
+    </program>
+
+    <p>
+      And here's what it looks like.
+    </p>
+
+    <program language="python">
+      <input>
+options = dict(marker=".", ms=2, lw=0.5, label="data")
+surv.plot(**options)
+decorate(xlabel="Inverse rate (log10 words per appearance)", ylabel="Tail probability")
+      </input>
+    </program>
+
+    <image source="images/chartist_fig1.png" width="80%"/>
+
+    <p>
+      The tail distribution has the sigmoid shape that is characteristic of normal distributions and <m>t</m> distributions, although it is notably asymmetric.
+    </p>
+
+    <p>
+      And here's what the tail probabilities look like on a log-y scale.
+    </p>
+
+    <program language="python">
+      <input>
+surv.plot(**options)
+decorate(xlabel="Inverse rate (words per appearance)", yscale="log")
+      </input>
+    </program>
+
+    <image source="images/chartist_fig2.png" width="80%"/>
+
+    <p>
+      If this distribution were normal, we would expect this curve to drop off with increasing slope.
+      But for the words with the lowest frequencies -- that is, the highest inverse rates -- it is almost a straight line.
+      And that suggests that a <m>t</m> distribution might be a good model for this data.
+    </p>
+  </section>
+
+  <section xml:id="sec-chartist-fitting">
+    <title>Fitting a Model</title>
+
+    <p>
+      To estimate the frequency of rare words, we will need to model the tail behavior of this distribution and extrapolate it beyond the data.
+      So let's fit a <m>t</m> distribution and see how it looks.
+      I'll use code from <url href="https://allendowney.github.io/ProbablyOverthinkingIt/longtail.html">Chapter 8 of <em>Probably Overthinking It</em></url>, which is all about these long-tailed distributions.
+    </p>
+
+    <p>
+      The following function makes a <c>Surv</c> object that represents a <m>t</m> distribution with the given parameters.
+    </p>
+
+    <program language="python">
+      <input>
+from scipy.stats import t as t_dist
+
+def truncated_t_sf(qs, df, mu, sigma):
+    """Makes Surv object for a t distribution.
+
+    Truncated on the left, assuming all values are greater than min(qs)
+    """
+    ps = t_dist.sf(qs, df, mu, sigma)
+    surv_model = Surv(ps / ps[0], qs)
+    return surv_model
+      </input>
+    </program>
+
+    <p>
+      If we are given the <c>df</c> parameter, we can use the following function to find the values of <c>mu</c> and <c>sigma</c> that best fit the data, focusing on the central part of the distribution.
+    </p>
+
+    <program language="python">
+      <input>
+from scipy.optimize import least_squares
+
+def fit_truncated_t(df, surv):
+    """Given df, find the best values of mu and sigma."""
+    low, high = surv.qs.min(), surv.qs.max()
+    qs_model = np.linspace(low, high, 2000)
+    ps = np.linspace(0.1, 0.8, 20)
+    qs = surv.inverse(ps)
+
+    def error_func_t(params, df, surv):
+        mu, sigma = params
+        surv_model = truncated_t_sf(qs_model, df, mu, sigma)
+
+        error = surv(qs) - surv_model(qs)
+        return error
+
+    pmf = surv.make_pmf()
+    pmf.normalize()
+    params = pmf.mean(), pmf.std()
+    res = least_squares(error_func_t, x0=params, args=(df, surv), xtol=1e-3)
+    assert res.success
+    return res.x
+      </input>
+    </program>
+
+    <p>
+      But since we are not given <c>df</c>, we can use the following function to search for the value that best fits the tail of the distribution.
+    </p>
+
+    <program language="python">
+      <input>
+from scipy.optimize import minimize
+
+def minimize_df(df0, surv, bounds=[(1, 1e3)], ps=None):
+    low, high = surv.qs.min(), surv.qs.max()
+    qs_model = np.linspace(low, high * 1.2, 2000)
+
+    if ps is None:
+        t = surv.ps[0], surv.ps[-5]
+        low, high = np.log10(t)
+        ps = np.logspace(low, high, 30, endpoint=False)
+
+    qs = surv.inverse(ps)
+
+    def error_func_tail(params):
+        (df,) = params
+        mu, sigma = fit_truncated_t(df, surv)
+        surv_model = truncated_t_sf(qs_model, df, mu, sigma)
+
+        errors = np.log10(surv(qs)) - np.log10(surv_model(qs))
+        return np.sum(errors**2)
+
+    params = (df0,)
+    res = minimize(error_func_tail, x0=params, bounds=bounds, tol=1e-3, method="Powell")
+    assert res.success
+    return res.x
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+df = minimize_df(25, surv)
+df
+      </input>
+    </program>
+
+    <pre>
+array([22.52401171])
+    </pre>
+
+    <program language="python">
+      <input>
+mu, sigma = fit_truncated_t(df, surv)
+df, mu, sigma
+      </input>
+    </program>
+
+    <pre>
+(array([22.52401171]), 6.433323515095857, 0.49070837962997577)
+    </pre>
+
+    <p>
+      Here's the <m>t</m> distribution that best fits the data.
+    </p>
+
+    <program language="python">
+      <input>
+low, high = surv.qs.min(), surv.qs.max()
+qs = np.linspace(low, 10, 2000)
+surv_model = truncated_t_sf(qs, df, mu, sigma)
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+surv_model.plot(color="gray", alpha=0.4, label="model")
+surv.plot(**options)
+decorate(xlabel="Inverse rate (log10 words per appearance)", ylabel="Tail probability")
+      </input>
+    </program>
+
+    <image source="images/chartist_fig3.png" width="80%"/>
+
+    <p>
+      With the y-axis on a linear scale, we can see that the model fits the data reasonably well, except for a range between 5 and 6 -- that is for words that appear about 1 time in a million.
+    </p>
+
+    <p>
+      Here's what the model looks like on a log-y scale.
+    </p>
+
+    <program language="python">
+      <input>
+surv_model.plot(color="gray", alpha=0.4, label="model")
+surv.plot(**options)
+decorate(
+    xlabel="Inverse rate (log10 words per appearance)",
+    ylabel="Tail probability",
+    yscale="log",
+)
+      </input>
+    </program>
+
+    <image source="images/chartist_fig4.png" width="80%"/>
+
+    <p>
+      The model fits the data well in the extreme tail, which is exactly where we need it.
+      And we can use the model to extrapolate a little beyond the data, to make sure we cover the range that will turn out to be likely in the scenario where we hear a word for this first time after 50 years.
+    </p>
+  </section>
+
+  <section xml:id="sec-chartist-update">
+    <title>The Update</title>
+
+    <p>
+      The model we've developed is the distribution of inverse rates for the words that appear in the corpus and, by extrapolation, for additional rare words that didn't appear in the corpus.
+      This distribution will be the prior for the Bayesian update.
+      We just have to convert it from a survival function to a PMF (remembering that these are equivalent representations of the same distribution).
+    </p>
+
+    <program language="python">
+      <input>
+prior = surv_model.make_pmf()
+prior.plot(label="prior")
+decorate(
+    xlabel="Inverse rate (log10 words per appearance)",
+    ylabel="Density",
+)
+      </input>
+    </program>
+
+    <image source="images/chartist_fig5.png" width="80%"/>
+
+    <p>
+      To compute the likelihood of the observation, we have to transform the inverse rates to probabilities.
+    </p>
+
+    <program language="python">
+      <input>
+ps = 1 / np.power(10, prior.qs)
+      </input>
+    </program>
+
+    <p>
+      Now suppose that in a given day, you read or hear 10,000 words in a context where you would notice if you heard a word for the first time.
+      Here's the number of words you would hear in 50 years.
+    </p>
+
+    <program language="python">
+      <input>
+words_per_day = 10_000
+days = 50 * 365
+k = days * words_per_day
+k
+      </input>
+    </program>
+
+    <pre>
+182500000
+    </pre>
+
+    <p>
+      Now, what's the probability that you fail to encounter a word in <c>k</c> attempts and then encounter it on the next attempt?
+      We can answer that with the negative binomial distribution, which computes the probability of getting the <c>n</c>th success after <c>k</c> failures, for a given probability -- or in this case, for a sequence of possible probabilities.
+    </p>
+
+    <program language="python">
+      <input>
+from scipy.stats import nbinom
+
+n = 1
+likelihood = nbinom.pmf(k, n, ps)
+      </input>
+    </program>
+
+    <p>
+      With this likelihood and the prior, we can compute the posterior distribution in the usual way.
+    </p>
+
+    <program language="python">
+      <input>
+posterior = prior * likelihood
+posterior.normalize()
+      </input>
+    </program>
+
+    <pre>
+1.368245917258196e-11
+    </pre>
+
+    <p>
+      And here's what it looks like.
+    </p>
+
+    <program language="python">
+      <input>
+prior.plot(alpha=0.5, label="prior")
+posterior.plot(label="posterior")
+decorate(
+    xlabel="Inverse rate (log10 words per appearance)",
+    ylabel="Density",
+)
+      </input>
+    </program>
+
+    <image source="images/chartist_fig6.png" width="80%"/>
+
+    <p>
+      If you go 50 years without hearing a word, that suggests that it is a rare word, and the posterior distribution reflects that logic.
+    </p>
+
+    <p>
+      The posterior distribution represents a range of possible values for the inverse rate of the word you heard.
+      Now we can use it to answer the question we started with: what is the probability of hearing the same word again on the same day -- that is, within the next 10,000 words you hear?
+    </p>
+
+    <p>
+      To answer that, we can use the survival function of the <url href="https://allendowney.github.io/ThinkBayes2/chap18.html?highlight=binomial#binomial-likelihood">binomial distribution</url> to compute the probability of more than 0 successes in the next <c>n_pred</c> attempts.
+      We'll compute this probability for each of the <c>ps</c> that correspond to the inverse rates in the posterior.
+    </p>
+
+    <program language="python">
+      <input>
+from scipy.stats import binom
+
+n_pred = words_per_day
+ps_pred = binom.sf(0, n_pred, ps)
+      </input>
+    </program>
+
+    <p>
+      And we can use the probabilities in the posterior to compute the expected value -- by the law of total probability, the result is the probability of hearing the same word again within a day.
+    </p>
+
+    <program language="python">
+      <input>
+p = np.sum(posterior * ps_pred)
+p, 1 / p
+      </input>
+    </program>
+
+    <pre>
+(0.00016019406802217392, 6242.42840166579)
+    </pre>
+
+    <p>
+      The result is about 1 in 6000.
+    </p>
+
+    <p>
+      With all of the assumptions we made in this calculation, there's no reason to be more precise than that.
+      And as I mentioned at the beginning, we should probably not take this conclusion to seriously.
+      If you hear a word for the first time after 50 years, there's a good chance the word is "having a moment", which greatly increases the chance you'll hear it again.
+      I can't think of why chartism might be in the news at the moment, but maybe this post will go viral and make it happen.
+    </p>
+  </section>
+
+</appendix>

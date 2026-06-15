@@ -26,6 +26,11 @@
   <xi:include href="./app-birth-rates.ptx" />
   <xi:include href="./app-typos.ptx" />
   <xi:include href="./app-bookstore.ptx" />
+  <xi:include href="./app-cube.ptx" />
+  <xi:include href="./app-chartist.ptx" />
+  <xi:include href="./app-poincare.ptx" />
+  <xi:include href="./app-cancer.ptx" />
+  <xi:include href="./app-raven.ptx" />
 
   <appendix>
     <title>List of Symbols</title>

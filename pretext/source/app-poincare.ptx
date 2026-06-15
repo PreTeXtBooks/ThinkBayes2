@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appendix xml:id="app-poincare" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <title>The Poincaré Problem</title>
+
+  <introduction>
+    <p>
+      Selection bias is the hardest problem in statistics because it's almost unavoidable in practice, and once the data have been collected, it's usually not possible to quantify the effect of selection or recover an unbiased estimate of what you are trying to measure.
+    </p>
+
+    <p>
+      And because the effect is systematic, not random, it doesn't help to collect more data.
+      In fact, larger sample sizes make the problem worse, because they give the false impression of precision.
+    </p>
+
+    <p>
+      But sometimes, if we are willing to make assumptions about the data generating process, we can use Bayesian methods to infer the effect of selection bias and produce an unbiased estimate.
+    </p>
+
+    <p>
+      As an example, let's solve an exercise from <url href="https://allendowney.github.io/ThinkBayes2/chap07.html">Chapter 7 of <em>Think Bayes</em></url>.
+      It's based on a fictional anecdote about the mathematician Henri Poincaré:
+    </p>
+
+    <blockquote>
+      <p>
+        Supposedly Poincaré suspected that his local bakery was selling loaves of bread that were lighter than the advertised weight of 1 kg, so every day for a year he bought a loaf of bread, brought it home and weighed it.
+        At the end of the year, he plotted the distribution of his measurements and showed that it fit a normal distribution with mean 950 g and standard deviation 50 g.
+        He brought this evidence to the bread police, who gave the baker a warning.
+      </p>
+
+      <p>
+        For the next year, Poincaré continued to weigh his bread every day.
+        At the end of the year, he found that the average weight was 1000 g, just as it should be, but again he complained to the bread police, and this time they fined the baker.
+      </p>
+
+      <p>
+        Why? Because the shape of the new distribution was asymmetric.
+        Unlike the normal distribution, it was skewed to the right, which is consistent with the hypothesis that the baker was still making 950 g loaves, but deliberately giving Poincaré the heavier ones.
+      </p>
+
+      <p>
+        To see whether this anecdote is plausible, let's suppose that when the baker sees Poincaré coming, he hefts <c>k</c> loaves of bread and gives Poincaré the heaviest one.
+        How many loaves would the baker have to heft to make the average of the maximum 1000 g?
+      </p>
+    </blockquote>
+
+    <p>
+      The following function generates the maximum of <c>k</c> values from a normal distribution with the given parameters, repeated <c>n</c> times.
+    </p>
+
+    <program language="python">
+      <input>
+from scipy.stats import norm
+
+def generate_sample(mu, sigma, k, n):
+    return norm(mu, sigma).rvs((k, n)).max(axis=0)
+      </input>
+    </program>
+
+    <p>
+      Here are distributions with the same underlying normal distribution and different values of <c>k</c>.
+    </p>
+
+    <program language="python">
+      <input>
+mu_true, sigma_true = 950, 50
+
+for k in range(1, 5):
+    sample = generate_sample(mu_true, sigma_true, k, n=1000)
+    sns.kdeplot(sample, label=f'k={k}')
+
+decorate(xlabel='Weight (g)')
+      </input>
+    </program>
+
+    <image source="images/bread_fig0.png" width="80%"/>
+
+    <p>
+      As <c>k</c> increases, the mean increases and the standard deviation decreases.
+      When <c>k=4</c>, the mean is close to 1000.
+      So let's assume the baker hefted four loaves and gave the heaviest to Poincaré.
+    </p>
+
+    <program language="python">
+      <input>
+k_true = 4
+
+sample4 = generate_sample(mu_true, sigma_true, k_true, n=365)
+mean, std = sample4.mean(), sample4.std()
+mean, std
+      </input>
+    </program>
+
+    <pre>
+(1001.9175597523723, 36.27105788650583)
+    </pre>
+
+    <p>
+      At the end of one year, can we tell the difference between these hypotheses?
+    </p>
+
+    <ul>
+      <li><p>Innocent: The baker actually increased the mean to 1000, and <c>k=1</c>.</p></li>
+      <li><p>Shenanigans: The mean was still 950, but the baker selected with <c>k=4</c>.</p></li>
+    </ul>
+
+    <p>
+      Here's a sample under the <c>k=4</c> scenario, compared to 10 samples with <c>k=1</c>.
+    </p>
+
+    <program language="python">
+      <input>
+for i in range(10):
+    sample = generate_sample(mean, std, k=1, n=365)
+    sns.kdeplot(sample, color='gray', lw=0.5)
+
+sns.kdeplot(sample4, color='C3', label='k=4')
+decorate(xlabel='Weight (g)')
+      </input>
+    </program>
+
+    <image source="images/bread_fig1.png" width="80%"/>
+
+    <p>
+      The <c>k=4</c> distribution falls mostly within the range of variation we'd expect from the <c>k=1</c> distribution with the same mean and standard deviation.
+      If you were on the jury and saw this evidence, would you convict the baker?
+    </p>
+  </introduction>
+
+  <section xml:id="sec-poincare-bayesian">
+    <title>Ask a Bayesian</title>
+
+    <p>
+      As a Bayesian approach to this problem, let's see if we can use this data to estimate <c>k</c> and the parameters of the underlying distribution.
+      To compute the likelihood of the data, we have to do a little math.
+    </p>
+
+    <p>
+      Assume that <m>m</m> is the maximum of <m>k</m> draws from a distribution with CDF <m>F(x)</m>.
+      In general, the CDF of <m>m</m> is
+    </p>
+
+    <me>F_M(m) = F(m)^k</me>
+
+    <p>
+      which we can differentiate to get the PDF:
+    </p>
+
+    <me>f_M(m) = k \, f(m) \, F(m)^{k-1}</me>
+
+    <p>
+      If the draws are from a normal distribution with parameters <m>\mu</m> and <m>\sigma</m>,
+    </p>
+
+    <me>F(m) = \Phi(z)</me>
+
+    <me>f(m) = \frac{1}{\sigma} \phi(z)</me>
+
+    <p>
+      where <m>\phi</m> and <m>\Phi</m> are the standard normal PDF and CDF, and <m>z</m> is the standardized value <m>(m - \mu) / \sigma</m>.
+      Plugging in, we get the PDF of <m>m</m>:
+    </p>
+
+    <me>f_M(m) = \frac{k}{\sigma} \, \phi(z) \, \Phi(z)^{k-1}</me>
+
+    <p>
+      Here's a function that evaluates the log of this PDF at <m>m</m>.
+    </p>
+
+    <program language="python">
+      <input>
+LOG2PI = np.log(2 * np.pi)
+SQRT2 = np.sqrt(2)
+
+def max_normal_logp(m, mu, sigma, k):
+    """Evaluate the log PDF of the distribution of the max of k draws."""
+    z = (m - mu) / sigma
+    log_phi = -0.5 * (z**2 + LOG2PI)
+
+    # Use PyTensor's erfc for better numerical stability
+    # Φ(z) = 0.5 * erfc(-z/√2)
+    Phi = 0.5 * pm.math.erfc(-z / SQRT2)
+    log_Phi = pm.math.log(Phi)
+
+    return pm.math.log(k/sigma) + log_phi + (k - 1) * log_Phi
+      </input>
+    </program>
+
+    <p>
+      Now here's a PyMC model that defines prior distributions for <c>mu</c>, <c>sigma</c>, and <c>k</c>, and uses the previous function to define a custom distribution that computes the likelihood of the data for a hypothetical set of parameters.
+    </p>
+
+    <program language="python">
+      <input>
+def make_model(sample):
+    with pm.Model() as model:
+        mu = pm.Normal("mu", mu=950, sigma=30)
+        sigma = pm.HalfNormal("sigma", sigma=30)
+        k = pm.Uniform("k", lower=0.5, upper=15)
+
+        obs = pm.CustomDist(
+            "obs",
+            mu, sigma, k,
+            logp=max_normal_logp,
+            observed=sample,
+        )
+    return model
+      </input>
+    </program>
+
+    <p>
+      Notice that we treat <c>k</c> as continuous.
+      That's because continuous parameters are much easier to sample (and the log PDF function allows non-integer values of <c>k</c>).
+      But it also makes sense in the context of the problem -- for example, if the baker sometimes hefts three loaves and sometimes four, we can approximate the distribution of the maximum with <c>k=3.5</c>.
+    </p>
+
+    <p>
+      Now let's sample.
+    </p>
+
+    <program language="python">
+      <input>
+model = make_model(sample4)
+with model:
+    trace = pm.sample()
+      </input>
+    </program>
+
+    <p>
+      The model runs quickly and the diagnostics look good.
+    </p>
+
+    <program language="python">
+      <input>
+az.summary(trace)
+      </input>
+    </program>
+
+    <pre>
+          mean      sd   hdi_3%  hdi_97%  mcse_mean  mcse_sd  ess_bulk  ess_tail  r_hat
+
+mu     940.108  20.932  902.266  979.839      0.880    0.533     562.0     679.0   1.01
+
+sigma   53.741   5.631   44.292   65.100      0.232    0.141     587.0     792.0   1.01
+
+k        5.346   2.525    1.530   10.189      0.107    0.089     566.0     700.0   1.01
+    </pre>
+
+    <p>
+      Here are the posterior distributions of the parameters compared to their known values.
+    </p>
+
+    <program language="python">
+      <input>
+plot_posterior(trace, 'mu', mu_true)
+      </input>
+    </program>
+
+    <image source="images/bread_fig2.png" width="80%"/>
+
+    <program language="python">
+      <input>
+plot_posterior(trace, 'sigma', sigma_true)
+      </input>
+    </program>
+
+    <image source="images/bread_fig3.png" width="80%"/>
+
+    <program language="python">
+      <input>
+plot_posterior(trace, 'k', k_true)
+      </input>
+    </program>
+
+    <image source="images/bread_fig4.png" width="80%"/>
+
+    <p>
+      With one year of data, we can recover the parameters pretty well.
+      The true values fall comfortably inside the posterior distributions, and the posterior mode of <c>k</c> is close to the true value, <c>4</c>.
+    </p>
+
+    <p>
+      But the posterior distributions are still quite wide.
+      There is even some possibility that the baker is innocent, although it is small.
+    </p>
+
+    <program language="python">
+      <input>
+samples_k = az.extract(trace)['k'].to_numpy()
+(samples_k &lt; 1.5).mean()
+      </input>
+    </program>
+
+    <pre>
+0.00725
+    </pre>
+
+    <p>
+      This example shows that we can use the shape of an observed distribution to estimate the effect of selection bias and recover the unbiased latent distribution.
+      But we might need a lot of data, and the inference depends on strong assumptions about the data generating process.
+    </p>
+
+    <p>
+      Credits: This example appears in Leonard Mlodinov, <em>The Drunkard's Walk</em> (2008).
+      Mlodinov credits Bart Holland, <em>What Are the Chances?</em> (2002).
+      The <url href="https://hsm.stackexchange.com/questions/7299/poincar%C3%A9-and-the-baker-was-the-anecdote-true">ultimate source</url> seems to be George Gamow and Marvin Stern, <em>Puzzle Math</em> (1958) -- but their version is about a German professor, not Poincaré.
+    </p>
+  </section>
+
+</appendix>

@@ -1,0 +1,780 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appendix xml:id="app-cube" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <title>The All-Knowing Cube of Probability</title>
+
+  <introduction>
+    <blockquote>
+      <p>
+        This example uses array computations to explore the concept of conjugate distributions.
+        It is an extension of <url href="https://greenteapress.com/wp/think-bayes/"><em>Think Bayes</em></url>, <url href="https://allendowney.github.io/ThinkBayes2/chap18.html">Chapter 18</url>, which explains how to use conjugate priors to do Bayesian updates with very little computation.
+      </p>
+    </blockquote>
+
+    <p>
+      The all-knowing cube of probability is a 3-D array that contains the past, the present, and the probabilistic future.
+    </p>
+
+    <p>
+      At first, the cube appears to be a collection of binomial PMFs, but if we turn it sideways, we see that it is also a collection of negative binomial PMFs, and if we turn it sideways again, it is also a collection of grid-approximated beta distributions.
+    </p>
+
+    <p>
+      This tripartite nature is the source of its uncanny ability to perform Bayesian updates, which I will demonstrate.
+    </p>
+
+    <program language="python">
+      <input>
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+      </input>
+    </program>
+  </introduction>
+
+  <section xml:id="sec-cube-making">
+    <title>Making the cube</title>
+
+    <p>
+      Suppose you run <m>n</m> trials where the probability of success is <m>p</m>.
+      To compute the probability of <m>k</m> successes, we can use the binomial distribution.
+    </p>
+
+    <p>
+      For example, here's a range of values for <m>k</m> and <m>n</m>, and a discrete grid of values for <m>p</m>.
+    </p>
+
+    <program language="python">
+      <input>
+ks = np.arange(101)
+ns = np.arange(101)
+ps = np.linspace(0, 1, 101)
+      </input>
+    </program>
+
+    <p>
+      We can use <c>meshgrid</c> to make a 3-D grid of <m>k</m>, <m>n</m>, and <m>p</m>, and <c>binom</c> to evaluate the binomial PMF at each point.
+    </p>
+
+    <program language="python">
+      <input>
+from scipy.stats import binom
+
+K, N, P = np.meshgrid(ks, ns, ps, indexing='ij')
+cube = binom.pmf(K, N, P)
+cube.shape
+      </input>
+    </program>
+
+    <pre>
+(101, 101, 101)
+    </pre>
+
+    <p>
+      The result is the <term>all-knowing cube of probability</term>, so-called because it can answer all of our questions about Bernoulli trials.
+      Allow me to demonstrate.
+    </p>
+  </section>
+
+  <section xml:id="sec-cube-binomial">
+    <title>The binomial distribution</title>
+
+    <p>
+      Suppose we are given <m>n</m> and <m>p</m>, and we would like to know the distribution of <m>k</m>.
+      We can answer that question by selecting a vector from the cube along the <m>k</m> axis.
+    </p>
+
+    <program language="python">
+      <input>
+n = 50
+p = 50
+pmf_k = cube[:, n, p]
+      </input>
+    </program>
+
+    <p>
+      The result is a normalized PMF.
+    </p>
+
+    <program language="python">
+      <input>
+pmf_k.sum()
+      </input>
+    </program>
+
+    <pre>
+0.9999999999999996
+    </pre>
+
+    <p>
+      Here's what it looks like.
+    </p>
+
+    <program language="python">
+      <input>
+plt.plot(ks, pmf_k)
+plt.xlabel('k')
+plt.ylabel('PMF')
+plt.title('Binomial distribution of $k$');
+      </input>
+    </program>
+
+    <image source="images/cube_fig0.png" width="80%"/>
+
+    <p>
+      Because we used <c>binom</c> to compute the cube, we should not be surprised to find that this slice from the cube is a binomial PMF.
+      But just to make sure, we can use <c>binom</c> again to confirm it.
+    </p>
+
+    <program language="python">
+      <input>
+pmf_binom = binom.pmf(ks, n, p/100)
+      </input>
+    </program>
+
+    <p>
+      And we can check that the results are consistent.
+    </p>
+
+    <program language="python">
+      <input>
+np.allclose(pmf_k, pmf_binom)
+      </input>
+    </program>
+
+    <pre>
+True
+    </pre>
+
+    <p>
+      So we can think of the cube as a collection of binomial PMFs.
+      But we can also think of it as a joint distribution of <m>k</m>, <m>n</m>, and <m>p</m>, which raises the question: what do we get if we select a vector along the <m>n</m> and <m>p</m> axes?
+    </p>
+  </section>
+
+  <section xml:id="sec-cube-negative-binomial">
+    <title>The negative binomial distribution</title>
+
+    <p>
+      Suppose we plan to run Bernoulli trials with probability <m>p</m> until we see <m>k</m> successes.
+      How many trials will it take?
+    </p>
+
+    <p>
+      We can answer this question by selecting a vector from the cube along the <m>n</m> axis.
+    </p>
+
+    <program language="python">
+      <input>
+k = 25
+p = 50
+pmf_n = cube[k, :, p].copy()
+      </input>
+    </program>
+
+    <p>
+      The result is close to the answer we want, but there's something we have to fix.
+      Remember that the values in the cube come from the binomial PMF, which looks like this.
+    </p>
+
+    <me>Pr(k; n, p) = \binom{n}{k} p^{k} (1-p)^{n-k}</me>
+
+    <p>
+      The first term is the binomial coefficient, which indicates that there are <m>n</m> places we could find <m>k</m> successes.
+      But if we keep running trials until we see <m>k</m> successes, we know the last trial will be a success, which means there are only <m>n-1</m> places we could find the other <m>k-1</m> successes.
+    </p>
+
+    <p>
+      So we have to adjust the values from the cube by dividing the elements by <m>n/k</m>.
+    </p>
+
+    <program language="python">
+      <input>
+np.seterr(divide='ignore', invalid='ignore')
+
+pmf_n /= (ns / k)
+pmf_n[0] = 0
+      </input>
+    </program>
+
+    <p>
+      And normalize the results to get a proper PMF.
+    </p>
+
+    <program language="python">
+      <input>
+pmf_n /= pmf_n.sum()
+      </input>
+    </program>
+
+    <p>
+      Here's what it looks like.
+    </p>
+
+    <program language="python">
+      <input>
+plt.plot(ns, pmf_n)
+plt.xlabel('n')
+plt.ylabel('PMF')
+plt.title('Negative binomial distribution of $n$');
+      </input>
+    </program>
+
+    <image source="images/cube_fig1.png" width="80%"/>
+
+    <p>
+      This is a negative binomial distribution, which we can confirm using <c>scipy.stats.nbinom</c>.
+    </p>
+
+    <program language="python">
+      <input>
+from scipy.stats import nbinom
+
+pmf_nbinom = nbinom.pmf(ns-k, k, p/100)
+pmf_nbinom.sum()
+      </input>
+    </program>
+
+    <pre>
+0.9999999094998685
+    </pre>
+
+    <program language="python">
+      <input>
+np.allclose(pmf_n, pmf_nbinom)
+      </input>
+    </program>
+
+    <pre>
+True
+    </pre>
+
+    <p>
+      To see why this works we can compare the binomial PMF, which is a distribution over <m>k</m> with <m>n</m> and <m>p</m> as parameters:
+    </p>
+
+    <me>Pr(k; n, p) = \binom{n}{k} p^{k} (1-p)^{n-k}</me>
+
+    <p>
+      And the negative binomial PMF, which I've written as a distribution over <m>n</m> with <m>k</m> and <m>p</m> as parameters:
+    </p>
+
+    <me>Pr(n; k, p) = \binom{n-1}{k-1} p^k (1-p)^{n-k}</me>
+
+    <p>
+      This is not the most common way to parameterize the negative binomial distribution, but it shows that the only difference is in the binomial coefficient, because we know that the last trial is a success.
+    </p>
+  </section>
+
+  <section xml:id="sec-cube-beta">
+    <title>The beta distribution</title>
+
+    <p>
+      Suppose we have 101 devices that perform Bernoulli trials with different probabilities.
+      The first device has <m>p=0</m>, the second has <m>p=0.01</m>, and so on up to the last device with <m>p=1</m>.
+    </p>
+
+    <p>
+      Now suppose we choose one of the devices so that all values of <m>p</m> are equally likely.
+      If we run <m>n</m> trials and see <m>k</m> successes, what is the distribution of <m>p</m>?
+    </p>
+
+    <p>
+      We can answer this question by selecting a vector from the cube along the <m>p</m> axis.
+    </p>
+
+    <program language="python">
+      <input>
+k = 25
+n = 50
+
+pdf_p = cube[k, n, :].copy()
+      </input>
+    </program>
+
+    <p>
+      The result is not normalized.
+    </p>
+
+    <program language="python">
+      <input>
+pdf_p.sum()
+      </input>
+    </program>
+
+    <pre>
+1.96078431372549
+    </pre>
+
+    <p>
+      But we can normalize it like this.
+    </p>
+
+    <program language="python">
+      <input>
+pdf_p /= pdf_p.sum()
+      </input>
+    </program>
+
+    <p>
+      And here's what it looks like.
+    </p>
+
+    <program language="python">
+      <input>
+plt.plot(ps, pdf_p)
+plt.xlabel('p')
+plt.ylabel('PMF')
+plt.title('Beta distribution of $p$');
+      </input>
+    </program>
+
+    <image source="images/cube_fig2.png" width="80%"/>
+
+    <p>
+      This is a beta distribution, which we can confirm by running <c>scipy.stats.beta</c> with a change of variables, <m>a = k+1</m> and <m>b = n-k+1</m>.
+    </p>
+
+    <program language="python">
+      <input>
+from scipy.stats import beta
+
+a = k + 1
+b = n - k + 1
+a, b
+      </input>
+    </program>
+
+    <pre>
+(26, 26)
+    </pre>
+
+    <program language="python">
+      <input>
+pdf_beta = beta.pdf(ps, a, b)
+pdf_beta /= pdf_beta.sum()
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+np.allclose(pdf_p, pdf_beta)
+      </input>
+    </program>
+
+    <pre>
+True
+    </pre>
+
+    <p>
+      To see why this works, let's compare the PDF of the beta distribution
+    </p>
+
+    <me>f(p, a, b) = \frac{1}{B(a, b)} p^{a-1} (1-p)^{b-1}</me>
+
+    <p>
+      And the PMF of the binomial distribution.
+    </p>
+
+    <me>Pr(k; n, p) = \binom{n}{k} p^{k} (1-p)^{n-k}</me>
+
+    <p>
+      With the change of variables, they are identical except for the first term, which normalizes the distributions.
+    </p>
+  </section>
+
+  <section xml:id="sec-cube-conjugate">
+    <title>Conjugate priors</title>
+
+    <p>
+      This similarity is the reason the beta and binomial are conjugate distributions, which means they are joined together.
+      This relationship has a useful property for Bayesian statistics: if the prior distribution of <m>p</m> is beta and the likelihood of the data is binomial, the posterior distribution is also beta.
+    </p>
+
+    <p>
+      To see how that works, here is the PDF of the a beta prior distribution with parameters <m>a</m> and <m>b</m>.
+    </p>
+
+    <me>p^{a-1} (1-p)^{b-1}</me>
+
+    <p>
+      I have omitted the normalizing factor -- we don't need it because we are going to normalize the distribution after the update.
+    </p>
+
+    <p>
+      Now suppose we see <m>k</m> successes in <m>n</m> trials.
+      The likelihood of this data is given by the binomial distribution, which has this PMF.
+    </p>
+
+    <me>p^{k} (1-p)^{n-k}</me>
+
+    <p>
+      Again, I have omitted the normalizing factor.
+      Now to get the unnormalized posterior, we multiply the beta prior and the binomial likelihood. The result is
+    </p>
+
+    <me>p^{a-1+k} (1-p)^{b-1+n-k}</me>
+
+    <p>
+      which we recognize as an unnormalized beta distribution with parameters <m>a+k</m> and <m>b+n-k</m>.
+    </p>
+
+    <p>
+      So if we observe <m>k</m> successes in <m>n</m> trials, we can do the update by making a beta posterior with parameters <m>a+k</m> and <m>b+n-k</m>.
+    </p>
+
+    <p>
+      As an example, suppose the prior is a beta distribution with parameters <m>a=2</m> and <m>b=3</m>.
+    </p>
+
+    <program language="python">
+      <input>
+a = 2
+b = 3
+
+prior = beta.pdf(ps, a, b)
+      </input>
+    </program>
+
+    <p>
+      And suppose we see <m>k=5</m> successes in <m>n=10</m> attempts.
+    </p>
+
+    <program language="python">
+      <input>
+k = 5
+n = 10
+
+like = binom.pmf(k, n, ps)
+      </input>
+    </program>
+
+    <p>
+      We can compute the posterior by multiplying the prior and the likelihood, then normalizing the results.
+    </p>
+
+    <program language="python">
+      <input>
+posterior = prior * like
+posterior /= posterior.sum()
+      </input>
+    </program>
+
+    <p>
+      Or we can compute a beta distribution with the updated parameters.
+    </p>
+
+    <program language="python">
+      <input>
+posterior_beta = beta.pdf(ps, a+k, b+n-k)
+posterior_beta /= posterior_beta.sum()
+      </input>
+    </program>
+
+    <p>
+      The result is the same either way.
+    </p>
+
+    <program language="python">
+      <input>
+np.allclose(posterior, posterior_beta)
+      </input>
+    </program>
+
+    <pre>
+True
+    </pre>
+
+    <p>
+      But we don't have to compute the posterior by doing an explicit update, or by computing a beta distribution, because the all-knowing cube of probability already knows the answer -- we just have to ask.
+    </p>
+
+    <p>
+      The following function takes the parameters <m>a</m> and <m>b</m> and looks up the corresponding beta distribution already computed in the cube.
+    </p>
+
+    <program language="python">
+      <input>
+def get_beta(a, b, cube):
+    k = a - 1
+    n = b + k - 1
+
+    pdf = cube[k, n, :].copy()
+    pdf /= pdf.sum()
+    return pdf
+      </input>
+    </program>
+
+    <p>
+      We can use it to get the posterior distribution of <m>p</m> from the cube.
+    </p>
+
+    <program language="python">
+      <input>
+posterior_cube = get_beta(a + k, b + n - k, cube)
+      </input>
+    </program>
+
+    <p>
+      And confirm that we get the same result.
+    </p>
+
+    <program language="python">
+      <input>
+np.allclose(posterior_beta, posterior_cube)
+      </input>
+    </program>
+
+    <pre>
+True
+    </pre>
+
+    <p>
+      Here's what it looks like.
+    </p>
+
+    <program language="python">
+      <input>
+plt.plot(ps, posterior_cube)
+
+plt.xlabel('p')
+plt.ylabel('PMF')
+plt.title('Posterior distribution of p');
+      </input>
+    </program>
+
+    <image source="images/cube_fig3.png" width="80%"/>
+  </section>
+
+  <section xml:id="sec-cube-update-nbinom">
+    <title>Update with nbinom</title>
+
+    <p>
+      Now suppose that instead of running <m>n</m> trials, we keep running trials until we see <m>k</m> successes -- and suppose it takes <m>n</m> trials.
+    </p>
+
+    <p>
+      In this case, we can use the negative binomial distribution to compute the likelihood of the data.
+    </p>
+
+    <program language="python">
+      <input>
+like2 = nbinom.pmf(n-k, k, ps)
+like2[0] = 0
+      </input>
+    </program>
+
+    <p>
+      And we can do the update in the usual way.
+    </p>
+
+    <program language="python">
+      <input>
+posterior2 = prior * like2
+posterior2 /= posterior2.sum()
+      </input>
+    </program>
+
+    <p>
+      It turns out that the result is the same in both cases:
+    </p>
+
+    <ul>
+      <li><p>If we decide ahead of time to run <m>n</m> trials, and see <m>k</m> successes, or</p></li>
+      <li><p>If we run until we see <m>k</m> successes, and it takes <m>n</m> trials.</p></li>
+    </ul>
+
+    <program language="python">
+      <input>
+np.allclose(posterior, posterior2)
+      </input>
+    </program>
+
+    <pre>
+True
+    </pre>
+
+    <p>
+      Bayesian inference only depends on the data, not the stopping condition.
+      Or, as my friend Ted Bunn put it: <url href="https://blog.richmond.edu/physicsbunn/2012/01/05/who-knows-what-evil-lurks-in-the-hearts-of-men-the-bayesian-doesnt-care/">Who knows what evil lurks in the hearts of men? The Bayesian doesn't care.</url>
+    </p>
+  </section>
+
+  <section xml:id="sec-cube-post-pred-k">
+    <title>Posterior predictive distributions</title>
+
+    <p>
+      The all-knowing cube of probability knows what we should believe in the light of new data, but that's not all.
+      It also knows the future, at least probabilistically.
+    </p>
+
+    <p>
+      After an update, we can get the posterior predictive distribution by computing a weighted mixture of binomial distributions with different values of <m>p</m>, weighted by the posterior probabilities.
+    </p>
+
+    <p>
+      We can do that by selecting the <m>(k, p)</m> plane from the cube, multiplying by the posterior and summing away the <m>p</m> axis.
+    </p>
+
+    <program language="python">
+      <input>
+post_pred_k = (cube[:, n, :] * posterior).sum(axis=1)
+      </input>
+    </program>
+
+    <p>
+      The result is a distribution over <m>k</m>. Here's what it looks like (dropping values of <m>k</m> greater than <m>n</m>).
+    </p>
+
+    <program language="python">
+      <input>
+plt.bar(ks[:n+1], post_pred_k[:n+1])
+
+plt.xlabel('k')
+plt.ylabel('PMF')
+plt.title('Posterior predictive distribution of k');
+      </input>
+    </program>
+
+    <image source="images/cube_fig4.png" width="80%"/>
+
+    <p>
+      A beta mixture of binomials is a beta-binomial distribution, and it has a PMF we can compute analytically.
+    </p>
+
+    <program language="python">
+      <input>
+from scipy.stats import betabinom
+
+post_pred_bb = betabinom.pmf(ks, n, a+k, b+n-k)
+      </input>
+    </program>
+
+    <p>
+      So we can confirm that the all-knowing cube was correct.
+    </p>
+
+    <program language="python">
+      <input>
+np.allclose(post_pred_k, post_pred_bb)
+      </input>
+    </program>
+
+    <pre>
+True
+    </pre>
+  </section>
+
+  <section xml:id="sec-cube-post-pred-n">
+    <title>The other posterior predictive</title>
+
+    <p>
+      We can also use the cube to compute the posterior predictive distribution of <m>n</m> given a required number of successes, <m>k</m>.
+    </p>
+
+    <p>
+      We start by selecting the <m>(n, p)</m> plane from the cube, which is a collection of negative binomial distributions, except that we have to correct them by dividing through by <m>n/k</m>, as we did above.
+    </p>
+
+    <p>
+      Actually, we only have to divide by <m>n</m> because <m>k</m> is a constant that will get normalized away.
+    </p>
+
+    <program language="python">
+      <input>
+plane = cube[k, :, :] / ns[:, None]
+plane[0] = 0
+      </input>
+    </program>
+
+    <p>
+      Now we can compute a weighted sum as in the previous example, multiplying by the posterior and summing away the <m>p</m> axis.
+    </p>
+
+    <program language="python">
+      <input>
+post_pred_n = (plane * posterior).sum(axis=1)
+post_pred_n /= post_pred_n.sum()
+      </input>
+    </program>
+
+    <p>
+      Here's what it looks like.
+    </p>
+
+    <program language="python">
+      <input>
+plt.plot(ns, post_pred_n)
+
+plt.xlabel('n')
+plt.ylabel('PMF')
+plt.title('Posterior predictive distribution of n');
+      </input>
+    </program>
+
+    <image source="images/cube_fig5.png" width="80%"/>
+
+    <p>
+      A beta-weighted mixture of negative binomials is a beta-negative binomial distribution, and it has a PMF we can compute analytically.
+      SciPy doesn't have a function to do it, but we can write our own using functions in <c>scipy.special</c>.
+    </p>
+
+    <program language="python">
+      <input>
+import scipy.special as sps
+
+def betanegbinom_pmf(n, r, a, b):
+    """Compute the PMF of the beta-negative binomial distribution.
+
+    Generated by ChatGPT, revised based on
+    https://en.wikipedia.org/wiki/Beta_negative_binomial_distribution
+
+    Parameters:
+    - n: Number of trials before stopping.
+    - r: Number of successes required.
+    - a: Shape parameter of the beta distribution.
+    - b: Shape parameter of the beta distribution.
+
+    Returns:
+    - PMF value for the given parameters.
+    """
+    k = n - r
+    binomial_coefficient = sps.comb(r + k - 1, k)
+    beta_num = sps.beta(a + r, b + k)
+    beta_den = sps.beta(a, b)
+
+    pmf = binomial_coefficient * (beta_num / beta_den)
+    return pmf
+      </input>
+    </program>
+
+    <p>
+      The conventional parameterization of the beta-negative binomial uses <m>k</m> for the number of failures and <m>r</m> for the number of required successes, so we have to change some variables to get a distribution over <m>n</m>.
+    </p>
+
+    <program language="python">
+      <input>
+post_pred_bnb = betanegbinom_pmf(ns, k, a+k, b+n-k)
+post_pred_bnb /= post_pred_bnb.sum()
+      </input>
+    </program>
+
+    <p>
+      But we can confirm that the result from the cube is consistent with the analytic PMF.
+    </p>
+
+    <program language="python">
+      <input>
+np.allclose(post_pred_n, post_pred_bnb)
+      </input>
+    </program>
+
+    <pre>
+True
+    </pre>
+
+    <p>
+      In conclusion, the all-knowing cube of probability contains the past (the prior distributions), the present (the posterior distributions), and the future (the posterior predictive distributions).
+    </p>
+  </section>
+
+</appendix>

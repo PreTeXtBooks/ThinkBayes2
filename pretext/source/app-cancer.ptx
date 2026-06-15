@@ -1,0 +1,873 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appendix xml:id="app-cancer" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <title>Cancer Survival Rates Are Misleading</title>
+
+  <introduction>
+    <p>
+      Five-year survival might be the most misleading statistic in medicine.
+      For example, suppose 5-year survival for a hypothetical cancer is
+    </p>
+
+    <ul>
+      <li><p>91% among patients diagnosed early, while the tumor is <term>localized</term> at the primary site,</p></li>
+      <li><p>74% among patients diagnosed later, when the tumor has spread <term>regionally</term> to nearby lymph nodes or adjacent organs, and</p></li>
+      <li><p>16% among patients diagnosed late, when the tumor has spread to <term>distant</term> organs or lymph nodes.</p></li>
+    </ul>
+
+    <p>
+      What can we infer from these statistics?
+    </p>
+
+    <ol>
+      <li><p>If a patient is diagnosed early, it is tempting to think the probability is 91% that they will survive five years after diagnosis.</p></li>
+      <li><p>Looking at the difference in survival between early and late detection, it is tempting to conclude that more screening would save lives.</p></li>
+      <li><p>In a case where a patient is diagnosed late and dies of cancer, it is tempting to say that they would have survived if their cancer had been caught early.</p></li>
+      <li><p>And if 5-year survival increases over time, it is tempting to conclude that treatment has improved.</p></li>
+    </ol>
+
+    <p>
+      In fact, <em>none of these inferences are correct</em>.
+      Let's take them one at a time.
+    </p>
+  </introduction>
+
+  <section xml:id="sec-cancer-particularization">
+    <title>Particularization</title>
+
+    <p>
+      Here's the first incorrect inference:
+    </p>
+
+    <blockquote>
+      <p>
+        If a patient is diagnosed early, and 5-year survival is 91%, it is tempting to think the probability is 91% that they will survive five years after diagnosis.
+      </p>
+    </blockquote>
+
+    <p>
+      This is <em>almost</em> correct in the sense that it applies to the past cases that were used to estimate the survival rate -- of all patients in the dataset who were diagnosed early, 91% of them survived at least five years.
+    </p>
+
+    <p>
+      But it is misleading for two reasons:
+    </p>
+
+    <ul>
+      <li><p>Because it is based on past cases, it doesn't apply to present cases if (1) the effectiveness of treatment has changed or -- often more importantly -- (2) diagnostic practices have changed.</p></li>
+      <li><p>Also, before interpreting a probability like this, which applies in general, it is important to <term>particularize</term> it for a specific case.</p></li>
+    </ul>
+
+    <p>
+      Factors that should be taken into account include the general health of the patient, their age, and the mode of detection.
+      Some factors are <term>causal</term> -- for example, general health directly improves the chance of survival.
+      Other factors are less obvious because they are <term>informational</term> -- for example, the mode of detection can make a big difference:
+    </p>
+
+    <ul>
+      <li><p>If a cancer is discovered because it is causing symptoms, it is more likely to be larger, more aggressive, and relatively late for a given stage -- and all of those implications decrease the chance of survival.</p></li>
+      <li><p>If a cancer is not symptomatic, but discovered during a physical exam, it is probably larger, later, and more likely to cause mortality, compared to one discovered by high resolution imaging or a sensitive chemical test.</p></li>
+      <li><p>Conversely, tumors detected by screening are more likely to be slow-growing because of <url href="https://en.wikipedia.org/wiki/Length_time_bias">length-biased sampling</url> -- the probability of detection depends on the time between when a tumor is detectable and when it causes symptoms.</p></li>
+    </ul>
+
+    <p>
+      Taking age into account is complicated because it might be both causal and informational, with opposite implications.
+      A young patient might be more robust and able to tolerate treatment, but a cancer detectable in a younger person is likely to have progressed more quickly than one that could only be discovered after more years of life.
+      So the implication of age might be negative among the youngest and oldest patients, and positive in the middle-aged.
+    </p>
+
+    <p>
+      For some cancers, the magnitude of these implications is large, so the probability of 5-year survival for a particular patient might be higher than 91% or much lower.
+    </p>
+  </section>
+
+  <section xml:id="sec-cancer-screening">
+    <title>Is More Screening Better?</title>
+
+    <p>
+      Now let's consider the second incorrect inference.
+    </p>
+
+    <blockquote>
+      <p>
+        If 5-year survival is high when a cancer is detected early and much lower when it is detected late, it is tempting to conclude that more screening would save lives.
+      </p>
+    </blockquote>
+
+    <p>
+      For example, in a <url href="https://www.youtube.com/watch?v=ph2ZeNooFLg">recent video</url>, Nassim Taleb and Emi Gal discuss the pros and cons of cancer screening, especially full-body MRIs for people who have no symptoms.
+      At one point they consider this table of survival rates based on stage at diagnosis:
+    </p>
+
+    <image source="images/cancer_table.png" width="80%"/>
+
+    <p>
+      They note that survival is highest if a tumor is detected while localized at the primary site, lower if it has spread regionally, and often much lower if it has spread distantly.
+    </p>
+
+    <p>
+      They take this as evidence that screening for these cancers is beneficial.
+      For example, <url href="https://youtu.be/ph2ZeNooFLg?t=357">at one point</url> Taleb says, "Look at the payoff for pancreatic cancer -- 10 times the survival rate."
+    </p>
+
+    <p>
+      And Gal adds, "Colon cancer, it's like seven times... The overarching insight is that you want to find cancer early... This table makes the case for the importance of finding cancer early."
+    </p>
+
+    <p>
+      Taleb agrees, but this inference is incorrect: <em>This table does not make the case that it is better to catch cancer early</em>.
+    </p>
+
+    <p>
+      Catching cancer early is beneficial only if (1) the cancers we catch would otherwise cause disease and death, <em>and</em> (2) we have treatments that prevent those outcomes, <em>and</em> (3) these benefits outweigh the costs of additional screening.
+      This table does not show that any of those things is true.
+    </p>
+
+    <p>
+      In fact, it is possible for a cancer to reproduce any row in this table, even if we have no treatment and detection has no effect on outcomes.
+      To demonstrate, I'll use a model of tumor progression to show that a hypothetical cancer could have the same survival rates as colon cancer -- <em>even if there is no effective treatment at all</em>.
+    </p>
+
+    <p>
+      To be clear, I'm not saying that cancer treatment is not effective -- in many cases we know that it is.
+      I'm saying that we can't tell, just looking at a survival rates, whether early detection has any benefit at all.
+    </p>
+  </section>
+
+  <section xml:id="sec-cancer-data">
+    <title>Data</title>
+
+    <p>
+      I downloaded 5-year survival data from <url href="https://canques.seer.cancer.gov/cq_results.php?dir=surv2021&amp;db=101&amp;rpt=TAB&amp;sel=1,2^1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36^0^0^0^1,2,3,4^5&amp;y=Stage%20at%20diagnosis^1,2,3,4&amp;x=Site^1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36&amp;z=Statistic%20type^1,2&amp;dec=1,0,1&amp;template=null">SEER 17</url>, including diagnoses from 2014-2020, male and female, all races, all ages at diagnosis.
+    </p>
+
+    <program language="python">
+      <input>
+tables = pd.read_html('CanQues Results.html')
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+def clean_table(df):
+    df = df.set_index("Unnamed: 0")
+    df.index.name = 'Site'
+    df = df.replace({'%': ''}, regex=True).apply(pd.to_numeric, errors='coerce')
+    return df
+      </input>
+    </program>
+
+    <p>
+      Here are the first few rows of the 5-year survival table.
+    </p>
+
+    <program language="python">
+      <input>
+df1 = clean_table(tables[0])
+df1.head()
+      </input>
+    </program>
+
+    <pre>
+                                  Localized  Regional  Distant  Unknown/unstaged
+Site
+Oral Cavity and Pharynx                88.2      70.8     38.2              58.8
+Esophagus                              48.0      28.1      5.6              13.6
+Stomach                                73.8      35.2      6.5              27.7
+Colon and Rectum                       91.4      74.0     15.8              42.8
+Liver and Intrahepatic Bile Duct       37.3      13.0      3.2               8.1
+    </pre>
+
+    <p>
+      In this data, 5-year survival for colon cancer is 91.4% if it's detected when localized, 74% if it is not detected until it has spread regionally, and 15.8% if it has spread distantly.
+      For this example, I'll assume that the unknown/unstaged cancers are a mixture of the other categories and we'll leave them out of the analysis.
+    </p>
+
+    <p>
+      The dataset also includes the number of cases diagnosed at each stage.
+    </p>
+
+    <program language="python">
+      <input>
+df2 = clean_table(tables[1])
+df2.head()
+      </input>
+    </program>
+
+    <pre>
+                                  Localized  Regional   Distant  Unknown/unstaged
+Site
+Oral Cavity and Pharynx             16225.0   32154.0    9328.0            3138.0
+Esophagus                            3954.0    7071.0    8722.0            2062.0
+Stomach                             10613.0    9131.0   13737.0            3371.0
+Colon and Rectum                    72619.0   72115.0   46247.0           10184.0
+Liver and Intrahepatic Bile Duct    24061.0   13361.0   10622.0            5459.0
+    </pre>
+
+    <p>
+      I'll normalize the rows so we have the percentage of cancers diagnosed at each stage.
+    </p>
+
+    <program language="python">
+      <input>
+cols = ['Localized', 'Regional', 'Distant']
+subset = df2[cols]
+incidence = subset.div(subset.sum(axis=1), axis=0) * 100
+incidence.head()
+      </input>
+    </program>
+
+    <pre>
+                                  Localized   Regional    Distant
+Site
+Oral Cavity and Pharynx           28.116173  55.719410  16.164417
+Esophagus                         20.023295  35.807971  44.168734
+Stomach                           31.698575  27.272184  41.029240
+Colon and Rectum                  38.024201  37.760301  24.215498
+Liver and Intrahepatic Bile Duct  50.081176  27.809924  22.108900
+    </pre>
+
+    <p>
+      Here are the statistics we'll try to replicate in the model:
+    </p>
+
+    <ul>
+      <li><p>Five-year survival: 91% if localized / 74% if regional / 16% if distant</p></li>
+      <li><p>Distribution of stage at diagnosis: 38% localized / 38% regional / 24% distant</p></li>
+    </ul>
+
+    <p>
+      Note that there are only five degrees of freedom because the second row has to add up to 100%.
+    </p>
+  </section>
+
+  <section xml:id="sec-cancer-markov">
+    <title>Markov Model</title>
+
+    <p>
+      We'll model tumor progression using a Markov chain with these states:
+    </p>
+
+    <ul>
+      <li><p><c>U1</c>, <c>U2</c>, and <c>U3</c> represent tumors that are undetected at each stage: local, regional, and distant.</p></li>
+      <li><p><c>D1</c>, <c>D2</c>, <c>D3</c> represent tumors that were detected/diagnosed at each stage.</p></li>
+      <li><p>And <c>M</c> represents mortality.</p></li>
+    </ul>
+
+    <p>
+      The following function builds the model.
+    </p>
+
+    <program language="python">
+      <input>
+import networkx as nx
+
+def make_graph(lams, kappas, mu, gamma=0):
+    G = nx.DiGraph()
+
+    for i, lam in enumerate(lams):
+        G.add_edge(f'U{i+1}', f'U{i+2}', p=lam)
+        G.add_edge(f'D{i+1}', f'D{i+2}', p=(1 - gamma) * lam)
+
+    for i, kappa in enumerate(kappas):
+        G.add_edge(f'U{i+1}', f'D{i+1}', p=kappa)
+
+    G.add_edge('D3', 'M', p=mu)
+    return G
+      </input>
+    </program>
+
+    <p>
+      The transition probabilities are:
+    </p>
+
+    <ul>
+      <li><p><c>lams</c>, two values that represent transition rates between stages,</p></li>
+      <li><p><c>kappas</c>, three values that represent detection rates at each state,</p></li>
+      <li><p><c>mu</c> the mortality rate from <c>D3</c>,</p></li>
+      <li><p><c>gamma</c> the effectiveness of treatment.</p></li>
+    </ul>
+
+    <p>
+      If <c>gamma > 0</c>, the treatment is effective by decreasing the probability of progression to the next stage.
+      In the models we'll run for this example, <c>gamma=0</c>, which means that detection has no effect on progression.
+      In reality, <c>gamma=0</c> could mean either:
+    </p>
+
+    <ul>
+      <li><p>There is no effective treatment, or</p></li>
+      <li><p>The benefit of treatment is offset by the negative implication of detection.</p></li>
+    </ul>
+
+    <p>
+      To explain the second point, detection might be more likely if a cancer causes symptoms, and a cancer that causes symptoms might be more likely to progress, compared to an asymptomatic cancer at the same stage.
+    </p>
+
+    <p>
+      So, in the absence of effective treatment, we might expect <c>gamma &lt; 0</c>.
+      A moderately effective treatment would have to overcome this effect to bring <c>gamma</c> up to 0.
+    </p>
+
+    <p>
+      Here are the values of these parameters I chose to fit the data.
+    </p>
+
+    <program language="python">
+      <input>
+lams = [0.15, 0.16]
+kappas = [0.09, 0.18, 0.80]
+mu = 0.3
+
+G = make_graph(lams, kappas, mu, gamma=0)
+      </input>
+    </program>
+
+    <p>
+      Overall, these values are within the range we observe in real cancers.
+    </p>
+
+    <ul>
+      <li><p>The transition rates are close to 1/6, which means the average time at each stage is 6 simulated years.</p></li>
+      <li><p>The detection rate is low at the first stage, higher at the second, and much higher at the third.</p></li>
+      <li><p>The mortality rate is close to 1/3, so the average survival after diagnosis at the third stage is about 3 years.</p></li>
+    </ul>
+
+    <p>
+      The following figure shows the states and transition rates of the model.
+    </p>
+
+    <program language="python">
+      <input>
+edge_labels = {(u, v): f"{d['p']:.2f}"
+               for u, v, d in G.edges(data=True)}
+pos = {}
+
+for i, state in enumerate(['U1', 'U2', 'U3']):
+    pos[state] = (i, 1)
+
+for i, state in enumerate(['D1', 'D2', 'D3']):
+    pos[state] = (i, 0)
+
+pos['M'] = (3, 0)
+
+nx.draw_networkx(G, pos=pos, node_color='lightblue', node_size=500)
+
+nx.draw_networkx_edge_labels(G, pos,
+                             edge_labels=edge_labels,
+                             font_size=11,
+                             font_color='C0')
+plt.axis('equal')
+plt.tight_layout()
+      </input>
+    </program>
+
+    <image source="images/cancer_fig0.png" width="80%"/>
+
+    <p>
+      In this model, death occurs only after a cancer has progressed to the third stage and been detected.
+      That's not realistic -- in reality deaths can occur at any stage, due to cancer or other causes.
+    </p>
+
+    <p>
+      But adding more transitions would not make the model better.
+      The purpose of the model is to show that we can reproduce the survival rates we see in reality, even if there are no effective treatments.
+      Making the model more realistic would increase the number of parameters, which would make it easier to reproduce the data, but that would not make the conclusion stronger.
+      More realistic models are not necessarily better.
+    </p>
+
+    <p>
+      But if this feature of the model still bothers you, it might help to think of the states more abstractly.
+      For example, a transition from <c>D2</c> to <c>D3</c> might literally represent a cancer that progresses from one stage to another, but it could also include someone whose risk of mortality has increased to be comparable to someone at the next stage, due to other causes.
+    </p>
+  </section>
+
+  <section xml:id="sec-cancer-simulation">
+    <title>Simulation</title>
+
+    <p>
+      To simulate the model, we'll use the Markov chain implementation in the <url href="https://quanteconpy.readthedocs.io/en/latest/">QuantEcon package</url>.
+    </p>
+
+    <p>
+      The following function extracts the probabilities in the graph and makes a transition matrix we can use with QuantEcon.
+    </p>
+
+    <program language="python">
+      <input>
+def make_transition_matrix(G, states):
+    n_states = len(states)
+
+    # Create a mapping from state names to indices
+    state_to_idx = {state: i for i, state in enumerate(states)}
+
+    # Initialize the transition matrix
+    P = np.eye(n_states)
+
+    # Fill in the transition probabilities from the graph
+    for i, state in enumerate(states):
+
+        for neighbor in G.successors(state):
+            j = state_to_idx[neighbor]
+            prob = G[state][neighbor]['p']
+            P[i, j] = prob
+            P[i, i] -= prob
+
+    return P
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+states = ['U1', 'U2', 'U3', 'D1', 'D2', 'D3', 'M']
+P = make_transition_matrix(G, states)
+pd.DataFrame(P, index=states, columns=states)
+      </input>
+    </program>
+
+    <pre>
+      U1    U2    U3    D1    D2    D3    M
+U1  0.76  0.15  0.00  0.09  0.00  0.00  0.0
+U2  0.00  0.66  0.16  0.00  0.18  0.00  0.0
+U3  0.00  0.00  0.20  0.00  0.00  0.80  0.0
+D1  0.00  0.00  0.00  0.85  0.15  0.00  0.0
+D2  0.00  0.00  0.00  0.00  0.84  0.16  0.0
+D3  0.00  0.00  0.00  0.00  0.00  0.70  0.3
+M   0.00  0.00  0.00  0.00  0.00  0.00  1.0
+    </pre>
+
+    <p>
+      Now we can make a <c>MarkovChain</c> object.
+    </p>
+
+    <program language="python">
+      <input>
+from quantecon import MarkovChain
+
+mc = MarkovChain(P, state_values=states)
+      </input>
+    </program>
+
+    <p>
+      We'll run 100 simulated years so we have survival times for all cases (with high probability).
+    </p>
+
+    <program language="python">
+      <input>
+state_seq = mc.simulate(ts_length=100, init='U1')
+state_seq
+      </input>
+    </program>
+
+    <pre>
+array(['U1', 'U1', 'U1', 'U1', 'U1', 'U1', 'U1', 'U1', 'U2', 'D2', 'D2',
+       'D2', 'D2', 'D2', 'D3', 'D3', 'D3', 'D3', 'M', 'M', 'M', 'M', 'M',
+       'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M',
+       'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M',
+       'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M',
+       'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M',
+       'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M',
+       'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M'],
+      dtype='&lt;U2')
+    </pre>
+
+    <p>
+      To analyze the results, we'll use the following function, which takes a state sequence and returns the time of diagnosis and stage at diagnosis.
+    </p>
+
+    <program language="python">
+      <input>
+def diagnosed(state_seq):
+    for i, state in enumerate(state_seq):
+        if state.startswith('D'):
+            return i, state
+    return None, None
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+diagnosis_index, stage = diagnosed(state_seq)
+diagnosis_index, stage
+      </input>
+    </program>
+
+    <pre>
+(9, 'D2')
+    </pre>
+
+    <p>
+      And we'll use the following function to check 5-year survival after diagnosis.
+      In the rare case where we reach the end of the sequence, that case is counted as a survival.
+    </p>
+
+    <program language="python">
+      <input>
+def survived(state_seq, diagnosis_index, duration=5):
+    idx = diagnosis_index + duration
+    if idx &lt; len(state_seq):
+        return state_seq[idx] != 'M'
+    else:
+        return True
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+survived(state_seq, diagnosis_index)
+      </input>
+    </program>
+
+    <pre>
+True
+    </pre>
+
+    <p>
+      Now we'll run many simulations and collect the results.
+      If a case is never diagnosed, it is omitted -- but that never happens in this example.
+    </p>
+
+    <program language="python">
+      <input>
+n_simulations = 10000
+results = []
+
+for _ in range(n_simulations):
+    state_seq = mc.simulate(ts_length=100, init='U1')
+    diagnosis_index, stage = diagnosed(state_seq)
+    if diagnosis_index is not None:
+        flag = survived(state_seq, diagnosis_index)
+        results.append((diagnosis_index, stage, flag))
+
+len(results)
+      </input>
+    </program>
+
+    <pre>
+10000
+    </pre>
+
+    <p>
+      Here are the first few rows.
+    </p>
+
+    <program language="python">
+      <input>
+df = pd.DataFrame(results, columns=['age', 'stage', 'survived'])
+df.head()
+      </input>
+    </program>
+
+    <pre>
+   age stage  survived
+0    5    D1      True
+1   13    D2      True
+2    2    D2     False
+3    6    D1      True
+4   11    D1      True
+    </pre>
+
+    <p>
+      For the hypothetical cancer in the model, overall 5-year survival is about 64%, the same as colon cancer in reality.
+    </p>
+
+    <program language="python">
+      <input>
+df['survived'].mean()
+      </input>
+    </program>
+
+    <pre>
+0.6425
+    </pre>
+
+    <p>
+      Here are the survival rates by stage.
+    </p>
+
+    <program language="python">
+      <input>
+rates = df.groupby('stage')['survived'].mean() * 100
+pd.DataFrame(dict(rates=rates))
+      </input>
+    </program>
+
+    <pre>
+          rates
+stage
+D1     94.700399
+D2     71.687292
+D3     16.848568
+    </pre>
+
+    <p>
+      In the model, survival rates are 95% if localized, 72% if spread regionally, and 17% if spread distantly.
+      For colon cancer, the rates from the SEER data are 91%, 74%, and 16%.
+      So the simulation results are not exactly the same, but they are close.
+    </p>
+
+    <p>
+      And here is the distribution of stage at diagnosis.
+    </p>
+
+    <program language="python">
+      <input>
+from empiricaldist import Pmf
+
+Pmf.from_seq(df['stage'], name='incidence') * 100
+      </input>
+    </program>
+
+    <pre>
+stage
+D1    37.55
+D2    33.13
+D3    29.32
+Name: incidence, dtype: float64
+    </pre>
+
+    <p>
+      In the model, 38% of tumors are localized when diagnosed, 33% have spread regionally, and 29% have spread distantly.
+      The actual distribution for colon cancer is 38%, 38%, and 24%.
+      Again, the simulation results are not exactly the same, but close.
+    </p>
+
+    <p>
+      With more trial and error, I could probably find parameters that reproduce the results exactly.
+      That would not be surprising, because even though the model is meant to be parsimonious, it has seven parameters and we are matching observations with only five degrees of freedom.
+    </p>
+
+    <p>
+      That might seem unfair, but it makes the point that there is not enough information in the survival table -- even if we also consider the distribution of stages -- to estimate the parameters of the model precisely.
+      The data don't exclude the possibility that treatment is ineffective, so they don't prove that early detection is beneficial.
+    </p>
+
+    <p>
+      Again, it <em>might</em> be better to find cancer early, if the benefit of treatment outweighs the costs of false discovery and overdiagnosis -- but that's a different analysis, and 5-year survival rates aren't part of it.
+    </p>
+
+    <p>
+      That's why <url href="https://pmc.ncbi.nlm.nih.gov/articles/PMC2733256/">this editorial</url> concludes, "Only reduced mortality rates can prove that screening saves lives... journal editors should no longer allow misleading statistics such as five year survival to be reported as evidence for screening."
+    </p>
+  </section>
+
+  <section xml:id="sec-cancer-counterfactuals">
+    <title>Counterfactuals</title>
+
+    <p>
+      Now let's consider the third incorrect inference.
+    </p>
+
+    <blockquote>
+      <p>
+        In a case where a patient is diagnosed late and dies of cancer, it is tempting to say that they would have survived if their cancer had been caught early.
+      </p>
+    </blockquote>
+
+    <p>
+      For example, <url href="https://youtu.be/ph2ZeNooFLg?t=836">later in the previous video</url>, Taleb says, "Your mother, had she had a colonoscopy, she would be alive today... she's no longer with us because it was detected when it was stage IV, right?" And Gal agrees.
+    </p>
+
+    <p>
+      That <em>might</em> be true, if treatment would have prevented the cancer from progressing.
+      But this conclusion is not supported by the data in the survival table.
+    </p>
+
+    <p>
+      If someone is diagnosed late and dies, it is tempting to look at the survival table and think there's a 91% chance they would have survived if they had been diagnosed earlier.
+      But that's not accurate -- and it might not even be close.
+    </p>
+
+    <p>
+      First, remember what 91% survival means: among people diagnosed early, 91% survived five years after diagnosis.
+      But among those survivors, an unknown proportion had tumors that would not have been fatal, even without treatment.
+      Some might be non-progressive, or progress so slowly that they never cause disease or death.
+      But in a case where the patient dies of cancer, we know their tumor was not one of those.
+    </p>
+
+    <p>
+      As a simplified example, suppose that of all tumors that are caught early, 50% would cause death within five years, if untreated, and 50% would not.
+      Now imagine 100 people, all detected early and all treated: 50 would survive with or without treatment; out of the other 50, 41 survive with treatment -- so overall survival is 91%.
+      But if we know someone is in the second group, their chance of survival is not 41/50, which is 82%.
+    </p>
+
+    <p>
+      And if the percentage of non-progressive cancers is higher than 50%, the survival rate for progressive cancers is even lower, holding overall survival constant.
+      So that's one reason the inference is incorrect.
+    </p>
+
+    <p>
+      To see the other reason, let's be precise about the counterfactual scenario.
+      Suppose someone was diagnosed in 2020 with a tumor that had spread distantly, and they died in 2022.
+      Would they be alive in 2025 if they had been diagnosed earlier?
+    </p>
+
+    <p>
+      That depends on when the hypothetical diagnosis happens -- if we imagine they were diagnosed in 2020, five year survival <em>might</em> apply (except for the previous point).
+      But if it had spread distantly in 2020, we have to go farther back in time to catch it early.
+      For example, if it took 10 years to progress, catching it early means catching it in 2010.
+      In that case, being "alive today" would depend on 15-year survival, not five.
+    </p>
+
+    <p>
+      The five-year survival rate answers the question, "Of all people diagnosed at stage I, how many survive five years?" That is a straightforward statistic to compute.
+    </p>
+
+    <p>
+      But the hypothetical asks a different question: "Of all people who died [during a particular interval] after being diagnosed late, how many would be alive [at some later point] if the tumor had been detected early?" That is a <em>much</em> harder question to answer -- and five-year survival provides little or no help.
+    </p>
+
+    <p>
+      In general, we don't know the probability that someone would be alive today, if they had been diagnosed earlier.
+      Among other things, it depends on progression rates with and without treatment.
+    </p>
+
+    <ul>
+      <li><p>If many of the tumors caught early would not have progressed or caused death, even without treatment, the counterfactual probability would be low.</p></li>
+      <li><p>In any case, if treatment is ineffective, as in the hypothetical cancer we simulated, the counterfactual probability is zero.</p></li>
+      <li><p>At the other extreme, if treatment is perfectly effective, the probability is 100%.</p></li>
+    </ul>
+
+    <p>
+      It might be frustrating that we can't be more specific about the probability of the counterfactual, but if someone you know was diagnosed late and died, and it bothers you to think they would have lived if they had been diagnosed earlier, it might be some comfort to realize that we don't know that -- and it could be unlikely.
+    </p>
+  </section>
+
+  <section xml:id="sec-cancer-comparing">
+    <title>Comparing Survival Rates</title>
+
+    <p>
+      Now let's consider the last incorrect inference.
+    </p>
+
+    <blockquote>
+      <p>
+        If 5-year survival increases over time, it is tempting to conclude that treatment has improved.
+      </p>
+    </blockquote>
+
+    <p>
+      This conclusion is appealing because if cancer treatment improves, survival rates improve, other things being equal.
+      But if we do more screening and catch more cancers early, survival rates improve even if treatment is no more effective.
+      And if screening becomes more sensitive, and detects smaller tumors, survival rates also improve.
+    </p>
+
+    <p>
+      For many cancers, all three factors have changed over time: improved treatment, more screening, and more sensitive screening.
+      Looking only at survival rates, we can't tell how much change in survival we should attribute to each.
+    </p>
+
+    <p>
+      And the answer is different for different sites.
+      For example, <url href="https://pubmed.ncbi.nlm.nih.gov/25417232/">this paper</url> concludes:
+    </p>
+
+    <blockquote>
+      <p>
+        In some cases, increased survival was accompanied by decreased burden of disease, reflecting true progress. For example, from 1975 to 2010, five-year survival for colon cancer patients improved ... while cancer burden fell: Fewer cases ... and fewer deaths ..., a pattern explained by both increased early detection (with removal of cancer precursors) and more effective treatment. In other cases, however, increased survival did not reflect true progress. In melanoma, kidney, and thyroid cancer, five-year survival increased but incidence increased with no change in mortality. This pattern suggests overdiagnosis from increased early detection, an increase in cancer burden.
+      </p>
+    </blockquote>
+
+    <p>
+      And <url href="https://pubmed.ncbi.nlm.nih.gov/10865276/">this paper</url> explains:
+    </p>
+
+    <blockquote>
+      <p>
+        Screening detects abnormalities that meet the pathological definition of cancer but that will never progress to cause symptoms or death (non-progressive or slow growing cancers). The higher the number of overdiagnosed patients, the higher the survival rate.
+      </p>
+    </blockquote>
+
+    <p>
+      It concludes that "Although 5-year survival is a valid measure for comparing cancer therapies in a randomized trial, our analysis shows that changes in 5-year survival over time bear little relationship to changes in cancer mortality. Instead, they appear primarily related to changing patterns of diagnosis."
+    </p>
+
+    <p>
+      That conclusion might be stated too strongly.
+      <url href="https://www.researchgate.net/publication/46555895_Are_Increasing_5-Year_Survival_Rates_Evidence_of_Success_Against_Cancer_A_Reexamination_Using_Data_from_the_US_and_Australia">This response paper</url> concludes "While the change in the 5-year survival rate is not a perfect measure of progress against cancer [...] it does contain useful information; its critics may have been unduly harsh. Part of the long-run increase in 5-year cancer survival rates is due to improved [...] therapy."
+    </p>
+
+    <p>
+      But they acknowledge that with survival rates alone, we can't say what part -- and in some cases we have evidence that it is small.
+    </p>
+  </section>
+
+  <section xml:id="sec-cancer-summary">
+    <title>Summary</title>
+
+    <p>
+      Survival statistics are misleading because they suggest inferences they do not actually support.
+    </p>
+
+    <ul>
+      <li><p>Survival rates from the past might not apply to the present, and for a particular patient, the probability of survival depends on (1) causal factors like general health, and (2) informational factors like the mode of discovery (screening vs symptomatic presentation).</p></li>
+      <li><p>If survival rates are higher when tumors are discovered early, that doesn't mean that more screening would be better.</p></li>
+      <li><p>And if a cancer is diagnosed late, and the patient dies, that doesn't mean that if it had been diagnosed early, they would have lived.</p></li>
+      <li><p>Finally, if survival rates improve over time (or they are different in different places) that doesn't mean treatment is more effective.</p></li>
+    </ul>
+
+    <p>
+      To be clear, all of these conclusions <em>can</em> be true, and in some cases we know they are true, at least in part.
+      For some cancers, treatments have improved, and for some, additional screening would save lives.
+      But to support these conclusions, we need other methods and metrics -- notably randomized controlled trials that compare mortality.
+      Survival rates alone provide little or no information, and they are more likely to mislead than inform.
+    </p>
+  </section>
+
+  <section xml:id="sec-cancer-pymc">
+    <title>Markov Analysis with PyMC</title>
+
+    <p>
+      Instead of QuantEcon, we could have used PyMC to simulate the Markov chain.
+    </p>
+
+    <program language="python">
+      <input>
+# pip install pymc pymc-extras
+
+import pymc as pm
+import pymc_extras as pmx
+
+# map labels &lt;-&gt; ints
+state_to_idx = {s: i for i, s in enumerate(states)}
+idx_to_state = np.array(states)
+
+# initial distribution: start in 'U1'
+init_probs = np.zeros(len(states))
+init_probs[state_to_idx['U1']] = 1.0
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+T = 100    # number of time steps
+N = 10     # number of trajectories
+
+with pm.Model():
+    init_dist = pm.Categorical.dist(p=init_probs)
+    chain_rv = pmx.DiscreteMarkovChain("chain", P=P, init_dist=init_dist, shape=(T,))
+
+# Fast, no idata:
+traj = pm.draw(chain_rv, draws=N)
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+traj_labels = idx_to_state[traj]
+traj_labels[0]
+      </input>
+    </program>
+
+    <pre>
+array(['U1', 'U1', 'U1', 'D1', 'D1', 'D1', 'D1', 'D1', 'D1', 'D1', 'D1',
+       'D1', 'D1', 'D2', 'D2', 'D2', 'D2', 'D2', 'D2', 'D2', 'D2', 'D2',
+       'D2', 'D2', 'D3', 'D3', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M',
+       'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M',
+       'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M',
+       'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M',
+       'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M',
+       'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M',
+       'M'], dtype='&lt;U2')
+    </pre>
+  </section>
+
+</appendix>
