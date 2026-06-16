@@ -6,17 +6,9 @@
 <!-- solutions in the next.  Then there is an appendix    -->
 <!-- with all notation generated, and finally the index.  -->
 <backmatter xmlns:xi="http://www.w3.org/2001/XInclude" xml:id="meta_backmatter">
-  <title>Backmatter</title>
-  
-  <solutions divisional="hint">
-    <title>Selected Hints</title>
-  </solutions>
-  
-  <solutions divisional="solution">
-    <title>Selected Solutions</title>
-  </solutions>
-  
+  <title>Examples</title>  
   <xi:include href="./app-redline.ptx" />
+  <xi:include href="./app-redline-pymc.ptx" />
   <xi:include href="./app-vaccine-efficacy.ptx" />
   <xi:include href="./app-usb.ptx" />
   <xi:include href="./app-sister.ptx" />
@@ -32,17 +24,6 @@
   <xi:include href="./app-cancer.ptx" />
   <xi:include href="./app-raven.ptx" />
   <xi:include href="./app-frog.ptx" />
-  <xi:include href="./app-redline-pymc.ptx" />
-
-  <appendix>
-    <title>List of Symbols</title>
-    <notation-list/>
-  </appendix>
-
-  <index>
-    <title>Index</title>
-    <index-list/>
-  </index>
 
   <colophon>
     <p>
