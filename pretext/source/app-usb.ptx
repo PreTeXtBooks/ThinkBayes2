@@ -282,7 +282,7 @@ eqn
     </program>
 
     <me>
-p*exp(-lam*t)/(p*exp(-lam*t) + q) = r
+\frac{p*exp(-lam*t)}{(p*exp(-lam*t) + q)} = r
     </me>
 
     <p>
@@ -296,7 +296,7 @@ solve(eqn, t)[0]
     </program>
 
     <me>
-\frac{log(p*(1 - r)/(q*r))}/{lam}
+\frac{log(p*\frac{1 - r}{q*r})}{lam}
     </me>
 
     <p>
