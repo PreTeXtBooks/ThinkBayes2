@@ -32,12 +32,48 @@
 
     <program language="python">
       <input>
+# Get utils.py
+
+from os.path import basename, exists
+
+def download(url):
+    filename = basename(url)
+    if not exists(filename):
+        from urllib.request import urlretrieve
+        local, _ = urlretrieve(url, filename)
+        print('Downloaded ' + local)
+    
+download('https://github.com/AllenDowney/ThinkBayes2/raw/master/soln/utils.py')
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+try:
+    import empiricaldist
+except ImportError:
+    !pip install empiricaldist
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pymc as pm
 
 from utils import decorate
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+# Make the figures smaller to save some screen real estate
+
+plt.rcParams['figure.dpi'] = 75
+plt.rcParams['figure.figsize'] = [6, 3.5]
+plt.rcParams['axes.titlelocation'] = 'left'
       </input>
     </program>
 
@@ -97,7 +133,7 @@ decorate(xlabel='Gap between trains (minutes)')
       </input>
     </program>
 
-    <image source="images/redline_pymc_fig0.png" width="80%"/>
+    <image source="images/app_redline_fig0.png" width="80%"/>
   </introduction>
 
   <section xml:id="sec-redline-pymc-length-bias">
@@ -538,6 +574,9 @@ def make_model4(n_obs=10):
       When <c>nu</c> is larger than about 30, the Student-t converges to a normal distribution.
       Values below 10 yield long tails.
       Values below 5 yield very long tails.
+For more on the properties of these distributions, and how they apply to real data, see Chapter 8
+of <url href = "https://allendowney.github.io/ThinkBayes2/redline_pymc.html#">Probably Overthinking It</url>,
+or this video from <url href = "https://allendowney.github.io/ThinkBayes2/redline_pymc.html#">SciPy 2023</url>.
     </p>
 
     <p>
@@ -625,7 +664,7 @@ def make_model5(n_obs=10):
     <title>Run the Model</title>
 
     <p>
-      In the following cell, we choose the model to run.
+      In the following cell, choose the model you want to run.
     </p>
 
     <program language="python">
@@ -638,8 +677,22 @@ model_name = make_model.__name__.split('_')[1]
     <program language="python">
       <input>
 model = make_model(n_obs=10)
-      </input>
+pm.model_to_graphviz(model)
+</input>
     </program>
+
+    <image source="images/redline_pymc_figa.png" width="80%"/>
+
+    <program language="python">
+      <input>
+graph = pm.model_to_graphviz(model)
+graph.render(model_name, format='png')
+</input>
+    </program>
+
+<pre>
+'model1.png'
+</pre>
 
     <p>
       First we'll sample from the prior and prior predictive distributions.
@@ -839,9 +892,7 @@ decorate(xlabel='Gap between trains (minutes)')
     <title>Correlations</title>
 
     <p>
-      It is common practice to look at posterior marginal distributions, but often there are non-negligible correlations among the sampled values.
-      For example, in models 4 and 5, we are uncertain about the rate of passenger arrivals, which means that there are two possible explanations if we see more passengers than usual: maybe it's been a while since the last train, or maybe passengers have arrived faster than expected.
-      So in these models, we expect to see a negative correlation between these parameters.
+      It is common practice to look at posterior marginal distributions, but often there are non-negligible correlations among the sampled values. For example, in models 4 and 5, we are uncertain about the rate of passenger arrivals, which means that there are two possible explanations if we see more passengers than usual: maybe it’s been a while since the last train, or maybe passengers have arrived faster than expects. So in these models, we expect to see a negative correlation between these parameters.
     </p>
 
     <p>
@@ -1031,6 +1082,255 @@ for make_model_func in make_model_funcs:
     run_model(make_model_func)
       </input>
     </program>
+<pre>
+2
+
+Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [gap_time, elapsed_time, rate]
+
+ 100.00% [4000/4000 00:01&lt;00:00 Sampling 4 chains, 37 divergences]
+Sampling 4 chains for 500 tune and 500 draw iterations (2_000 + 2_000 draws total) took 1 seconds.
+There were 37 divergences after tuning. Increase `target_accept` or reparameterize.
+5
+Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [gap_time, elapsed_time, rate]
+
+ 100.00% [4000/4000 00:01&lt;00:00 Sampling 4 chains, 4 divergences]
+Sampling 4 chains for 500 tune and 500 draw iterations (2_000 + 2_000 draws total) took 1 seconds.
+There were 4 divergences after tuning. Increase `target_accept` or reparameterize.
+10
+Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [gap_time, elapsed_time, rate]
+
+ 100.00% [4000/4000 00:01&lt;00:00 Sampling 4 chains, 0 divergences]
+Sampling 4 chains for 500 tune and 500 draw iterations (2_000 + 2_000 draws total) took 1 seconds.
+20
+Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [gap_time, elapsed_time, rate]
+
+ 100.00% [4000/4000 00:01&lt;00:00 Sampling 4 chains, 0 divergences]
+Sampling 4 chains for 500 tune and 500 draw iterations (2_000 + 2_000 draws total) took 1 seconds.
+30
+Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [gap_time, elapsed_time, rate]
+
+ 100.00% [4000/4000 00:01&lt;00:00 Sampling 4 chains, 0 divergences]
+Sampling 4 chains for 500 tune and 500 draw iterations (2_000 + 2_000 draws total) took 1 seconds.
+40
+Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [gap_time, elapsed_time, rate]
+
+ 100.00% [4000/4000 00:01&lt;00:00 Sampling 4 chains, 0 divergences]
+Sampling 4 chains for 500 tune and 500 draw iterations (2_000 + 2_000 draws total) took 1 seconds.
+2
+Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [gap_time, elapsed_time, rate]
+
+ 100.00% [4000/4000 00:01&lt;00:00 Sampling 4 chains, 70 divergences]
+Sampling 4 chains for 500 tune and 500 draw iterations (2_000 + 2_000 draws total) took 1 seconds.
+There were 70 divergences after tuning. Increase `target_accept` or reparameterize.
+5
+Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [gap_time, elapsed_time, rate]
+
+ 100.00% [4000/4000 00:01&lt;00:00 Sampling 4 chains, 6 divergences]
+Sampling 4 chains for 500 tune and 500 draw iterations (2_000 + 2_000 draws total) took 1 seconds.
+There were 6 divergences after tuning. Increase `target_accept` or reparameterize.
+10
+Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [gap_time, elapsed_time, rate]
+
+ 100.00% [4000/4000 00:01&lt;00:00 Sampling 4 chains, 0 divergences]
+Sampling 4 chains for 500 tune and 500 draw iterations (2_000 + 2_000 draws total) took 1 seconds.
+20
+Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [gap_time, elapsed_time, rate]
+
+ 100.00% [4000/4000 00:01&lt;00:00 Sampling 4 chains, 0 divergences]
+Sampling 4 chains for 500 tune and 500 draw iterations (2_000 + 2_000 draws total) took 1 seconds.
+30
+Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [gap_time, elapsed_time, rate]
+
+ 100.00% [4000/4000 00:01&lt;00:00 Sampling 4 chains, 0 divergences]
+Sampling 4 chains for 500 tune and 500 draw iterations (2_000 + 2_000 draws total) took 1 seconds.
+40
+Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [gap_time, elapsed_time, rate]
+
+ 100.00% [4000/4000 00:01&lt;00:00 Sampling 4 chains, 0 divergences]
+Sampling 4 chains for 500 tune and 500 draw iterations (2_000 + 2_000 draws total) took 1 seconds.
+2
+Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [log_time, elapsed_time, rate]
+
+ 100.00% [4000/4000 00:00<00:00 Sampling 4 chains, 0 divergences]
+Sampling 4 chains for 500 tune and 500 draw iterations (2_000 + 2_000 draws total) took 1 seconds.
+5
+Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [log_time, elapsed_time, rate]
+
+ 100.00% [4000/4000 00:00<00:00 Sampling 4 chains, 0 divergences]
+Sampling 4 chains for 500 tune and 500 draw iterations (2_000 + 2_000 draws total) took 1 seconds.
+10
+Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [log_time, elapsed_time, rate]
+
+ 100.00% [4000/4000 00:01&lt;00:00 Sampling 4 chains, 0 divergences]
+Sampling 4 chains for 500 tune and 500 draw iterations (2_000 + 2_000 draws total) took 1 seconds.
+20
+Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [log_time, elapsed_time, rate]
+
+ 100.00% [4000/4000 00:01&lt;00:00 Sampling 4 chains, 0 divergences]
+Sampling 4 chains for 500 tune and 500 draw iterations (2_000 + 2_000 draws total) took 1 seconds.
+30
+Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [log_time, elapsed_time, rate]
+
+ 100.00% [4000/4000 00:01&lt;00:00 Sampling 4 chains, 0 divergences]
+Sampling 4 chains for 500 tune and 500 draw iterations (2_000 + 2_000 draws total) took 1 seconds.
+40
+Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [log_time, elapsed_time, rate]
+
+ 100.00% [4000/4000 00:01&lt;00:00 Sampling 4 chains, 0 divergences]
+Sampling 4 chains for 500 tune and 500 draw iterations (2_000 + 2_000 draws total) took 1 seconds.
+2
+Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [log_time, elapsed_time, rate]
+
+ 100.00% [4000/4000 00:01&lt;00:00 Sampling 4 chains, 0 divergences]
+Sampling 4 chains for 500 tune and 500 draw iterations (2_000 + 2_000 draws total) took 1 seconds.
+5
+Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [log_time, elapsed_time, rate]
+
+ 100.00% [4000/4000 00:01&lt;00:00 Sampling 4 chains, 0 divergences]
+Sampling 4 chains for 500 tune and 500 draw iterations (2_000 + 2_000 draws total) took 1 seconds.
+10
+Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [log_time, elapsed_time, rate]
+
+ 100.00% [4000/4000 00:01&lt;00:00 Sampling 4 chains, 0 divergences]
+Sampling 4 chains for 500 tune and 500 draw iterations (2_000 + 2_000 draws total) took 1 seconds.
+20
+Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [log_time, elapsed_time, rate]
+
+ 100.00% [4000/4000 00:01&lt;00:00 Sampling 4 chains, 0 divergences]
+Sampling 4 chains for 500 tune and 500 draw iterations (2_000 + 2_000 draws total) took 2 seconds.
+30
+Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [log_time, elapsed_time, rate]
+
+ 100.00% [4000/4000 00:01&lt;00:00 Sampling 4 chains, 0 divergences]
+Sampling 4 chains for 500 tune and 500 draw iterations (2_000 + 2_000 draws total) took 1 seconds.
+40
+Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [log_time, elapsed_time, rate]
+
+ 100.00% [4000/4000 00:01&lt;00:00 Sampling 4 chains, 0 divergences]
+Sampling 4 chains for 500 tune and 500 draw iterations (2_000 + 2_000 draws total) took 1 seconds.
+2
+Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [log_time, elapsed_time, rate]
+
+ 100.00% [4000/4000 00:00<00:00 Sampling 4 chains, 0 divergences]
+Sampling 4 chains for 500 tune and 500 draw iterations (2_000 + 2_000 draws total) took 1 seconds.
+5
+Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [log_time, elapsed_time, rate]
+
+ 100.00% [4000/4000 00:01&lt;00:00 Sampling 4 chains, 0 divergences]
+Sampling 4 chains for 500 tune and 500 draw iterations (2_000 + 2_000 draws total) took 1 seconds.
+10
+Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [log_time, elapsed_time, rate]
+
+ 100.00% [4000/4000 00:01&lt;00:00 Sampling 4 chains, 0 divergences]
+Sampling 4 chains for 500 tune and 500 draw iterations (2_000 + 2_000 draws total) took 1 seconds.
+20
+Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [log_time, elapsed_time, rate]
+
+ 100.00% [4000/4000 00:01&lt;00:00 Sampling 4 chains, 0 divergences]
+Sampling 4 chains for 500 tune and 500 draw iterations (2_000 + 2_000 draws total) took 1 seconds.
+30
+Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [log_time, elapsed_time, rate]
+
+ 100.00% [4000/4000 00:01&lt;00:00 Sampling 4 chains, 0 divergences]
+Sampling 4 chains for 500 tune and 500 draw iterations (2_000 + 2_000 draws total) took 1 seconds.
+40
+Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [log_time, elapsed_time, rate]
+
+ 100.00% [4000/4000 00:01&lt;00:00 Sampling 4 chains, 0 divergences]
+Sampling 4 chains for 500 tune and 500 draw iterations (2_000 + 2_000 draws total) took 1 seconds.
+The rhat statistic is larger than 1.01 for some parameters. This indicates problems during sampling. See https://arxiv.org/abs/1903.08008 for details
+The effective sample size per chain is smaller than 100 for some parameters.  A higher number is needed for reliable 
+</pre>
 
     <p>
       The following function reads a result back from the HDF file.
@@ -1169,5 +1469,4 @@ decorate(xlabel='People on platform', ylabel='Mean posterior arrival rate (per m
 
     <image source="images/redline_pymc_fig17.png" width="80%"/>
   </section>
-
 </appendix>
