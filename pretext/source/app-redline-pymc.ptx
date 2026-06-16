@@ -1190,7 +1190,7 @@ Initializing NUTS using jitter+adapt_diag...
 Multiprocess sampling (4 chains in 4 jobs)
 NUTS: [log_time, elapsed_time, rate]
 
- 100.00% [4000/4000 00:00<00:00 Sampling 4 chains, 0 divergences]
+ 100.00% [4000/4000 00:00&lt;00:00 Sampling 4 chains, 0 divergences]
 Sampling 4 chains for 500 tune and 500 draw iterations (2_000 + 2_000 draws total) took 1 seconds.
 5
 Auto-assigning NUTS sampler...
@@ -1198,7 +1198,7 @@ Initializing NUTS using jitter+adapt_diag...
 Multiprocess sampling (4 chains in 4 jobs)
 NUTS: [log_time, elapsed_time, rate]
 
- 100.00% [4000/4000 00:00<00:00 Sampling 4 chains, 0 divergences]
+ 100.00% [4000/4000 00:00&lt;00:00 Sampling 4 chains, 0 divergences]
 Sampling 4 chains for 500 tune and 500 draw iterations (2_000 + 2_000 draws total) took 1 seconds.
 10
 Auto-assigning NUTS sampler...
@@ -1286,7 +1286,7 @@ Initializing NUTS using jitter+adapt_diag...
 Multiprocess sampling (4 chains in 4 jobs)
 NUTS: [log_time, elapsed_time, rate]
 
- 100.00% [4000/4000 00:00<00:00 Sampling 4 chains, 0 divergences]
+ 100.00% [4000/4000 00:00&lt;00:00 Sampling 4 chains, 0 divergences]
 Sampling 4 chains for 500 tune and 500 draw iterations (2_000 + 2_000 draws total) took 1 seconds.
 5
 Auto-assigning NUTS sampler...
