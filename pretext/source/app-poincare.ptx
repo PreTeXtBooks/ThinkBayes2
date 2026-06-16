@@ -116,10 +116,25 @@ for i in range(10):
 
 sns.kdeplot(sample4, color='C3', label='k=4')
 decorate(xlabel='Weight (g)')
+plt.savefig('bread_dist_compare.png', dpi=300)
       </input>
     </program>
 
     <image source="images/bread_fig1.png" width="80%"/>
+
+    <program language="python">
+      <input>
+np.random.seed(19)
+
+sample = generate_sample(mean, std, k=1, n=365)
+sns.kdeplot(sample, color='C4', label='N(1000, 35)')
+
+sns.kdeplot(sample4, color='C1', label='max of 4 N(950, 50)')
+decorate(xlabel='Weight (g)')
+plt.savefig('bread_dist_compare.png', dpi=300)
+      </input>
+    </program>
+    <image source="images/bread_fig2.png" width="80%"/>
 
     <p>
       The <c>k=4</c> distribution falls mostly within the range of variation we'd expect from the <c>k=1</c> distribution with the same mean and standard deviation.
@@ -187,7 +202,10 @@ def max_normal_logp(m, mu, sigma, k):
     </program>
 
     <p>
-      Now here's a PyMC model that defines prior distributions for <c>mu</c>, <c>sigma</c>, and <c>k</c>, and uses the previous function to define a custom distribution that computes the likelihood of the data for a hypothetical set of parameters.
+      Now here's a PyMC model that
+<ul><li>defines prior distributions for <c>mu</c>, <c>sigma</c>, and <c>k</c>, and</li>
+<li>uses the previous function to define a custom distribution that computes the likelihood of the data for a hypothetical set of parameters.</li>
+</ul>
     </p>
 
     <program language="python">
@@ -256,7 +274,7 @@ plot_posterior(trace, 'mu', mu_true)
       </input>
     </program>
 
-    <image source="images/bread_fig2.png" width="80%"/>
+    <image source="images/bread_fig3.png" width="80%"/>
 
     <program language="python">
       <input>
@@ -264,7 +282,7 @@ plot_posterior(trace, 'sigma', sigma_true)
       </input>
     </program>
 
-    <image source="images/bread_fig3.png" width="80%"/>
+    <image source="images/bread_fig4.png" width="80%"/>
 
     <program language="python">
       <input>
@@ -272,7 +290,7 @@ plot_posterior(trace, 'k', k_true)
       </input>
     </program>
 
-    <image source="images/bread_fig4.png" width="80%"/>
+    <image source="images/bread_fig5.png" width="80%"/>
 
     <p>
       With one year of data, we can recover the parameters pretty well.
@@ -292,19 +310,58 @@ samples_k = az.extract(trace)['k'].to_numpy()
     </program>
 
     <pre>
-0.00725
+0.00625
     </pre>
 
     <p>
-      This example shows that we can use the shape of an observed distribution to estimate the effect of selection bias and recover the unbiased latent distribution.
-      But we might need a lot of data, and the inference depends on strong assumptions about the data generating process.
+This example shows that we can use the shape of an observed distribution to estimate the effect of selection bias and recover the unbiased latent distribution. But we might need a lot of data, and the inference depends on strong assumptions about the data generating process.
     </p>
 
+
     <p>
-      Credits: This example appears in Leonard Mlodinov, <em>The Drunkard's Walk</em> (2008).
+      Credits:  I don’t remember where I got this example from (maybe <url href = "https://everything2.com/title/%2522true%2522+story+about+Poincar%25C3%25A9%2527s+baker">here</url>?), but it
+      appears in Leonard Mlodinov, <em>The Drunkard's Walk</em> (2008).
       Mlodinov credits Bart Holland, <em>What Are the Chances?</em> (2002).
       The <url href="https://hsm.stackexchange.com/questions/7299/poincar%C3%A9-and-the-baker-was-the-anecdote-true">ultimate source</url> seems to be George Gamow and Marvin Stern, <em>Puzzle Math</em> (1958) -- but their version is about a German professor, not Poincaré.
     </p>
+
+    <program language="python">
+      <input>
+mu_true, sigma_true = 950, 50
+
+sample2 = generate_sample(mu_true, sigma_true, k=4, n=365)
+
+sns.kdeplot(sample, label=f'Year 1')
+sns.kdeplot(sample2, label=f'Year 2')
+    
+decorate(xlabel='Weight (g)')
+plt.savefig('bread_dist_2.png', dpi=300)
+sample2.mean()
+      </input>
+    </program>
+<pre>
+1000.6543865551631
+</pre>
+    <image source="images/bread_fig6.png" width="80%"/>
+
+    <program language="python">
+      <input>
+mu_true, sigma_true = 950, 50
+
+sample = generate_sample(mu_true, sigma_true, k=1, n=365)
+sns.kdeplot(sample, label=f'Year 1')
+    
+decorate(xlabel='Weight (g)')
+plt.savefig('bread_dist_1.png', dpi=300)
+sample.mean()
+      </input>
+    </program>
+<pre>
+949.81307056437
+</pre>
+
+    <image source="images/bread_fig7.png" width="80%"/>
+
   </section>
 
 </appendix>
