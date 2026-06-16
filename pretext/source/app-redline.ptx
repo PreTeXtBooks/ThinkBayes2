@@ -8,24 +8,23 @@
     </p>
 
     <p>
-      When I arrived at the station, I could estimate the time until the next train based on the number of passengers on the platform. If there were only a few people, I inferred that I just missed a train and expected to wait about 7 minutes. If there were more passengers, I expected the train to arrive sooner. But if there were a large number of passengers, I suspected that trains were not running on schedule, so I would go back to the street level and get a taxi.
+When I arrived at the station, I could estimate the time until the next train based on the number of passengers on the platform. If there were only a few people, I inferred that I just missed a train and expected to wait about 7 minutes. If there were more passengers, I expected the train to arrive sooner. But if there were a large number of passengers, I suspected that trains were not running on schedule, so I would go back to the street level and get a taxi.
     </p>
 
     <p>
-      While I was waiting for trains, I thought about how Bayesian estimation could help predict my wait time and decide when I should give up and take a taxi. This chapter presents the analysis I came up with.
+While I was waiting for trains, I thought about how Bayesian estimation could help predict my wait time and decide when I should give up and take a taxi. This chapter presents the analysis I came up with.
     </p>
 
     <p>
-      This example is based on a project by Brendan Ritter and Kai Austin, who took a class with me at Olin College.
-It was a chapter in the first edition of <em>Think Bayes</em>, I cut it from the second edition.
+This example is based on a project by Brendan Ritter and Kai Austin, who took a class with me at Olin College.
     </p>
 
     <p>
-      Before we get to the analysis, we have to make some modeling decisions. First, I will treat passenger arrivals as a Poisson process, which means I assume that passengers are equally likely to arrive at any time, and that they arrive at a rate, λ, measured in passengers per minute. Since I observe passengers during a short period of time, and at the same time every day, I assume that λ is constant.
+Before we get to the analysis, we have to make some modeling decisions. First, I will treat passenger arrivals as a Poisson process, which means I assume that passengers are equally likely to arrive at any time, and that they arrive at a rate, λ, measured in passengers per minute. Since I observe passengers during a short period of time, and at the same time every day, I assume that λ is constant.
     </p>
 
     <p>
-      On the other hand, the arrival process for trains is not Poisson. Trains to Boston are supposed to leave from the end of the line (Alewife station) every 7–8 minutes during peak times, but by the time they get to Kendall Square, the time between trains varies between 3 and 12 minutes.
+On the other hand, the arrival process for trains is not Poisson. Trains to Boston are supposed to leave from the end of the line (Alewife station) every 7–8 minutes during peak times, but by the time they get to Kendall Square, the time between trains varies between 3 and 12 minutes.
     </p>
 
     <p>
@@ -187,9 +186,8 @@ I chose this notation so that
     </p>
 
     <p>
-      <c></c>`
-z = x + y.
-<c></c>`
+      <c>
+z = x + y</c>`
     </p>
 
     <p>
@@ -393,9 +391,9 @@ Remember that we defined
     </p>
 
     <p>
-      <c></c>`
+      <c>
 z = x + y
-<c></c>`
+</c>
     </p>
 
     <p>
@@ -403,9 +401,9 @@ z = x + y
     </p>
 
     <p>
-      <c></c>`
+      <c>
 y = z - x
-<c></c>`
+</c>
     </p>
 
     <p>
@@ -680,7 +678,7 @@ As an example, here's the distribution of wait time if we see 10 passengers.
 
     <p>
       This analysis is based on the assumption that the arrival rate, <c>lam</c>, is known.
-If it is not know precisely, but is estimated from data, we could represent our uncertainty about <c>lam</c> with a distribution, compute the distribution of <c>y</c> for each value of <c>lam</c>, and make a mixture to represent the distribution of <c>y</c>.
+If it is not known precisely, but is estimated from data, we could represent our uncertainty about <c>lam</c> with a distribution, compute the distribution of <c>y</c> for each value of <c>lam</c>, and make a mixture to represent the distribution of <c>y</c>.
 I did that in the version of this problem in the first edition of <em>Think Bayes</em>; I left it out here because it is not the focus of the problem.
     </p>
   </section>
