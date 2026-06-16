@@ -450,6 +450,9 @@ posterior_n2.plot()
 posterior_n2.mean()
       </input>
     </program>
+<pre>
+168.947980523708
+</pre>
 
     <image source="images/radiation_fig4.png" width="80%"/>
 

@@ -131,6 +131,11 @@
       To be clear, I'm not saying that cancer treatment is not effective -- in many cases we know that it is.
       I'm saying that we can't tell, just looking at a survival rates, whether early detection has any benefit at all.
     </p>
+
+<p>
+<url href = "https://allendowney.github.io/ThinkBayes2/cancer.html">The details of the model are here</url> and you can
+<url href = "https://colab.research.google.com/github/AllenDowney/ThinkBayes2/blob/master/examples/cancer.ipynb">click here to run my analysis in a Jupyter notebook on Colab</url>.
+</p>
   </section>
 
   <section xml:id="sec-cancer-data">
