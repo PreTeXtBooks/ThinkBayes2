@@ -30,6 +30,34 @@
 
     <program language="python">
       <input>
+try:
+    import empiricaldist
+except ImportError:
+    !pip install empiricaldist
+      </input>
+    </program>
+    <program language="python">
+      <input>
+# download thinkdsp.py
+
+from os.path import basename, exists
+
+    <program language="python">
+      <input>
+def download(url):
+    filename = basename(url)
+    if not exists(filename):
+        from urllib.request import urlretrieve
+
+        local, _ = urlretrieve(url, filename)
+        print("Downloaded " + local)
+
+
+download("https://github.com/AllenDowney/ThinkBayes2/raw/master/soln/utils.py")
+      </input>
+    </program>
+    <program language="python">
+      <input>
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -60,15 +88,6 @@ plt.rcParams["figure.figsize"] = [6, 3.5]
 
     <program language="python">
       <input>
-from os.path import basename, exists
-
-def download(url):
-    filename = basename(url)
-    if not exists(filename):
-        from urllib.request import urlretrieve
-        local, _ = urlretrieve(url, filename)
-        print("Downloaded " + local)
-
 download("https://www.corpusdata.org/coca/samples/coca-samples-text.zip")
       </input>
     </program>
@@ -266,6 +285,22 @@ array(['laneer', 'emc', 'literature-like', 'tomyworld', 'roald',
        'all-her-life', 'lakhani', 'screeeeaming', 'marketings', 'girthy',
        'non-discriminatory', 'chumpy', 'resque', 'lysing'], dtype='&lt;U24')
     </pre>
+
+<p>As it turns out, “chartist” and “chartism” do not appear in this corpus, confirming that they are rare words.
+</p>
+
+    <program language="python">
+      <input>
+counter['chartist'], counter['chartism']
+      </input>
+    </program>
+<pre>
+0
+</pre>
+
+<p>
+Now let’s see what the distribution of word frequencies looks like.
+</p>
   </section>
 
   <section xml:id="sec-chartist-zipf">
