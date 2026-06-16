@@ -36,11 +36,14 @@ except ImportError:
     !pip install empiricaldist
       </input>
     </program>
+
     <program language="python">
       <input>
 # download thinkdsp.py
 
 from os.path import basename, exists
+      </input>
+    </program>
 
     <program language="python">
       <input>
