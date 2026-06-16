@@ -28,6 +28,28 @@
 
     <program language="python">
       <input>
+# If we're running on Colab, install empiricaldist
+# https://pypi.org/project/empiricaldist/
+
+import sys
+IN_COLAB = 'google.colab' in sys.modules
+
+if IN_COLAB:
+    !pip install empiricaldist
+      </input>
+    </program>
+    <program language="python">
+      <input>
+# Get utils.py
+
+import os
+
+if not os.path.exists('utils.py'):
+    !wget https://github.com/AllenDowney/ThinkBayes2/raw/master/soln/utils.py
+      </input>
+    </program>
+    <program language="python">
+      <input>
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
