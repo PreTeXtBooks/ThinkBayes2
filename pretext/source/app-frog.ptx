@@ -1,0 +1,453 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appendix xml:id="app-frog" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <title>The Frog Puzzle</title>
+
+  <introduction>
+    <p>
+      Here's a probability puzzle from a TED-Ed video called <em>Can you solve the frog riddle?</em> by Derek Abbott.
+      Here's an abridged version of the puzzle:
+    </p>
+
+    <blockquote>
+      <p>
+        You're stranded in a rainforest after accidentally eating a poisonous mushroom.
+        To survive the poison, you need to lick a certain species of frog.
+        Only female frogs produce the antidote.
+        Male and female frogs occur in equal numbers and look identical, but male frogs have a distinctive croak.
+      </p>
+      <p>
+        You see one frog alone on a tree stump.
+        In another direction, you hear the croak of a male frog coming from a clearing with two frogs.
+        You can't tell which one made the sound.
+      </p>
+      <p>
+        You only have time to go to one place.
+        What are your chances of survival if you go to the clearing and lick both frogs?
+        What if you go to the lone frog?
+      </p>
+    </blockquote>
+
+    <p>
+      The second question is relatively easy: if we assume that you are equally likely to see a male or female frog, the probability is 50% that the lone frog is female.
+    </p>
+
+    <p>
+      The first question depends on how we interpret the puzzle.
+      In particular, it hinges on the word "distinctive" -- does that mean:
+    </p>
+
+    <ol>
+      <li><p>Only male frogs croak, and the sound is distinguishable from background noises, or</p></li>
+      <li><p>Both male and female frogs croak, but the male croak is distinguishable from the female croak.</p></li>
+    </ol>
+
+    <p>
+      Based on the answer presented in the video, the first meaning is intended.
+      So we'll start by solving that version.
+      But the second meaning makes the problem a little harder, so we'll solve that one, too.
+    </p>
+  </introduction>
+
+  <section xml:id="sec-frog-only-male">
+    <title>Only Male Frogs Croak</title>
+
+    <p>
+      To solve the intended version of the puzzle, we'll assume
+    </p>
+
+    <ul>
+      <li><p>Only male frogs croak, and</p></li>
+      <li><p>When two frogs appear together, their sexes are independent.</p></li>
+    </ul>
+
+    <p>
+      So we'll start with a prior where all two-frog combinations are equally likely.
+    </p>
+
+    <program language="python">
+      <input>
+from sympy import Rational
+
+hypo = ['FF', 'FM', 'MF', 'MM']
+prior = Rational(1)
+      </input>
+    </program>
+
+    <p>
+      Now let's think about the likelihood of the data under each scenario.
+      In the video, the solution is based on these assumptions:
+    </p>
+
+    <ul>
+      <li><p>If both frogs are female, the probability of hearing the male croak is <m>0</m>.</p></li>
+      <li><p>If either frog is male, the probability that one of them croaks is <m>1</m>.</p></li>
+    </ul>
+
+    <program language="python">
+      <input>
+likelihood = [0, 1, 1, 1]
+      </input>
+    </program>
+
+    <p>
+      I'll use a <c>BayesTable</c> to compute the posterior probability for each scenario.
+    </p>
+
+    <program language="python">
+      <input>
+import pandas as pd
+import numpy as np
+
+class BayesTable(pd.DataFrame):
+    def __init__(self, hypo, prior=1, **options):
+        columns = ['prior', 'likelihood', 'unnorm', 'posterior']
+        super().__init__(index=hypo, columns=columns, **options)
+        self.prior = prior
+
+    def update(self, likelihood):
+        self.likelihood = likelihood
+        self.unnorm = self.prior * self.likelihood
+        nc = self.unnorm.sum()
+        self.posterior = self.unnorm / nc
+      </input>
+    </program>
+
+    <program language="python">
+      <input>
+table = BayesTable(hypo, prior)
+table.update(likelihood)
+table
+      </input>
+    </program>
+
+    <pre>
+      prior  likelihood  unnorm  posterior
+FF        1           0       0          0
+FM        1           1       1        1/3
+MF        1           1       1        1/3
+MM        1           1       1        1/3
+    </pre>
+
+    <p>
+      From the table, we can extract the posterior probability that both frogs are male.
+    </p>
+
+    <program language="python">
+      <input>
+from sympy import init_printing
+init_printing(use_latex=False)
+table.posterior['MM']
+      </input>
+    </program>
+
+    <pre>
+1/3
+    </pre>
+
+    <p>
+      With these assumptions, the probability is <m>1/3</m> that both frogs are male (and you die), so the probability is <m>2/3</m> that at least one is female (and you live).
+      And that's the answer in the video.
+    </p>
+  </section>
+
+  <section xml:id="sec-frog-poisson">
+    <title>Poisson (not Poison) Frogs</title>
+
+    <p>
+      But is that the right likelihood?
+      Suppose frogs are equally likely to croak at any instant in time, so their croaks follow a Poisson process.
+      If we assume that these croaking processes are independent, two frogs would be more likely to croak, during a given interval, than one.
+    </p>
+
+    <p>
+      If the interval is much longer than the average time between croaks, the probability that either frog croaks approaches 1, which is consistent with the previous solution.
+    </p>
+
+    <p>
+      But if the interval is short -- as it might be if you were deciding whether to approach the first frog -- the probability of hearing a croak would be double if there are two male frogs rather than one.
+    </p>
+
+    <p>
+      In that case, the likelihood of the data would be:
+    </p>
+
+    <program language="python">
+      <input>
+half = Rational(1, 2)
+likelihood = [0, half, half, 1]
+      </input>
+    </program>
+
+    <p>
+      And here are the posterior probabilities:
+    </p>
+
+    <program language="python">
+      <input>
+table = BayesTable(hypo, prior)
+table.update(likelihood)
+table
+      </input>
+    </program>
+
+    <pre>
+      prior  likelihood  unnorm  posterior
+FF        1           0       0          0
+FM        1         1/2     1/2        1/4
+MF        1         1/2     1/2        1/4
+MM        1           1       1        1/2
+    </pre>
+
+    <p>
+      With Poisson frogs and a short interval, the probability of two male frogs is <m>1/2</m>, so it doesn't matter whether you approach the lone frog or the pair of frogs.
+    </p>
+  </section>
+
+  <section xml:id="sec-frog-female-croak">
+    <title>Female Frogs Croak, Too</title>
+
+    <p>
+      Now let's think about the other interpretation of the puzzle: suppose both male and female frogs croak, but we can distinguish one from the other.
+      And suppose male and female frogs croak at different rates, but they are still independent.
+    </p>
+
+    <p>
+      Assume that male frogs croak at a rate of 1 per time unit, and female frogs at a rate of <m>r</m> per time unit.
+      In that case, if we start listening at a random time, the probability that we hear a male frog first is <m>1/(r+1)</m> if there's only one male frog, and <m>1</m> if there are two male frogs.
+    </p>
+
+    <p>
+      So the likelihood in this case is:
+    </p>
+
+    <program language="python">
+      <input>
+from sympy import symbols
+
+r = symbols('r')
+likelihood = [0, 1 / (r+1), 1 / (r+1), 1]
+      </input>
+    </program>
+
+    <p>
+      And here are the posteriors:
+    </p>
+
+    <program language="python">
+      <input>
+table = BayesTable(hypo, prior)
+table.update(likelihood)
+table
+      </input>
+    </program>
+
+    <pre>
+      prior  likelihood     unnorm                             posterior
+FF        1           0          0                                     0
+FM        1   1/(r + 1)  1/(r + 1)  1/((1 + 2/(r + 1))*(r + 1))
+MF        1   1/(r + 1)  1/(r + 1)  1/((1 + 2/(r + 1))*(r + 1))
+MM        1           1          1                 1/(1 + 2/(r + 1))
+    </pre>
+
+    <p>
+      In this scenario, here's the probability you die.
+    </p>
+
+    <program language="python">
+      <input>
+prob_die = table.posterior['MM']
+prob_die.simplify()
+      </input>
+    </program>
+
+    <pre>
+r + 1
+─────
+r + 3
+    </pre>
+
+    <p>
+      If female frogs don't croak, we get the same answer as in the first scenario.
+    </p>
+
+    <program language="python">
+      <input>
+prob_die.subs({r: 0})
+      </input>
+    </program>
+
+    <pre>
+1/3
+    </pre>
+
+    <p>
+      If male and female frogs croak at the same rate, the probability that both frogs are male is <m>1/2</m>.
+    </p>
+
+    <program language="python">
+      <input>
+prob_die.subs({r: 1})
+      </input>
+    </program>
+
+    <pre>
+1/2
+    </pre>
+
+    <p>
+      But if female frogs croak much more often, the fact that a male croaked first is strong evidence that both are male, so the posterior probability is close to 1.
+    </p>
+
+    <program language="python">
+      <input>
+prob_die.subs({r: 1000}).evalf()
+      </input>
+    </program>
+
+    <pre>
+0.998005982053839
+    </pre>
+  </section>
+
+  <section xml:id="sec-frog-assortative">
+    <title>Assortative Mating</title>
+
+    <p>
+      Now suppose that when we see two frogs together, their sexes are not independent; specifically, let's assume that the probability of a same-sex pair is <m>p</m>, so the probability of a mixed-sex pair is <m>1-p</m>.
+      In this scenario, the priors (before we hear the croak) are not equal.
+    </p>
+
+    <program language="python">
+      <input>
+p = symbols('p')
+prior = [p, 1-p, 1-p, p]
+      </input>
+    </program>
+
+    <p>
+      Here are the posterior probabilities, assuming again that both male and female frogs croak, possibly at different rates.
+    </p>
+
+    <program language="python">
+      <input>
+likelihood = [0, 1 / (r+1), 1 / (r+1), 1]
+table = BayesTable(hypo, prior)
+table.update(likelihood)
+table
+      </input>
+    </program>
+
+    <pre>
+      prior  likelihood              unnorm                                              posterior
+FF        p           0                   0                                                      0
+FM      1-p   1/(r + 1)      (1-p)/(r + 1)      (1-p)/((p + 2*(1-p)/(r + 1))*(r + 1))
+MF      1-p   1/(r + 1)      (1-p)/(r + 1)      (1-p)/((p + 2*(1-p)/(r + 1))*(r + 1))
+MM        p           1                   p                          p/(p + 2*(1-p)/(r + 1))
+    </pre>
+
+    <program language="python">
+      <input>
+table.posterior['MM'].simplify()
+      </input>
+    </program>
+
+    <pre>
+ p⋅(r + 1)
+───────────
+p⋅r - p + 2
+    </pre>
+
+    <p>
+      If <m>p = 1/2</m>, this simplifies to the previous scenario.
+    </p>
+
+    <program language="python">
+      <input>
+table.posterior['MM'].subs({p: half}).simplify()
+      </input>
+    </program>
+
+    <pre>
+r + 1
+─────
+r + 3
+    </pre>
+
+    <p>
+      And if <m>r = 0</m> (female frogs don't croak), we get the answer presented in the video.
+    </p>
+
+    <program language="python">
+      <input>
+table.posterior['MM'].subs({p: half, r: 0}).simplify()
+      </input>
+    </program>
+
+    <pre>
+1/3
+    </pre>
+
+    <p>
+      But depending on the assumptions, the probability can be as low as 0:
+    </p>
+
+    <program language="python">
+      <input>
+table.posterior['MM'].subs({p: 0, r: 1}).simplify()
+      </input>
+    </program>
+
+    <pre>
+0
+    </pre>
+
+    <p>
+      Or as high as 1:
+    </p>
+
+    <program language="python">
+      <input>
+table.posterior['MM'].subs({p: 1, r: 0}).simplify()
+      </input>
+    </program>
+
+    <pre>
+1
+    </pre>
+
+    <p>
+      Or anything in between.
+      As is often the case with problems like these, the answer depends on a precise specification of the data-generating process.
+    </p>
+  </section>
+
+  <section xml:id="sec-frog-discussion">
+    <title>Discussion</title>
+
+    <p>
+      If all of this seems like more trouble than it's worth, let me suggest a metacognitive shortcut for solving puzzles like this.
+    </p>
+
+    <p>
+      Notice that in all probability puzzles, the answer is either <m>1/2</m> or <m>1/3</m>.
+    </p>
+
+    <p>
+      Also, the answer is always counterintuitive; otherwise it wouldn't be a puzzle.
+    </p>
+
+    <p>
+      Therefore, if your intuition says the answer is <m>1/2</m>, it's actually <m>1/3</m>, and vice versa.
+    </p>
+
+    <p>
+      That might save you some time.
+    </p>
+
+    <p>
+      This appendix uses methods and materials from <em>Think Bayes</em>, second edition.
+      You can read the whole book, and more examples, at <url href="https://allendowney.github.io/ThinkBayes2/">allendowney.github.io/ThinkBayes2/</url>.
+    </p>
+  </section>
+
+</appendix>

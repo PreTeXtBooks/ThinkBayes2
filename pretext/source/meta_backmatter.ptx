@@ -31,6 +31,8 @@
   <xi:include href="./app-poincare.ptx" />
   <xi:include href="./app-cancer.ptx" />
   <xi:include href="./app-raven.ptx" />
+  <xi:include href="./app-frog.ptx" />
+  <xi:include href="./app-redline-pymc.ptx" />
 
   <appendix>
     <title>List of Symbols</title>
