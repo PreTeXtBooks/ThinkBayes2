@@ -1011,6 +1011,18 @@ for i, ps in enumerate(marginal_xs):
     </pre>
 
     <image source="images/hospital_fig20.png" width="80%"/>
+    <image source="images/hospital_fig21.png" width="80%"/>
+    <image source="images/hospital_fig22.png" width="80%"/>
+    <image source="images/hospital_fig23.png" width="80%"/>
+    <image source="images/hospital_fig25.png" width="80%"/>
+    <image source="images/hospital_fig26.png" width="80%"/>
+    <image source="images/hospital_fig27.png" width="80%"/>
+    <image source="images/hospital_fig28.png" width="80%"/>
+    <image source="images/hospital_fig29.png" width="80%"/>
+    <image source="images/hospital_fig30.png" width="80%"/>
+    <image source="images/hospital_fig31.png" width="80%"/>
+    <image source="images/hospital_fig32.png" width="80%"/>
+    <image source="images/hospital_fig33.png" width="80%"/>
 
     <p>
       And here are the percentage differences between the results from the grid algorithm and PyMC. Most of them are less than 1%.
