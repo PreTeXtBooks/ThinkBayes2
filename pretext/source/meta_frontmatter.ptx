@@ -54,11 +54,41 @@
       and the source is hosted on
       <url href="https://github.com/AllenDowney/ThinkBayes2" visual="github.com/AllenDowney/ThinkBayes2">GitHub</url>.
       All credit for the content of this book belongs to Allen B. Downey.
-    </p>
+      </p>
+  </preface>
+
+  <preface xml:id="preface-ptx-version">
+    <title>Note on This PreTeXt Edition</title>
+
     <p>
-      This PreTeXt edition is maintained at
-      <url href="https://github.com/PreTeXtBooks/ThinkBayes2" visual="github.com/PreTeXtBooks/ThinkBayes2">github.com/PreTeXtBooks/ThinkBayes2</url>.
-      If you find errors or issues specific to this PreTeXt version, please open an issue there.
+      This is a <url href="https://pretextbook.org/" visual="pretextbook.org">PreTeXt</url>
+      conversion of <em>Think Bayes 2: Bayesian Statistics Made Simple</em>, originally written by
+      <url href="https://github.com/AllenDowney" visual="github.com/AllenDowney">Allen B. Downey</url>
+      of Olin College of Engineering.
+      The original work is freely available online at
+      <url href="https://allendowney.github.io/ThinkBayes2" visual="allendowney.github.io/ThinkBayes2">allendowney.github.io/ThinkBayes2</url>.
+      The original GitHub repository for the book source is at
+      <url href="https://github.com/AllenDowney/ThinkBayes2"
+           visual="github.com/AllenDowney/ThinkBayes2">github.com/AllenDowney/ThinkBayes2</url>.
+    </p>
+
+    <p>
+      This PreTeXt edition was prepared by
+      <url href="https://github.com/PreTeXtBooks/ThinkBayes2"
+           visual="github.com/PreTeXtBooks/ThinkBayes2">the PreTeXtBooks project</url>
+      to make the content available in the PreTeXt format, enabling accessible and structured
+      output in HTML, PDF, and other formats. All prose, code examples, figures, and mathematical
+      content are intended to be faithful reproductions of the original work, though occasional
+      typographical errors may have been introduced in the conversion process. Report any issues to our
+      <url href="https://github.com/PreTeXtBooks/ThinkBayes2/issues"
+           visual="github.com/PreTeXtBooks/ThinkBayes2/issues">GitHub Issues page</url>.
+    </p>
+
+    <p>
+      The original work by Allen B. Downey is licensed under a
+      <url href="https://creativecommons.org/licenses/by-nc-sa/4.0/"
+           visual="creativecommons.org/licenses/by-nc-sa/4.0">Creative Commons
+      Attribution-NonCommercial-ShareAlike 4.0 International License</url>.
     </p>
   </preface>
 
